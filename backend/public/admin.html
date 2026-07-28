@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechConnect Cameroun — Admin Verification Stand-in</title>
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+    }
+    h1 { color: var(--primary); margin: 0; font-size: 24px; }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .doc-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; margin-left: 8px; }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #dcfce7; color: #166534; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>TechConnect — Validation des Techniciens</h1>
+      <span id="admin-status">Admin Mode</span>
+    </header>
+
+    <div id="login-box" class="card">
+      <h3>Connexion Administrateur</h3>
+      <input type="email" id="email" placeholder="Email admin" value="admin@techconnect.cm" style="padding: 8px; width: 250px; margin-right: 8px;">
+      <input type="password" id="password" placeholder="Mot de passe" value="Password123!" style="padding: 8px; width: 200px; margin-right: 8px;">
+      <button onclick="login()" class="btn btn-success">Se connecter</button>
+    </div>
+
+    <div id="verifications-list" style="display: none;">
+      <h2>Documents en attente</h2>
+      <div id="docs-container">Chargement...</div>
+    </div>
+  </div>
+
+  <script>
+    let token = '';
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const json = await res.json();
+        if (json.data && json.data.token) {
+          token = json.data.token;
+          document.getElementById('login-box').style.display = 'none';
+          document.getElementById('verifications-list').style.display = 'block';
+          loadDocs();
+        } else {
+          alert('Échec de la connexion: ' + (json.error ? json.error.message : 'inconnu'));
+        }
+      } catch (err) {
+        alert('Erreur: ' + err.message);
+      }
+    }
+
+    async function loadDocs() {
+      const container = document.getElementById('docs-container');
+      try {
+        const res = await fetch('/api/admin/verifications', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const json = await res.json();
+        const docs = json.data || [];
+
+        if (docs.length === 0) {
+          container.innerHTML = '<p>Aucun document de vérification en attente.</p>';
+          return;
+        }
+
+        container.innerHTML = docs.map(doc => `
+          <div class="card">
+            <div class="doc-header">
+              <span>Technicien: ${doc.technician?.user?.full_name || 'Inconnu'} (${doc.technician?.user?.email})</span>
+              <span class="status-badge status-${doc.status}">${doc.status}</span>
+            </div>
+            <p><strong>Type:</strong> ${doc.document_type} | <strong>Soumis le:</strong> ${new Date(doc.uploaded_at).toLocaleString('fr-FR')}</p>
+            <p><strong>Lien fichier:</strong> <a href="${doc.file_url}" target="_blank">${doc.file_url}</a></p>
+            ${doc.status === 'pending' ? `
+              <div style="margin-top: 12px;">
+                <button onclick="review('${doc.id}', 'approved')" class="btn btn-success">Approuver</button>
+                <button onclick="review('${doc.id}', 'rejected')" class="btn btn-danger">Rejeter</button>
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = '<p>Erreur de chargement: ' + err.message + '</p>';
+      }
+    }
+
+    async function review(docId, status) {
+      let rejectionReason = null;
+      if (status === 'rejected') {
+        rejectionReason = prompt('Motif du rejet :');
+        if (!rejectionReason) return;
+      }
+
+      try {
+        const res = await fetch(`/api/admin/verifications/${docId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ status, rejectionReason })
+        });
+        const json = await res.json();
+        if (json.data) {
+          alert(`Document ${status === 'approved' ? 'approuvé' : 'rejeté'} avec succès !`);
+          loadDocs();
+        } else {
+          alert('Erreur: ' + (json.error ? json.error.message : 'inconnu'));
+        }
+      } catch (err) {
+        alert('Erreur: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

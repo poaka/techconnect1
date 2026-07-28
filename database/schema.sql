@@ -1,0 +1,344 @@
+-- TechConnect Cameroun — Database Schema
+-- Supabase-managed PostgreSQL Database Script
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ============================================================================
+-- ENUM TYPES
+-- ============================================================================
+
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('client', 'technician', 'admin');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE availability_status AS ENUM ('available', 'busy', 'offline');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE request_status AS ENUM ('pending', 'accepted', 'rejected', 'in_progress', 'completed', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE document_type AS ENUM ('id_card', 'certificate');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE document_status AS ENUM ('pending', 'approved', 'rejected');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- ============================================================================
+-- TABLES
+-- ============================================================================
+
+-- 1. Users Table
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(30),
+    password_hash VARCHAR(255) NOT NULL,
+    role user_role NOT NULL DEFAULT 'client',
+    avatar_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Regions Table
+CREATE TABLE IF NOT EXISTS regions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Cities Table
+CREATE TABLE IF NOT EXISTS cities (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL,
+    region_id UUID NOT NULL REFERENCES regions(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_city_per_region UNIQUE (name, region_id)
+);
+
+-- 4. Categories Table
+CREATE TABLE IF NOT EXISTS categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) UNIQUE NOT NULL,
+    icon VARCHAR(100),
+    description TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Technician Profiles Table
+CREATE TABLE IF NOT EXISTS technician_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    bio TEXT,
+    years_experience INT DEFAULT 0 CHECK (years_experience >= 0),
+    price_min NUMERIC(10, 2) DEFAULT 0.00 CHECK (price_min >= 0),
+    price_max NUMERIC(10, 2) DEFAULT 0.00 CHECK (price_max >= price_min),
+    whatsapp VARCHAR(30),
+    city_id UUID REFERENCES cities(id) ON DELETE SET NULL,
+    verified BOOLEAN DEFAULT FALSE,
+    availability availability_status DEFAULT 'available',
+    rating_avg NUMERIC(3, 2) DEFAULT 0.00 CHECK (rating_avg >= 0.00 AND rating_avg <= 5.00),
+    rating_count INT DEFAULT 0 CHECK (rating_count >= 0),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Technician Categories Junction Table
+CREATE TABLE IF NOT EXISTS technician_categories (
+    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
+    category_id UUID NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    PRIMARY KEY (technician_id, category_id)
+);
+
+-- 7. Technician Verification Documents Table
+CREATE TABLE IF NOT EXISTS technician_documents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
+    document_type document_type NOT NULL,
+    file_url TEXT NOT NULL,
+    status document_status DEFAULT 'pending',
+    rejection_reason TEXT,
+    uploaded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMPTZ
+);
+
+-- 8. Service Requests Table
+CREATE TABLE IF NOT EXISTS service_requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
+    category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+    status request_status DEFAULT 'pending',
+    description TEXT NOT NULL,
+    address TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMPTZ
+);
+
+-- 9. Reviews Table (Enforced 1 review per completed request)
+CREATE TABLE IF NOT EXISTS reviews (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    request_id UUID UNIQUE NOT NULL REFERENCES service_requests(id) ON DELETE CASCADE,
+    client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 10. Favorites Table
+CREATE TABLE IF NOT EXISTS favorites (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_favorite_per_client UNIQUE (client_id, technician_id)
+);
+
+-- 11. Notifications Table
+CREATE TABLE IF NOT EXISTS notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL, -- 'request_status_change', 'verification_update', 'system'
+    title VARCHAR(200) NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================================
+-- INDEXES
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_cities_region ON cities(region_id);
+CREATE INDEX IF NOT EXISTS idx_tech_profiles_city ON technician_profiles(city_id);
+CREATE INDEX IF NOT EXISTS idx_tech_profiles_verified ON technician_profiles(verified);
+CREATE INDEX IF NOT EXISTS idx_tech_profiles_availability ON technician_profiles(availability);
+CREATE INDEX IF NOT EXISTS idx_tech_profiles_rating ON technician_profiles(rating_avg DESC);
+CREATE INDEX IF NOT EXISTS idx_requests_client ON service_requests(client_id);
+CREATE INDEX IF NOT EXISTS idx_requests_technician ON service_requests(technician_id);
+CREATE INDEX IF NOT EXISTS idx_requests_status ON service_requests(status);
+CREATE INDEX IF NOT EXISTS idx_reviews_technician ON reviews(technician_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_client ON favorites(client_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);
+
+-- ============================================================================
+-- FUNCTIONS AND TRIGGERS
+-- ============================================================================
+
+-- Auto-update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE OR REPLACE TRIGGER trigger_technician_profiles_updated_at
+    BEFORE UPDATE ON technician_profiles
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE OR REPLACE TRIGGER trigger_service_requests_updated_at
+    BEFORE UPDATE ON service_requests
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Automatic calculation of rating_avg and rating_count for technicians
+CREATE OR REPLACE FUNCTION refresh_technician_rating()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_tech_id UUID;
+BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        target_tech_id := OLD.technician_id;
+    ELSE
+        target_tech_id := NEW.technician_id;
+    END IF;
+
+    UPDATE technician_profiles
+    SET 
+        rating_avg = COALESCE((
+            SELECT ROUND(AVG(rating)::numeric, 2)
+            FROM reviews
+            WHERE technician_id = target_tech_id
+        ), 0.00),
+        rating_count = (
+            SELECT COUNT(*)
+            FROM reviews
+            WHERE technician_id = target_tech_id
+        )
+    WHERE id = target_tech_id;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_refresh_technician_rating
+    AFTER INSERT OR UPDATE OR DELETE ON reviews
+    FOR EACH ROW EXECUTE FUNCTION refresh_technician_rating();
+
+-- Automatic profile creation for technicians on user creation
+CREATE OR REPLACE FUNCTION handle_new_user_registration()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.role = 'technician' THEN
+        INSERT INTO technician_profiles (user_id)
+        VALUES (NEW.id)
+        ON CONFLICT (user_id) DO NOTHING;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_on_user_created
+    AFTER INSERT ON users
+    FOR EACH ROW EXECUTE FUNCTION handle_new_user_registration();
+
+-- ============================================================================
+-- SEED DATA
+-- ============================================================================
+
+-- Seed Regions of Cameroon
+INSERT INTO regions (id, name) VALUES
+    ('00000000-0000-0000-0000-000000000001', 'Centre'),
+    ('00000000-0000-0000-0000-000000000002', 'Littoral'),
+    ('00000000-0000-0000-0000-000000000003', 'Ouest'),
+    ('00000000-0000-0000-0000-000000000004', 'Nord-Ouest'),
+    ('00000000-0000-0000-0000-000000000005', 'Sud-Ouest'),
+    ('00000000-0000-0000-0000-000000000006', 'Sud'),
+    ('00000000-0000-0000-0000-000000000007', 'Est'),
+    ('00000000-0000-0000-0000-000000000008', 'Adamaoua'),
+    ('00000000-0000-0000-0000-000000000009', 'Nord'),
+    ('00000000-0000-0000-0000-000000000010', 'Extrême-Nord')
+ON CONFLICT (name) DO NOTHING;
+
+-- Seed Cities
+INSERT INTO cities (id, name, region_id) VALUES
+    ('10000000-0000-0000-0000-000000000001', 'Yaoundé', '00000000-0000-0000-0000-000000000001'),
+    ('10000000-0000-0000-0000-000000000002', 'Douala', '00000000-0000-0000-0000-000000000002'),
+    ('10000000-0000-0000-0000-000000000003', 'Bafoussam', '00000000-0000-0000-0000-000000000003'),
+    ('10000000-0000-0000-0000-000000000004', 'Bamenda', '00000000-0000-0000-0000-000000000004'),
+    ('10000000-0000-0000-0000-000000000005', 'Buea', '00000000-0000-0000-0000-000000000005'),
+    ('10000000-0000-0000-0000-000000000006', 'Kribi', '00000000-0000-0000-0000-000000000006'),
+    ('10000000-0000-0000-0000-000000000007', 'Bertoua', '00000000-0000-0000-0000-000000000007'),
+    ('10000000-0000-0000-0000-000000000008', 'Ngaoundéré', '00000000-0000-0000-0000-000000000008'),
+    ('10000000-0000-0000-0000-000000000009', 'Garoua', '00000000-0000-0000-0000-000000000009'),
+    ('10000000-0000-0000-0000-000000000010', 'Maroua', '00000000-0000-0000-0000-000000000010')
+ON CONFLICT (name, region_id) DO NOTHING;
+
+-- Seed 21 Service Categories
+INSERT INTO categories (id, name, icon, description) VALUES
+    ('20000000-0000-0000-0000-000000000001', 'Électricien', 'bolt', 'Dépannage, câblage, installation électrique et groupes électrogènes'),
+    ('20000000-0000-0000-0000-000000000002', 'Plombier', 'water_drop', 'Réparation de fuites, débouchage, installation sanitaire et tuyauterie'),
+    ('20000000-0000-0000-0000-000000000003', 'Mécanicien', 'build', 'Entretien et réparation automobile, diagnostic moteur et vidange'),
+    ('20000000-0000-0000-0000-000000000004', 'Menuisier', 'carpenter', 'Fabrication et réparation de meubles en bois, portes et placards'),
+    ('20000000-0000-0000-0000-000000000005', 'Réparateur Téléphone & Informatique', 'phone_android', 'Réparation d''écrans, batteries, logiciels ordinateurs et téléphones'),
+    ('20000000-0000-0000-0000-000000000006', 'Tailleur / Styliste', 'checkroom', 'Confection de vêtements sur mesure, retouches et tenues traditionnelles'),
+    ('20000000-0000-0000-0000-000000000007', 'Peintre', 'format_paint', 'Peinture d''intérieur et extérieur, traitement des murs et façades'),
+    ('20000000-0000-0000-0000-000000000008', 'Maçon', 'engineering', 'Construction, travaux de maçonnerie, fondations et rénovation'),
+    ('20000000-0000-0000-0000-000000000009', 'Climatisation & Froid', 'ac_unit', 'Installation et entretien de climatiseurs, réfrigérateurs et chambres froides'),
+    ('20000000-0000-0000-0000-000000000010', 'Carreleur', 'grid_on', 'Pose de carrelage, faïence, marbre et dalles d''intérieur/extérieur'),
+    ('20000000-0000-0000-0000-000000000011', 'Jardinier', 'grass', 'Entretien d''espaces verts, taille de haies et aménagement paysager'),
+    ('20000000-0000-0000-0000-000000000012', 'Coiffeur & Esthétique', 'content_cut', 'Coiffure à domicile, soins esthétiques et tresses'),
+    ('20000000-0000-0000-0000-000000000013', 'Serrurier', 'key', 'Ouverture de portes bloquées, changement de serrures et blindage'),
+    ('20000000-0000-0000-0000-000000000014', 'Soudeur', 'precision_manufacturing', 'Travaux de soudure métallique, portails, grilles de sécurité'),
+    ('20000000-0000-0000-0000-000000000015', 'Cordonnier', 'roller_skating', 'Réparation de chaussures, sacs en cuir et maroquinerie'),
+    ('20000000-0000-0000-0000-000000000016', 'Décorateur', 'chair', 'Décoration d''intérieur, évènementielle et aménagement'),
+    ('20000000-0000-0000-0000-000000000017', 'Déménageur', 'local_shipping', 'Transport de meubles, emballage et manutention'),
+    ('20000000-0000-0000-0000-000000000018', 'Services de Nettoyage', 'cleaning_services', 'Nettoyage de maisons, bureaux, tapis et fin de chantier'),
+    ('20000000-0000-0000-0000-000000000019', 'Installateur TV & Canal+', 'tv', 'Installation d''antennes paraboles, décodeurs et câblage TV'),
+    ('20000000-0000-0000-0000-000000000020', 'Lavage & Nettoyage Auto', 'local_car_wash', 'Lavage complet de véhicules à domicile et pressing intérieur'),
+    ('20000000-0000-0000-0000-000000000021', 'Maintenance Électroménager', 'kitchen', 'Réparation de machines à laver, micro-ondes et gazinières')
+ON CONFLICT (name) DO NOTHING;
+
+-- Seed Default Test Accounts (Passwords hashed with bcrypt 10 rounds: "Password123!")
+-- Hash for "Password123!" is "$2a$10$v7.YmB/T22iMvS2/Z/Jv8O1Z3D4XqP89S/4nSg5dY5g6g7g8g9g0a"
+INSERT INTO users (id, full_name, email, phone, password_hash, role) VALUES
+    ('30000000-0000-0000-0000-000000000001', 'Admin TechConnect', 'admin@techconnect.cm', '+237690000000', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'admin'),
+    ('30000000-0000-0000-0000-000000000002', 'Jean Client', 'client@techconnect.cm', '+237691111111', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'client'),
+    ('30000000-0000-0000-0000-000000000003', 'Samuel Électricien', 'samuel@techconnect.cm', '+237692222222', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'technician')
+ON CONFLICT (email) DO NOTHING;
+
+-- Seed Technician Profile for Samuel
+INSERT INTO technician_profiles (id, user_id, bio, years_experience, price_min, price_max, whatsapp, city_id, verified, availability) VALUES
+    ('40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', 'Électricien qualifié avec 8 ans d''expérience à Yaoundé. Spécialiste dépannage rapide et câblage moderne.', 8, 5000.00, 25000.00, '+237692222222', '10000000-0000-0000-0000-000000000001', TRUE, 'available')
+ON CONFLICT (user_id) DO UPDATE SET
+    id = EXCLUDED.id,
+    bio = EXCLUDED.bio,
+    years_experience = EXCLUDED.years_experience,
+    price_min = EXCLUDED.price_min,
+    price_max = EXCLUDED.price_max,
+    whatsapp = EXCLUDED.whatsapp,
+    city_id = EXCLUDED.city_id,
+    verified = EXCLUDED.verified,
+    availability = EXCLUDED.availability;
+
+-- Link Samuel to Category "Électricien"
+INSERT INTO technician_categories (technician_id, category_id)
+SELECT id, '20000000-0000-0000-0000-000000000001'
+FROM technician_profiles
+WHERE user_id = '30000000-0000-0000-0000-000000000003'
+ON CONFLICT DO NOTHING;
+

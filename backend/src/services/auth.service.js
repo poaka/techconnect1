@@ -1,0 +1,267 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const supabase = require('../config/supabase');
+const env = require('../config/env');
+const { ApiError } = require('../middleware/errorHandler');
+
+// In-memory fallback store for local development/testing without live Supabase
+const mockUsers = new Map([
+  ['admin@techconnect.cm', {
+    id: '30000000-0000-0000-0000-000000000001',
+    full_name: 'Admin TechConnect',
+    email: 'admin@techconnect.cm',
+    phone: '+237690000000',
+    password_hash: bcrypt.hashSync('Password123!', 10),
+    role: 'admin',
+    avatar_url: null,
+    created_at: new Date().toISOString()
+  }],
+  ['client@techconnect.cm', {
+    id: '30000000-0000-0000-0000-000000000002',
+    full_name: 'Jean Client',
+    email: 'client@techconnect.cm',
+    phone: '+237691111111',
+    password_hash: bcrypt.hashSync('Password123!', 10),
+    role: 'client',
+    avatar_url: null,
+    created_at: new Date().toISOString()
+  }],
+  ['samuel@techconnect.cm', {
+    id: '30000000-0000-0000-0000-000000000003',
+    full_name: 'Samuel Électricien',
+    email: 'samuel@techconnect.cm',
+    phone: '+237692222222',
+    password_hash: bcrypt.hashSync('Password123!', 10),
+    role: 'technician',
+    avatar_url: null,
+    created_at: new Date().toISOString()
+  }]
+]);
+
+class AuthService {
+  static generateToken(user) {
+    return jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        fullName: user.full_name
+      },
+      env.jwtSecret,
+      { expiresIn: env.jwtExpiresIn }
+    );
+  }
+
+  static async register({ fullName, email, phone, password, role = 'client' }) {
+    if (!['client', 'technician'].includes(role)) {
+      throw ApiError.badRequest('Rôle d\'utilisateur non valide');
+    }
+
+    const emailLower = email.toLowerCase();
+    console.log('[AuthService.register] Starting registration for:', emailLower, 'role:', role);
+
+    if (supabase) {
+      console.log('[AuthService.register] Using Supabase — checking existing user...');
+      const { data: existingUser, error: lookupError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', emailLower)
+        .maybeSingle();
+
+      if (lookupError) {
+        console.error('[AuthService.register] Lookup error:', lookupError);
+        throw ApiError.internal('Erreur lors de la vérification de l\'email');
+      }
+
+      if (existingUser) {
+        console.log('[AuthService.register] User already exists:', existingUser.id);
+        throw ApiError.conflict('Un utilisateur avec cet email existe déjà');
+      }
+
+      console.log('[AuthService.register] No existing user found. Hashing password...');
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      console.log('[AuthService.register] Inserting new user into Supabase...');
+      const { data: newUser, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            full_name: fullName,
+            email: emailLower,
+            phone: phone || null,
+            password_hash: passwordHash,
+            role: role
+          }
+        ])
+        .select('id, full_name, email, phone, role, avatar_url, created_at')
+        .single();
+
+      if (error) {
+        console.error('[AuthService.register] Insert error:', error);
+        throw ApiError.internal('Erreur lors de la création de l\'utilisateur');
+      }
+
+      console.log('[AuthService.register] User created successfully:', newUser.id);
+      const token = this.generateToken(newUser);
+      return { user: newUser, token };
+    }
+
+    // Local fallback
+    if (mockUsers.has(emailLower)) {
+      throw ApiError.conflict('Un utilisateur avec cet email existe déjà');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const newUser = {
+      id: `user-${Date.now()}`,
+      full_name: fullName,
+      email: emailLower,
+      phone: phone || null,
+      password_hash: passwordHash,
+      role: role,
+      avatar_url: null,
+      created_at: new Date().toISOString()
+    };
+
+    mockUsers.set(emailLower, newUser);
+
+    const userToReturn = { ...newUser };
+    delete userToReturn.password_hash;
+    const token = this.generateToken(userToReturn);
+
+    return { user: userToReturn, token };
+  }
+
+  static async login({ email, password }) {
+    const emailLower = email.toLowerCase();
+    console.log('[AuthService.login] Attempting login for:', emailLower);
+
+    if (supabase) {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id, full_name, email, phone, password_hash, role, avatar_url, created_at')
+        .eq('email', emailLower)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[AuthService.login] DB error:', error);
+        throw ApiError.unauthorized('Email ou mot de passe incorrect');
+      }
+
+      if (!user) {
+        throw ApiError.unauthorized('Email ou mot de passe incorrect');
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password_hash);
+      if (!isMatch) {
+        throw ApiError.unauthorized('Email ou mot de passe incorrect');
+      }
+
+      delete user.password_hash;
+      const token = this.generateToken(user);
+      console.log('[AuthService.login] Login successful for user:', user.id);
+
+      return { user, token };
+    }
+
+    // Local fallback
+    const user = mockUsers.get(emailLower);
+    if (!user) {
+      throw ApiError.unauthorized('Email ou mot de passe incorrect');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+      throw ApiError.unauthorized('Email ou mot de passe incorrect');
+    }
+
+    const userToReturn = { ...user };
+    delete userToReturn.password_hash;
+    const token = this.generateToken(userToReturn);
+
+    return { user: userToReturn, token };
+  }
+
+  static async getMe(userId) {
+    if (supabase) {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id, full_name, email, phone, role, avatar_url, created_at')
+        .eq('id', userId)
+        .single();
+
+      if (error || !user) {
+        throw ApiError.notFound('Utilisateur non trouvé');
+      }
+
+      let profileData = null;
+      if (user.role === 'technician') {
+        const { data: techProfile } = await supabase
+          .from('technician_profiles')
+          .select(`
+            id, bio, years_experience, price_min, price_max, whatsapp, verified, availability, rating_avg, rating_count,
+            city:cities(id, name, region:regions(id, name)),
+            categories:technician_categories(category:categories(id, name, icon))
+          `)
+          .eq('user_id', userId)
+          .single();
+
+        profileData = techProfile;
+      }
+
+      return { ...user, technician_profile: profileData };
+    }
+
+    // Local fallback
+    for (const u of mockUsers.values()) {
+      if (u.id === userId) {
+        const copy = { ...u };
+        delete copy.password_hash;
+        return copy;
+      }
+    }
+
+    throw ApiError.notFound('Utilisateur non trouvé');
+  }
+
+  static async updateMe(userId, { fullName, phone }) {
+    const updateData = {};
+    if (fullName !== undefined) updateData.full_name = fullName;
+    if (phone !== undefined) updateData.phone = phone;
+
+    if (Object.keys(updateData).length === 0) {
+      return this.getMe(userId);
+    }
+
+    if (supabase) {
+      const { error } = await supabase
+        .from('users')
+        .update(updateData)
+        .eq('id', userId);
+
+      if (error) {
+        throw ApiError.internal('Erreur lors de la mise à jour du profil');
+      }
+
+      return this.getMe(userId);
+    }
+
+    // Local fallback
+    let userFound = false;
+    for (const u of mockUsers.values()) {
+      if (u.id === userId) {
+        Object.assign(u, updateData);
+        userFound = true;
+        break;
+      }
+    }
+
+    if (!userFound) {
+      throw ApiError.notFound('Utilisateur non trouvé');
+    }
+
+    return this.getMe(userId);
+  }
+}
+
+module.exports = AuthService;
