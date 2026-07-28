@@ -25,6 +25,15 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static admin stand-in tool
 app.use('/admin/verify', express.static(path.join(__dirname, '../public/admin.html')));
 
+// Root welcome route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Bienvenue sur l\'API TechConnect Cameroun',
+    health: '/health',
+    version: '1.0.0'
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
