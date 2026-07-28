@@ -28,28 +28,35 @@ class RequestsService {
           status: 'pending'
         }
       ])
-      .select(`
-        id, status, description, address, created_at,
-        client:users!client_id(id, full_name, email, phone),
-        technician:technician_profiles!technician_id(id, user:users!user_id(id, full_name, phone))
-      `)
+      .select('*')
       .single();
 
-    if (createErr) {
+    if (createErr || !newRequest) {
       console.error('[RequestsService.createRequest error]', createErr);
       throw ApiError.internal('Erreur lors de la création de la demande');
     }
 
-    // Send notification to technician
-    await supabase.from('notifications').insert([
-      {
-        user_id: techProfile.user_id,
-        type: 'request_created',
-        title: 'Nouvelle demande de service',
-        message: `Vous avez reçu une nouvelle demande de service de ${newRequest.client.full_name}.`,
-        metadata: { requestId: newRequest.id }
-      }
-    ]);
+    // Fetch client name for notification safely
+    const { data: clientUser } = await supabase
+      .from('users')
+      .select('full_name')
+      .eq('id', clientId)
+      .maybeSingle();
+
+    // Send notification to technician safely
+    try {
+      await supabase.from('notifications').insert([
+        {
+          user_id: techProfile.user_id,
+          type: 'request_created',
+          title: 'Nouvelle demande de service',
+          message: `Vous avez reçu une nouvelle demande de service de ${clientUser?.full_name || 'un client'}.`,
+          metadata: { requestId: newRequest.id }
+        }
+      ]);
+    } catch (notifErr) {
+      console.error('[RequestsService notification insert error]', notifErr);
+    }
 
     return newRequest;
   }
