@@ -48,8 +48,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Demande envoyée avec succès !'), backgroundColor: AppColors.success),
         );
-        context.pop(); // Go back to profile
-        context.push('/requests'); // Optional: navigate to requests list
+        context.go('/requests');
       }
     } catch (e) {
       if (mounted) {
