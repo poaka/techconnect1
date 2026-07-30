@@ -43,12 +43,13 @@ class NotificationsState {
     int? unreadCount,
     bool? isLoading,
     String? errorMessage,
+    bool clearError = false,
   }) {
     return NotificationsState(
       notifications: notifications ?? this.notifications,
       unreadCount: unreadCount ?? this.unreadCount,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }
@@ -76,7 +77,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   Future<void> fetch() async {
     // Don't show loading spinner on background poll refreshes
     if (state.notifications.isEmpty) {
-      state = state.copyWith(isLoading: true, errorMessage: null);
+      state = state.copyWith(isLoading: true, clearError: true);
     }
     try {
       final result = await _repository.getNotifications();

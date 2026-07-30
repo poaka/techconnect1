@@ -6,7 +6,7 @@ const { ApiError } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
-const validateRequest = (req, res, next) => {
+const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(ApiError.badRequest('Données de formulaire invalides', errors.array()));
@@ -14,19 +14,57 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
+// All admin routes require auth + admin role
 router.use(requireAuth);
 router.use(requireRole('admin'));
 
+// ── Platform Stats ────────────────────────────────────────────────────────
+router.get('/stats', AdminController.getPlatformStats);
+
+// ── Verifications ─────────────────────────────────────────────────────────
 router.get('/verifications', AdminController.getPendingVerifications);
 router.patch(
   '/verifications/:documentId',
   [
     body('status').isIn(['approved', 'rejected']).withMessage('Statut de décision invalide'),
     body('rejectionReason').optional().trim(),
-    validateRequest
+    validate
   ],
   AdminController.reviewDocument
 );
-router.get('/stats', AdminController.getPlatformStats);
+
+// ── Users ─────────────────────────────────────────────────────────────────
+router.get('/users', AdminController.getUsers);
+router.delete('/users/:userId', AdminController.deleteUser);
+
+// ── Technicians ───────────────────────────────────────────────────────────
+router.get('/technicians', AdminController.getTechnicians);
+
+// ── Categories ────────────────────────────────────────────────────────────
+router.get('/categories', AdminController.getCategories);
+router.post(
+  '/categories',
+  [
+    body('name').trim().notEmpty().withMessage('Le nom est requis'),
+    body('icon').optional().trim(),
+    body('description').optional().trim(),
+    validate
+  ],
+  AdminController.createCategory
+);
+router.put(
+  '/categories/:categoryId',
+  [
+    body('name').optional().trim().notEmpty().withMessage('Le nom ne peut pas être vide'),
+    body('icon').optional().trim(),
+    body('description').optional().trim(),
+    validate
+  ],
+  AdminController.updateCategory
+);
+router.delete('/categories/:categoryId', AdminController.deleteCategory);
+
+// ── Regions & Cities ──────────────────────────────────────────────────────
+router.get('/regions', AdminController.getRegions);
 
 module.exports = router;

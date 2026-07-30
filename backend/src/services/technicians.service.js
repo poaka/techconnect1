@@ -54,6 +54,18 @@ class TechniciansService {
     return data;
   }
 
+  static async getCities() {
+    if (!supabase) {
+      return mockRegions.flatMap(r => r.cities);
+    }
+    const { data, error } = await supabase
+      .from('cities')
+      .select('id, name, region_id, region:regions(id, name)')
+      .order('name');
+    if (error) throw ApiError.internal('Erreur lors de la récupération des villes');
+    return data;
+  }
+
   static async getRegions() {
     if (!supabase) return mockRegions;
     const { data, error } = await supabase
@@ -191,7 +203,23 @@ class TechniciansService {
       throw ApiError.internal('Erreur lors de la recherche du profil');
     }
 
-    const { bio, yearsExperience, priceMin, priceMax, whatsapp, cityId, categoryIds } = updateData;
+    const { bio, yearsExperience, priceMin, priceMax, whatsapp, cityId, categoryIds, fullName, phone } = updateData;
+
+    if (fullName !== undefined || phone !== undefined) {
+      const userUpdates = {};
+      if (fullName !== undefined) userUpdates.full_name = fullName;
+      if (phone !== undefined) userUpdates.phone = phone;
+
+      const { error: userUpdateErr } = await supabase
+        .from('users')
+        .update(userUpdates)
+        .eq('id', userId);
+
+      if (userUpdateErr) {
+        console.error('[TechniciansService.updateMyProfile update user error]', userUpdateErr);
+        throw ApiError.internal('Erreur lors de la mise à jour des informations utilisateur');
+      }
+    }
 
     const fieldsToUpdate = {};
     if (bio !== undefined) fieldsToUpdate.bio = bio;
@@ -204,6 +232,7 @@ class TechniciansService {
     let profileId;
     if (!profile) {
       fieldsToUpdate.user_id = userId;
+      fieldsToUpdate.availability = 'available'; // Default to available
       const { data: newProfile, error: insertErr } = await supabase
         .from('technician_profiles')
         .insert([fieldsToUpdate])
@@ -241,7 +270,36 @@ class TechniciansService {
       }
     }
 
-    return this.getTechnicianById(profileId);
+    try {
+      return await this.getTechnicianById(profileId);
+    } catch (finalErr) {
+      console.error('[TechniciansService] updateMyProfile final fetch error:', finalErr);
+      throw finalErr;
+    }
+  }
+
+  static async _ensureProfileExists(userId) {
+    let { data: profile } = await supabase
+      .from('technician_profiles')
+      .select('id, rating_avg, rating_count, availability, verified')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!profile) {
+      console.log(`[TechniciansService] Auto-healing missing profile for user ${userId}`);
+      const { data: newProfile, error } = await supabase
+        .from('technician_profiles')
+        .insert([{ user_id: userId }])
+        .select('id, rating_avg, rating_count, availability, verified')
+        .single();
+      
+      if (error) {
+         console.error('[TechniciansService] Auto-heal failed:', error);
+         throw ApiError.internal('Erreur création profil technicien');
+      }
+      profile = newProfile;
+    }
+    return profile;
   }
 
   static async updateAvailability(userId, availability) {
@@ -256,15 +314,17 @@ class TechniciansService {
       return { id: tech.id, availability };
     }
 
+    const profile = await this._ensureProfileExists(userId);
+
     const { data, error } = await supabase
       .from('technician_profiles')
       .update({ availability })
-      .eq('user_id', userId)
+      .eq('id', profile.id)
       .select('id, availability')
       .single();
 
     if (error || !data) {
-      throw ApiError.notFound('Profil technicien non trouvé');
+      throw ApiError.internal('Erreur lors de la mise à jour de la disponibilité');
     }
 
     return data;
@@ -290,13 +350,7 @@ class TechniciansService {
 
     if (!supabase) return doc;
 
-    const { data: profile } = await supabase
-      .from('technician_profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
-
-    if (!profile) throw ApiError.notFound('Profil technicien non trouvé');
+    const profile = await this._ensureProfileExists(userId);
 
     const { data: savedDoc, error } = await supabase
       .from('technician_documents')
@@ -318,13 +372,7 @@ class TechniciansService {
   static async getMyDocuments(userId) {
     if (!supabase) return [];
 
-    const { data: profile } = await supabase
-      .from('technician_profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
-
-    if (!profile) throw ApiError.notFound('Profil technicien non trouvé');
+    const profile = await this._ensureProfileExists(userId);
 
     const { data, error } = await supabase
       .from('technician_documents')
@@ -355,16 +403,8 @@ class TechniciansService {
       };
     }
 
-    // Get the technician profile
-    const { data: profile, error: profileErr } = await supabase
-      .from('technician_profiles')
-      .select('id, rating_avg, rating_count, availability, verified')
-      .eq('user_id', userId)
-      .single();
-
-    if (profileErr || !profile) {
-      throw ApiError.notFound('Profil technicien non trouvé');
-    }
+    // Get or auto-create the technician profile
+    const profile = await this._ensureProfileExists(userId);
 
     // Count requests by status in one call
     const statusCounts = {

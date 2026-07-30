@@ -3,178 +3,1255 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TechConnect Cameroun — Admin Verification Stand-in</title>
+  <title>TechConnect Cameroun — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* ══════════════════════════════════════════════════════════
+       DESIGN TOKENS — mirrors AppColors.dart exactly
+    ══════════════════════════════════════════════════════════ */
     :root {
-      --primary: #1e40af;
-      --primary-hover: #1d4ed8;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --border: #e2e8f0;
-      --success: #16a34a;
-      --danger: #dc2626;
+      /* Brand Primary */
+      --primary:        #1D4ED8;   /* Royal Deep Blue */
+      --primary-light:  #3B82F6;   /* Electric Blue */
+      --primary-dark:   #1E3A8A;   /* Midnight Navy */
+      --primary-subtle: #EFF6FF;   /* Soft Blue Tint */
+
+      /* Accent */
+      --amber:  #F59E0B;           /* Amber Gold */
+
+      /* Neutral */
+      --bg:           #F8FAFC;     /* Slate 50 */
+      --surface:      #FFFFFF;     /* Card White */
+      --text:         #0F172A;     /* Slate 900 */
+      --text-muted:   #64748B;     /* Slate 500 */
+      --border:       #E2E8F0;     /* Slate 200 */
+      --input-bg:     #F1F5F9;     /* Slate 100 */
+
+      /* Status */
+      --success:      #10B981;     /* Emerald Green */
+      --warning:      #F59E0B;     /* Amber */
+      --error:        #EF4444;     /* Rose Red */
+      --success-bg:   #D1FAE5;
+      --warning-bg:   #FEF3C7;
+      --error-bg:     #FEE2E2;
+
+      /* Layout */
+      --sidebar-w: 248px;
+      --radius:    12px;
+      --radius-sm: 8px;
+      --shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-elevated: 0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
     }
+
+    /* ══════════════════════════════════════════════════════════
+       BASE RESET
+    ══════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
       color: var(--text);
-      margin: 0;
-      padding: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
     }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    header {
+    button { cursor: pointer; font-family: inherit; }
+    input, select, textarea { font-family: inherit; }
+    a { color: var(--primary); text-decoration: none; }
+
+    /* ══════════════════════════════════════════════════════════
+       LOGIN SCREEN
+    ══════════════════════════════════════════════════════════ */
+    #login-screen {
       display: flex;
-      justify-content: space-between;
+      min-height: 100vh;
       align-items: center;
-      padding-bottom: 20px;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 24px;
+      justify-content: center;
+      background: linear-gradient(145deg, var(--primary-dark) 0%, var(--primary) 50%, #2563eb 100%);
+      position: relative;
+      overflow: hidden;
     }
-    h1 { color: var(--primary); margin: 0; font-size: 24px; }
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    #login-screen::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+      top: -200px; right: -100px;
     }
-    .doc-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; }
+    #login-screen::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.03);
+      bottom: -150px; left: -100px;
+    }
+    .login-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 44px 40px;
+      width: 420px;
+      max-width: 94vw;
+      box-shadow: 0 32px 64px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.2);
+      position: relative; z-index: 1;
+    }
+    .login-brand {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 32px;
+    }
+    .login-brand-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: white;
+      box-shadow: 0 4px 12px rgba(29,78,216,.35);
+    }
+    .login-brand-text { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -.3px; }
+    .login-brand-sub  { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; }
+    .login-card h2 { font-size: 24px; font-weight: 800; letter-spacing: -.4px; margin-bottom: 6px; }
+    .login-card > p { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--text-muted); margin-bottom: 7px;
+    }
+    .field input {
+      width: 100%; padding: 12px 14px;
+      background: var(--input-bg); border: 1.5px solid transparent;
+      border-radius: var(--radius-sm); font-size: 14px; outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    .field input:focus { background: white; border-color: var(--primary); }
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 46px; }
+    .pw-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; font-size: 17px; color: var(--text-muted);
+      padding: 0; line-height: 1;
+    }
+    .login-btn {
+      width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: white; font-size: 15px; font-weight: 700; letter-spacing: .2px;
+      box-shadow: 0 4px 14px rgba(29,78,216,.4);
+      transition: opacity .2s, transform .1s;
+    }
+    .login-btn:hover { opacity: .92; }
+    .login-btn:active { transform: scale(.98); }
+    .login-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .login-err {
+      display: none; margin-top: 14px; padding: 11px 14px;
+      background: var(--error-bg); color: #991b1b;
+      border: 1px solid #fca5a5; border-radius: 8px; font-size: 13px;
+    }
+    .api-url-row {
+      margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border);
+    }
+    .api-url-row label { font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; }
+    .api-url-row input {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--border);
+      border-radius: 7px; font-size: 12px; background: white; outline: none;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       APP SHELL
+    ══════════════════════════════════════════════════════════ */
+    #app { display: none; }
+
+    /* ── Sidebar ─────────────────────────────────────────── */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w);
+      background: var(--primary-dark);
+      display: flex; flex-direction: column;
+      z-index: 200;
+      box-shadow: 4px 0 24px rgba(0,0,0,.18);
+    }
+    .sb-brand {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .sb-logo {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+    }
+    .sb-logo-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; color: white; flex-shrink: 0;
+      box-shadow: 0 3px 8px rgba(29,78,216,.4);
+    }
+    .sb-logo-name { font-size: 15px; font-weight: 800; color: white; letter-spacing: -.2px; }
+    .sb-logo-sub  { font-size: 10px; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .5px; }
+    .admin-pill {
+      display: flex; align-items: center; gap: 9px;
+      background: rgba(255,255,255,.07); border-radius: 10px;
+      padding: 9px 11px;
+    }
+    .admin-pill-av {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: white; flex-shrink: 0;
+    }
+    .admin-pill-name { font-size: 12px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .admin-pill-role { font-size: 10px; color: rgba(255,255,255,.4); }
+
+    .sb-nav { flex: 1; overflow-y: auto; padding: 14px 12px; }
+    .sb-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: rgba(255,255,255,.28); padding: 0 8px; margin: 14px 0 6px; }
+    .sb-section:first-child { margin-top: 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 10px; border-radius: var(--radius-sm); margin-bottom: 2px;
+      color: rgba(255,255,255,.58); font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all .15s; user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
+    .nav-item.active { background: var(--primary); color: white; box-shadow: 0 3px 10px rgba(29,78,216,.45); }
+    .nav-item .ni { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto; background: var(--amber); color: #1c1917;
+      border-radius: 10px; padding: 2px 7px; font-size: 10px; font-weight: 800;
+    }
+    .sb-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,.07); }
+    .logout-btn {
+      width: 100%; padding: 10px; border-radius: var(--radius-sm); border: none;
+      background: rgba(239,68,68,.12); color: #fca5a5; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      transition: all .15s;
+    }
+    .logout-btn:hover { background: rgba(239,68,68,.22); color: #ef4444; }
+
+    /* ── Main ──────────────────────────────────────────── */
+    .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+
+    .topbar {
+      height: 62px; background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 28px; gap: 14px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-text { flex: 1; }
+    .topbar-title { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
+    .topbar-sub { font-size: 12px; color: var(--text-muted); }
+    .topbar-actions { display: flex; gap: 8px; }
+
+    .content { padding: 24px 28px; flex: 1; }
+
+    /* ══════════════════════════════════════════════════════════
+       DESIGN SYSTEM COMPONENTS
+    ══════════════════════════════════════════════════════════ */
+
+    /* Buttons */
     .btn {
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: var(--radius-sm); border: none;
+      font-size: 13px; font-weight: 600; letter-spacing: .1px;
+      transition: all .15s; white-space: nowrap; cursor: pointer;
     }
-    .btn-success { background: var(--success); color: white; }
-    .btn-danger { background: var(--danger); color: white; margin-left: 8px; }
-    .status-badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(29,78,216,.3); }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--success); color: white; box-shadow: 0 2px 8px rgba(16,185,129,.3); }
+    .btn-success:hover { background: #059669; }
+    .btn-error { background: var(--error); color: white; box-shadow: 0 2px 8px rgba(239,68,68,.25); }
+    .btn-error:hover { background: #dc2626; }
+    .btn-outline {
+      background: transparent; color: var(--text-muted);
+      border: 1.5px solid var(--border);
     }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-approved { background: #dcfce7; color: #166534; }
-    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-subtle); }
+    .btn-sm { padding: 6px 13px; font-size: 12px; }
+    .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
+
+    /* Card */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow-card);
+    }
+    .card-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .card-title { font-size: 15px; font-weight: 700; flex: 1; }
+    .card-body { padding: 20px; }
+
+    /* Stat cards */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 14px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      box-shadow: var(--shadow-card); transition: box-shadow .2s;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-elevated); }
+    .stat-icon { font-size: 24px; margin-bottom: 14px; }
+    .stat-value { font-size: 30px; font-weight: 800; letter-spacing: -1px; color: var(--text); }
+    .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 3px; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .b-blue   { background: var(--primary-subtle); color: var(--primary-dark); }
+    .b-green  { background: var(--success-bg); color: #065f46; }
+    .b-amber  { background: var(--warning-bg); color: #92400e; }
+    .b-red    { background: var(--error-bg); color: #991b1b; }
+    .b-gray   { background: var(--input-bg); color: var(--text-muted); }
+    .b-purple { background: #ede9fe; color: #5b21b6; }
+
+    /* Table */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      padding: 10px 16px; text-align: left;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; color: var(--text-muted);
+      background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #fafbff; }
+
+    /* Filter row */
+    .filter-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+    }
+    .f-input {
+      flex: 1; min-width: 180px; padding: 9px 12px;
+      background: var(--input-bg); border: 1.5px solid transparent;
+      border-radius: var(--radius-sm); font-size: 13px; outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    .f-input:focus { background: white; border-color: var(--primary); }
+    .f-select {
+      padding: 9px 10px; background: var(--input-bg); border: 1.5px solid transparent;
+      border-radius: var(--radius-sm); font-size: 13px; outline: none; cursor: pointer;
+    }
+    .f-select:focus { background: white; border-color: var(--primary); }
+
+    /* Pages */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* States */
+    .empty-state { padding: 52px 20px; text-align: center; color: var(--text-muted); }
+    .empty-state .es-icon { font-size: 40px; margin-bottom: 12px; opacity: .35; }
+    .empty-state p { font-size: 14px; }
+    .loading-row td { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
+
+    /* Progress bars */
+    .prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .prog-label { font-size: 13px; font-weight: 500; flex: 1; min-width: 160px; }
+    .prog-track { flex: 2; background: var(--border); border-radius: 4px; height: 7px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+    .prog-val { font-size: 13px; font-weight: 700; color: var(--primary); min-width: 40px; text-align: right; }
+
+    /* Two column */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 920px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ══════════════════════════════════════════════════════════
+       VERIFICATION CARDS
+    ══════════════════════════════════════════════════════════ */
+    .verif-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0; margin-bottom: 14px;
+      box-shadow: var(--shadow-card); overflow: hidden;
+    }
+    .verif-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      background: var(--bg);
+    }
+    .verif-name { font-size: 15px; font-weight: 700; }
+    .verif-email { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .verif-body { padding: 18px 20px; }
+    .verif-profile-row {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;
+    }
+    .meta-chip {
+      background: var(--input-bg); border-radius: 7px; padding: 5px 11px;
+      font-size: 12px; color: var(--text-muted);
+    }
+    .meta-chip strong { color: var(--text); }
+    .doc-row {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+      background: var(--input-bg); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px;
+    }
+    .doc-type { font-size: 13px; font-weight: 600; }
+    .doc-date { font-size: 11px; color: var(--text-muted); }
+    .rejection-note {
+      background: var(--error-bg); border: 1px solid #fca5a5;
+      border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #be123c;
+      margin-bottom: 12px;
+    }
+    .verif-actions { display: flex; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+
+    /* ══════════════════════════════════════════════════════════
+       MODAL
+    ══════════════════════════════════════════════════════════ */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,.5); z-index: 9000;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 18px; padding: 30px;
+      width: 460px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 32px 64px rgba(0,0,0,.2);
+      animation: modal-in .2s ease;
+    }
+    @keyframes modal-in {
+      from { opacity:0; transform:scale(.95) translateY(12px); }
+      to   { opacity:1; transform:none; }
+    }
+    .modal h3 { font-size: 18px; font-weight: 800; margin-bottom: 6px; letter-spacing: -.3px; }
+    .modal > p { color: var(--text-muted); font-size: 13px; margin-bottom: 22px; }
+    .m-field { margin-bottom: 16px; }
+    .m-field label {
+      display: block; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+      color: var(--text-muted); margin-bottom: 6px;
+    }
+    .m-field input, .m-field textarea, .m-field select {
+      width: 100%; padding: 11px 13px;
+      background: var(--input-bg); border: 1.5px solid transparent;
+      border-radius: var(--radius-sm); font-size: 14px; outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    .m-field input:focus, .m-field textarea:focus, .m-field select:focus {
+      background: white; border-color: var(--primary);
+    }
+    .m-field textarea { resize: vertical; min-height: 90px; }
+    .m-row { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 99999;
+      padding: 13px 20px; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      box-shadow: var(--shadow-elevated);
+      display: none; align-items: center; gap: 8px;
+      max-width: 320px; animation: toast-in .25s ease;
+    }
+    #toast.visible { display: flex; }
+    #toast.ok  { background: #065f46; color: white; }
+    #toast.err { background: #991b1b; color: white; }
+    #toast.info { background: var(--primary-dark); color: white; }
+    @keyframes toast-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+    /* Accordion */
+    .acc-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+    .acc-toggle {
+      width: 100%; padding: 14px 18px; background: white; border: none;
+      font-size: 14px; font-weight: 600; text-align: left;
+      display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+      transition: background .15s;
+    }
+    .acc-toggle:hover { background: var(--bg); }
+    .acc-toggle .chev { transition: transform .2s; font-size: 11px; color: var(--text-muted); }
+    .acc-toggle.open .chev { transform: rotate(180deg); }
+    .acc-body { display: none; padding: 14px 18px; background: var(--bg); border-top: 1px solid var(--border); }
+    .acc-body.open { display: block; }
+    .city-tag {
+      display: inline-block; background: white; border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 12px; font-size: 12px; margin: 3px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>TechConnect — Validation des Techniciens</h1>
-      <span id="admin-status">Admin Mode</span>
-    </header>
 
-    <div id="login-box" class="card">
-      <h3>Connexion Administrateur</h3>
-      <input type="email" id="email" placeholder="Email admin" value="admin@techconnect.cm" style="padding: 8px; width: 250px; margin-right: 8px;">
-      <input type="password" id="password" placeholder="Mot de passe" value="Password123!" style="padding: 8px; width: 200px; margin-right: 8px;">
-      <button onclick="login()" class="btn btn-success">Se connecter</button>
+<!-- ══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-icon">🔧</div>
+      <div>
+        <div class="login-brand-text">TechConnect</div>
+        <div class="login-brand-sub">Cameroun · Espace Admin</div>
+      </div>
     </div>
+    <h2>Connexion</h2>
+    <p>Accédez au panneau d'administration de la plateforme</p>
 
-    <div id="verifications-list" style="display: none;">
-      <h2>Documents en attente</h2>
-      <div id="docs-container">Chargement...</div>
+    <div class="field">
+      <label>Adresse e-mail</label>
+      <input type="email" id="l-email" value="admin@techconnect.cm" placeholder="admin@techconnect.cm">
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <div class="pw-wrap">
+        <input type="password" id="l-password" value="Password123!" placeholder="••••••••••">
+        <button class="pw-toggle" onclick="togglePw()" title="Afficher">👁️</button>
+      </div>
+    </div>
+    <button class="login-btn" id="l-btn" onclick="login()">Se connecter</button>
+    <div class="login-err" id="l-err"></div>
+
+    <div class="api-url-row">
+      <label>🔗 Serveur API (optionnel — laisser vide pour localhost)</label>
+      <input type="text" id="api-url" placeholder="https://techconnect1-api.onrender.com">
     </div>
   </div>
+</div>
 
-  <script>
-    let token = '';
+<!-- ══════════════════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════════════════ -->
+<div id="app">
 
-    async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">🔧</div>
+        <div>
+          <div class="sb-logo-name">TechConnect</div>
+          <div class="sb-logo-sub">Admin Dashboard</div>
+        </div>
+      </div>
+      <div class="admin-pill" style="margin-top:0;">
+        <div class="admin-pill-av" id="av">A</div>
+        <div>
+          <div class="admin-pill-name" id="av-name">Administrateur</div>
+          <div class="admin-pill-role">Accès complet · Admin</div>
+        </div>
+      </div>
+    </div>
 
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const json = await res.json();
-        if (json.data && json.data.token) {
-          token = json.data.token;
-          document.getElementById('login-box').style.display = 'none';
-          document.getElementById('verifications-list').style.display = 'block';
-          loadDocs();
-        } else {
-          alert('Échec de la connexion: ' + (json.error ? json.error.message : 'inconnu'));
-        }
-      } catch (err) {
-        alert('Erreur: ' + err.message);
-      }
-    }
+    <nav class="sb-nav">
+      <div class="sb-section">Tableau de bord</div>
+      <div class="nav-item active" data-page="dashboard" onclick="go('dashboard')">
+        <span class="ni">📊</span> Vue d'ensemble
+      </div>
 
-    async function loadDocs() {
-      const container = document.getElementById('docs-container');
-      try {
-        const res = await fetch('/api/admin/verifications', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const json = await res.json();
-        const docs = json.data || [];
+      <div class="sb-section">Vérifications</div>
+      <div class="nav-item" data-page="verifications" onclick="go('verifications')">
+        <span class="ni">🧾</span> Documents soumis
+        <span class="nav-badge" id="vbadge" style="display:none">0</span>
+      </div>
 
-        if (docs.length === 0) {
-          container.innerHTML = '<p>Aucun document de vérification en attente.</p>';
-          return;
-        }
+      <div class="sb-section">Utilisateurs</div>
+      <div class="nav-item" data-page="users" onclick="go('users')">
+        <span class="ni">👥</span> Tous les utilisateurs
+      </div>
+      <div class="nav-item" data-page="technicians" onclick="go('technicians')">
+        <span class="ni">🛠️</span> Techniciens
+      </div>
 
-        container.innerHTML = docs.map(doc => `
+      <div class="sb-section">Configuration</div>
+      <div class="nav-item" data-page="categories" onclick="go('categories')">
+        <span class="ni">🗂️</span> Catégories
+      </div>
+      <div class="nav-item" data-page="regions" onclick="go('regions')">
+        <span class="ni">🌍</span> Régions & Villes
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <button class="logout-btn" onclick="logout()">🚪 Se déconnecter</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-text">
+        <div class="topbar-title" id="pt">Vue d'ensemble</div>
+        <div class="topbar-sub"  id="ps">Statistiques globales de la plateforme TechConnect Cameroun</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="reload()">🔄 Actualiser</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ─────────────────────────── DASHBOARD ─── -->
+      <div class="page active" id="page-dashboard">
+        <div class="stat-grid" id="stat-grid">
+          <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-value" id="s-users">—</div><div class="stat-label">Utilisateurs totaux</div></div>
+          <div class="stat-card"><div class="stat-icon">🛠️</div><div class="stat-value" id="s-tech">—</div><div class="stat-label">Techniciens</div></div>
+          <div class="stat-card"><div class="stat-icon" style="color:var(--success)">✅</div><div class="stat-value" id="s-verif" style="color:var(--success)">—</div><div class="stat-label">Profils vérifiés</div></div>
+          <div class="stat-card"><div class="stat-icon" style="color:var(--amber)">🕐</div><div class="stat-value" id="s-pverif" style="color:var(--amber)">—</div><div class="stat-label">En attente de vérif.</div></div>
+          <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value" id="s-req">—</div><div class="stat-label">Demandes de service</div></div>
+          <div class="stat-card"><div class="stat-icon" style="color:var(--success)">🏆</div><div class="stat-value" id="s-done" style="color:var(--success)">—</div><div class="stat-label">Demandes complétées</div></div>
+          <div class="stat-card"><div class="stat-icon" style="color:var(--amber)">⭐</div><div class="stat-value" id="s-rev">—</div><div class="stat-label">Avis publiés</div></div>
+        </div>
+
+        <div class="two-col">
           <div class="card">
-            <div class="doc-header">
-              <span>Technicien: ${doc.technician?.user?.full_name || 'Inconnu'} (${doc.technician?.user?.email})</span>
-              <span class="status-badge status-${doc.status}">${doc.status}</span>
-            </div>
-            <p><strong>Type:</strong> ${doc.document_type} | <strong>Soumis le:</strong> ${new Date(doc.uploaded_at).toLocaleString('fr-FR')}</p>
-            <p><strong>Lien fichier:</strong> <a href="${doc.file_url}" target="_blank">${doc.file_url}</a></p>
-            ${doc.status === 'pending' ? `
-              <div style="margin-top: 12px;">
-                <button onclick="review('${doc.id}', 'approved')" class="btn btn-success">Approuver</button>
-                <button onclick="review('${doc.id}', 'rejected')" class="btn btn-danger">Rejeter</button>
-              </div>
-            ` : ''}
+            <div class="card-head"><div class="card-title">📈 Indicateurs clés</div></div>
+            <div class="card-body" id="kpi-body"><div class="empty-state"><div class="es-icon">⏳</div><p>Chargement…</p></div></div>
           </div>
-        `).join('');
-      } catch (err) {
-        container.innerHTML = '<p>Erreur de chargement: ' + err.message + '</p>';
-      }
-    }
+          <div class="card">
+            <div class="card-head"><div class="card-title">⚡ Actions rapides</div></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <button class="btn btn-primary" style="justify-content:flex-start;" onclick="go('verifications')">🧾 Examiner les vérifications en attente</button>
+                <button class="btn btn-outline" style="justify-content:flex-start;" onclick="go('users')">👥 Gérer les utilisateurs</button>
+                <button class="btn btn-outline" style="justify-content:flex-start;" onclick="go('categories')">🗂️ Gérer les catégories</button>
+                <button class="btn btn-outline" style="justify-content:flex-start;" onclick="go('technicians')">🛠️ Voir tous les techniciens</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    async function review(docId, status) {
-      let rejectionReason = null;
-      if (status === 'rejected') {
-        rejectionReason = prompt('Motif du rejet :');
-        if (!rejectionReason) return;
-      }
+      <!-- ─────────────────────── VERIFICATIONS ─── -->
+      <div class="page" id="page-verifications">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="filter-row">
+            <select class="f-select" id="vf-status" onchange="renderVerif()">
+              <option value="">Tous les statuts</option>
+              <option value="pending">⏳ En attente</option>
+              <option value="approved">✅ Approuvés</option>
+              <option value="rejected">❌ Rejetés</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="loadVerif()">🔄 Actualiser</button>
+          </div>
+        </div>
+        <div id="verif-list"><div class="empty-state"><div class="es-icon">⏳</div><p>Chargement…</p></div></div>
+      </div>
 
-      try {
-        const res = await fetch(`/api/admin/verifications/${docId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({ status, rejectionReason })
-        });
-        const json = await res.json();
-        if (json.data) {
-          alert(`Document ${status === 'approved' ? 'approuvé' : 'rejeté'} avec succès !`);
-          loadDocs();
-        } else {
-          alert('Erreur: ' + (json.error ? json.error.message : 'inconnu'));
-        }
-      } catch (err) {
-        alert('Erreur: ' + err.message);
+      <!-- ───────────────────────────── USERS ─── -->
+      <div class="page" id="page-users">
+        <div class="card">
+          <div class="filter-row">
+            <input class="f-input" type="text" id="uf-q" placeholder="🔍 Nom ou e-mail…" oninput="renderUsers()">
+            <select class="f-select" id="uf-role" onchange="renderUsers()">
+              <option value="">Tous les rôles</option>
+              <option value="client">Client</option>
+              <option value="technician">Technicien</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="loadUsers()">🔄</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Utilisateur</th><th>Rôle</th><th>Téléphone</th><th>Inscrit le</th><th>Actions</th></tr></thead>
+              <tbody id="users-tbody"><tr class="loading-row"><td colspan="5">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────────────────── TECHNICIANS ─── -->
+      <div class="page" id="page-technicians">
+        <div class="card">
+          <div class="filter-row">
+            <input class="f-input" type="text" id="tf-q" placeholder="🔍 Nom ou e-mail…" oninput="renderTechs()">
+            <select class="f-select" id="tf-verif" onchange="renderTechs()">
+              <option value="">Tous les profils</option>
+              <option value="1">✅ Vérifiés</option>
+              <option value="0">⏳ Non vérifiés</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="loadTechs()">🔄</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Technicien</th><th>Ville / Région</th><th>Catégories</th><th>Expérience</th><th>Note</th><th>Statut</th><th>Tarifs FCFA</th></tr></thead>
+              <tbody id="techs-tbody"><tr class="loading-row"><td colspan="7">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────────────────── CATEGORIES ─── -->
+      <div class="page" id="page-categories">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Catégories de services (21 au total)</div>
+            <button class="btn btn-primary btn-sm" onclick="openCatModal()">＋ Nouvelle catégorie</button>
+          </div>
+          <div class="filter-row">
+            <input class="f-input" type="text" id="cf-q" placeholder="🔍 Rechercher une catégorie…" oninput="renderCats()">
+            <button class="btn btn-outline btn-sm" onclick="loadCats()">🔄</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th style="width:70px;text-align:center;">Icône</th><th>Nom</th><th>Description</th><th style="width:130px">Actions</th></tr></thead>
+              <tbody id="cats-tbody"><tr class="loading-row"><td colspan="4">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────────────── REGIONS ─── -->
+      <div class="page" id="page-regions">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Régions & Villes du Cameroun</div>
+            <span class="badge b-blue" id="r-count">— régions</span>
+          </div>
+          <div class="card-body">
+            <div id="reg-acc"><div class="empty-state"><div class="es-icon">⏳</div><p>Chargement…</p></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /app -->
+
+<!-- ══════════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════════ -->
+
+<!-- Reject reason -->
+<div class="overlay" id="m-reject">
+  <div class="modal">
+    <h3>❌ Rejeter le document</h3>
+    <p>Expliquez au technicien pourquoi son document est refusé. Ce message lui sera transmis via notification.</p>
+    <div class="m-field">
+      <label>Motif du rejet *</label>
+      <textarea id="reject-reason" rows="4" placeholder="Ex: Photo floue, document expiré, mauvais type de document…"></textarea>
+    </div>
+    <div class="m-row">
+      <button class="btn btn-outline" onclick="closeM('m-reject')">Annuler</button>
+      <button class="btn btn-error" onclick="doReject()">Confirmer le rejet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete -->
+<div class="overlay" id="m-delete">
+  <div class="modal">
+    <h3>🗑️ Confirmer la suppression</h3>
+    <p id="m-delete-msg" style="color:var(--text-muted);font-size:14px;margin-bottom:0;"></p>
+    <div class="m-row">
+      <button class="btn btn-outline" onclick="closeM('m-delete')">Annuler</button>
+      <button class="btn btn-error" onclick="doDelete()">Supprimer définitivement</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category create/edit -->
+<div class="overlay" id="m-cat">
+  <div class="modal">
+    <h3 id="m-cat-title">Nouvelle catégorie</h3>
+    <p>Ajoutez une nouvelle catégorie de service qui apparaîtra dans l'annuaire et le filtre des techniciens.</p>
+    <input type="hidden" id="c-id">
+    <div class="m-field">
+      <label>Nom de la catégorie *</label>
+      <input type="text" id="c-name" placeholder="Ex: Électricien, Plombier, Menuisier…">
+    </div>
+    <div class="m-field">
+      <label>Icône (nom d'icône Material)</label>
+      <input type="text" id="c-icon" placeholder="Ex: bolt, water_drop, build, carpenter…">
+    </div>
+    <div class="m-field">
+      <label>Description</label>
+      <textarea id="c-desc" placeholder="Brève description des services couverts par cette catégorie…"></textarea>
+    </div>
+    <div class="m-row">
+      <button class="btn btn-outline" onclick="closeM('m-cat')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCat()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════ -->
+<script>
+/* ─── State ─────────────────────────────────────────────── */
+let TOKEN = '';
+let ME = null;
+let ALL_VERIF = [];
+let ALL_USERS = [];
+let ALL_TECHS = [];
+let ALL_CATS  = [];
+let PENDING_REJECT_ID = null;
+let PENDING_DEL = { type: null, id: null };
+
+/* ─── Helpers ────────────────────────────────────────────── */
+function baseUrl() {
+  const v = document.getElementById('api-url').value.trim();
+  if (v) return v.replace(/\/$/, '');
+  if (location.protocol.startsWith('http')) return location.origin;
+  return 'https://techconnect1-api.onrender.com';
+}
+
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN }
+  };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const res = await fetch(baseUrl() + path, opts);
+  const j = await res.json();
+  if (!res.ok) throw new Error(j.error?.message || `Erreur ${res.status}`);
+  return j.data;
+}
+
+function toast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = (type === 'ok' ? '✅ ' : type === 'err' ? '❌ ' : 'ℹ️ ') + msg;
+  el.className = 'visible ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 4000);
+}
+
+function openM(id) { document.getElementById(id).classList.add('open'); }
+function closeM(id) { document.getElementById(id).classList.remove('open'); }
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function roleBadge(r) {
+  const cls = { admin:'b-purple', client:'b-blue', technician:'b-green' };
+  const lbl = { admin:'Admin', client:'Client', technician:'Technicien' };
+  return `<span class="badge ${cls[r]||'b-gray'}">${lbl[r]||r}</span>`;
+}
+
+function iconEmoji(icon) {
+  const m = { bolt:'⚡', water_drop:'💧', build:'🔧', carpenter:'🪵', phone_android:'📱',
+    checkroom:'👗', format_paint:'🎨', engineering:'🏗️', ac_unit:'❄️', grid_on:'🔲',
+    grass:'🌿', content_cut:'✂️', key:'🔑', precision_manufacturing:'⚙️',
+    roller_skating:'👟', chair:'🛋️', local_shipping:'🚚', cleaning_services:'🧹',
+    tv:'📺', local_car_wash:'🚗', kitchen:'🍳' };
+  return m[icon] || '🔧';
+}
+
+/* ─── Auth ───────────────────────────────────────────────── */
+function togglePw() {
+  const p = document.getElementById('l-password');
+  p.type = p.type === 'password' ? 'text' : 'password';
+}
+
+async function login() {
+  const email = document.getElementById('l-email').value.trim();
+  const pw    = document.getElementById('l-password').value;
+  const btn   = document.getElementById('l-btn');
+  const err   = document.getElementById('l-err');
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Connexion en cours…';
+  try {
+    const res = await fetch(baseUrl() + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw })
+    });
+    const j = await res.json();
+    if (j.data?.token) {
+      if (j.data.user.role !== 'admin') {
+        err.textContent = '⚠️ Ce compte n\'a pas les droits administrateur.';
+        err.style.display = 'block'; TOKEN = ''; return;
       }
+      TOKEN = j.data.token; ME = j.data.user;
+      const initials = (ME.full_name||'A').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      document.getElementById('av').textContent = initials;
+      document.getElementById('av-name').textContent = ME.full_name || 'Admin';
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      go('dashboard');
+      loadVerif(); // pre-load to compute badge
+    } else {
+      err.textContent = '⚠️ ' + (j.error?.message || 'Identifiants incorrects');
+      err.style.display = 'block';
     }
-  </script>
+  } catch (e) {
+    err.textContent = '⚠️ Impossible de joindre le serveur. Vérifiez votre connexion ou renseignez l\'URL du serveur API.';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Se connecter';
+  }
+}
+
+function logout() {
+  TOKEN = ''; ME = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') login();
+});
+
+/* ─── Navigation ─────────────────────────────────────────── */
+const PAGE_META = {
+  dashboard:     ['Vue d\'ensemble',          'Statistiques globales de la plateforme TechConnect Cameroun'],
+  verifications: ['Documents de vérification','Examinez les pièces soumises par les techniciens avant approbation'],
+  users:         ['Gestion des utilisateurs', 'Consultez et gérez tous les comptes de la plateforme'],
+  technicians:   ['Techniciens inscrits',     'Profils, statuts de vérification et statistiques des techniciens'],
+  categories:    ['Catégories de services',   'Créez, modifiez ou supprimez les catégories du répertoire'],
+  regions:       ['Régions & Villes',         'Découpage géographique du Cameroun utilisé dans la plateforme'],
+};
+
+const LOADERS = {
+  dashboard:     loadDashboard,
+  verifications: loadVerif,
+  users:         loadUsers,
+  technicians:   loadTechs,
+  categories:    loadCats,
+  regions:       loadRegions,
+};
+
+function go(page) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page === page));
+  document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === 'page-' + page));
+  const [t, s] = PAGE_META[page] || [page, ''];
+  document.getElementById('pt').textContent = t;
+  document.getElementById('ps').textContent = s;
+  LOADERS[page]?.();
+}
+
+function reload() {
+  const active = document.querySelector('.nav-item.active')?.dataset?.page || 'dashboard';
+  LOADERS[active]?.();
+}
+
+/* ─── Dashboard ──────────────────────────────────────────── */
+async function loadDashboard() {
+  try {
+    const s = await api('GET', '/api/admin/stats');
+    document.getElementById('s-users').textContent  = s.usersCount;
+    document.getElementById('s-tech').textContent   = s.techniciansCount;
+    document.getElementById('s-verif').textContent  = s.verifiedTechniciansCount;
+    document.getElementById('s-pverif').textContent = s.pendingVerificationsCount;
+    document.getElementById('s-req').textContent    = s.serviceRequestsCount;
+    document.getElementById('s-done').textContent   = s.completedRequestsCount;
+    document.getElementById('s-rev').textContent    = s.reviewsCount;
+
+    const badge = document.getElementById('vbadge');
+    badge.textContent = s.pendingVerificationsCount;
+    badge.style.display = s.pendingVerificationsCount > 0 ? 'inline' : 'none';
+
+    const compRate = s.serviceRequestsCount > 0
+      ? Math.round(s.completedRequestsCount / s.serviceRequestsCount * 100) : 0;
+    const verifRate = s.techniciansCount > 0
+      ? Math.round(s.verifiedTechniciansCount / s.techniciansCount * 100) : 0;
+
+    document.getElementById('kpi-body').innerHTML = `
+      <div class="prog-row">
+        <div class="prog-label">Techniciens vérifiés</div>
+        <div class="prog-track"><div class="prog-fill" style="width:${verifRate}%;background:var(--primary);"></div></div>
+        <div class="prog-val">${verifRate}%</div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-label">Taux de complétion des demandes</div>
+        <div class="prog-track"><div class="prog-fill" style="width:${compRate}%;background:var(--success);"></div></div>
+        <div class="prog-val">${compRate}%</div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-label">Documents en attente de vérification</div>
+        <div class="prog-track"><div class="prog-fill" style="width:${Math.min(s.pendingVerificationsCount*15,100)}%;background:var(--amber);"></div></div>
+        <div class="prog-val">${s.pendingVerificationsCount}</div>
+      </div>
+      <div style="padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);margin-top:4px;">
+        Mise à jour le ${new Date().toLocaleString('fr-FR')}
+      </div>`;
+  } catch (e) {
+    toast('Erreur de chargement des statistiques', 'err');
+  }
+}
+
+/* ─── Verifications ──────────────────────────────────────── */
+async function loadVerif() {
+  document.getElementById('verif-list').innerHTML = '<div class="empty-state"><div class="es-icon">⏳</div><p>Chargement…</p></div>';
+  try {
+    ALL_VERIF = await api('GET', '/api/admin/verifications');
+    renderVerif();
+    const n = ALL_VERIF.filter(d => d.status === 'pending').length;
+    const b = document.getElementById('vbadge');
+    b.textContent = n; b.style.display = n > 0 ? 'inline' : 'none';
+  } catch (e) {
+    document.getElementById('verif-list').innerHTML = `<div class="empty-state"><div class="es-icon">❌</div><p>${e.message}</p></div>`;
+  }
+}
+
+function renderVerif() {
+  const filt = document.getElementById('vf-status')?.value || '';
+  const list = filt ? ALL_VERIF.filter(d => d.status === filt) : ALL_VERIF;
+  const el = document.getElementById('verif-list');
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="es-icon">📭</div><p>Aucun document${filt?' avec ce statut':''} trouvé.</p></div>`;
+    return;
+  }
+
+  const stBadge = s => {
+    const m = { pending:'b-amber', approved:'b-green', rejected:'b-red' };
+    const l = { pending:'⏳ En attente', approved:'✅ Approuvé', rejected:'❌ Rejeté' };
+    return `<span class="badge ${m[s]||'b-gray'}">${l[s]||s}</span>`;
+  };
+
+  el.innerHTML = list.map(doc => {
+    const u = doc.technician?.user || {};
+    const t = doc.technician || {};
+    const cats = (doc.technician?.categories||[]).map(c=>c.category?.name).filter(Boolean);
+    return `
+      <div class="verif-card">
+        <div class="verif-head">
+          <div>
+            <div class="verif-name">👤 ${u.full_name || 'Inconnu'}</div>
+            <div class="verif-email">${u.email || '—'} · ${u.phone || '—'}</div>
+          </div>
+          ${stBadge(doc.status)}
+        </div>
+        <div class="verif-body">
+          <!-- Technician profile context to help admin decide -->
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;">Profil du technicien</div>
+          <div class="verif-profile-row">
+            ${t.years_experience !== undefined ? `<div class="meta-chip"><strong>${t.years_experience}</strong> ans d'exp.</div>` : ''}
+            ${t.verified !== undefined ? `<div class="meta-chip">Profil : <strong>${t.verified ? '✅ Déjà vérifié' : '⏳ Non vérifié'}</strong></div>` : ''}
+            ${t.city?.name ? `<div class="meta-chip">📍 <strong>${t.city.name}</strong>${t.city.region ? ` (${t.city.region.name})` : ''}</div>` : ''}
+            ${doc.technician?.price_min !== undefined ? `<div class="meta-chip">💰 <strong>${doc.technician.price_min|0} – ${doc.technician.price_max|0} FCFA</strong></div>` : ''}
+            ${cats.length ? cats.map(c=>`<div class="meta-chip">🗂️ <strong>${c}</strong></div>`).join('') : ''}
+          </div>
+
+          <!-- Document info -->
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:12px 0 8px;">Document soumis</div>
+          <div class="doc-row">
+            <div>
+              <div class="doc-type">${doc.document_type === 'id_card' ? '🪪 Carte nationale d\'identité' : '📜 Certificat / Diplôme'}</div>
+              <div class="doc-date">Soumis le ${fmtDate(doc.uploaded_at)}${doc.reviewed_at ? ' · Examiné le '+fmtDate(doc.reviewed_at) : ''}</div>
+            </div>
+            <a href="${doc.file_url}" target="_blank" class="btn btn-outline btn-sm">🔗 Voir le fichier</a>
+          </div>
+
+          ${doc.rejection_reason ? `<div class="rejection-note"><strong>Motif du rejet précédent :</strong> ${doc.rejection_reason}</div>` : ''}
+        </div>
+
+        ${doc.status === 'pending' ? `
+          <div class="verif-actions">
+            <button class="btn btn-success btn-sm" onclick="doApprove('${doc.id}')">✅ Approuver le document</button>
+            <button class="btn btn-error btn-sm" onclick="openRejectM('${doc.id}')">❌ Rejeter</button>
+          </div>` : `
+          <div class="verif-actions" style="color:var(--text-muted);font-size:13px;padding:12px 20px;">
+            ${doc.status === 'approved' ? '✅ Ce document a été approuvé.' : '❌ Ce document a été rejeté.'}
+          </div>`}
+      </div>`;
+  }).join('');
+}
+
+async function doApprove(id) {
+  try {
+    await api('PATCH', `/api/admin/verifications/${id}`, { status:'approved' });
+    toast('Document approuvé — le technicien est maintenant vérifié !', 'ok');
+    loadVerif(); loadDashboard();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+function openRejectM(id) {
+  PENDING_REJECT_ID = id;
+  document.getElementById('reject-reason').value = '';
+  openM('m-reject');
+}
+
+async function doReject() {
+  const reason = document.getElementById('reject-reason').value.trim();
+  if (!reason) { toast('Veuillez saisir un motif de rejet', 'err'); return; }
+  try {
+    await api('PATCH', `/api/admin/verifications/${PENDING_REJECT_ID}`, { status:'rejected', rejectionReason:reason });
+    closeM('m-reject');
+    toast('Document rejeté. Le technicien sera notifié.', 'ok');
+    loadVerif(); loadDashboard();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+/* ─── Users ──────────────────────────────────────────────── */
+async function loadUsers() {
+  document.getElementById('users-tbody').innerHTML = '<tr class="loading-row"><td colspan="5">Chargement…</td></tr>';
+  try {
+    ALL_USERS = await api('GET', '/api/admin/users');
+    renderUsers();
+  } catch (e) {
+    document.getElementById('users-tbody').innerHTML = `<tr class="loading-row"><td colspan="5">❌ ${e.message}</td></tr>`;
+  }
+}
+
+function renderUsers() {
+  const q    = document.getElementById('uf-q')?.value?.toLowerCase() || '';
+  const role = document.getElementById('uf-role')?.value || '';
+  let list = ALL_USERS;
+  if (role) list = list.filter(u => u.role === role);
+  if (q)    list = list.filter(u => (u.full_name||'').toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+
+  const tb = document.getElementById('users-tbody');
+  if (!list.length) { tb.innerHTML = '<tr class="loading-row"><td colspan="5">Aucun utilisateur trouvé.</td></tr>'; return; }
+
+  tb.innerHTML = list.map(u => `
+    <tr>
+      <td><div style="font-weight:600;">${u.full_name||'—'}</div><div style="font-size:12px;color:var(--text-muted);">${u.email}</div></td>
+      <td>${roleBadge(u.role)}</td>
+      <td style="color:var(--text-muted);font-size:13px;">${u.phone||'—'}</td>
+      <td style="color:var(--text-muted);font-size:12px;">${fmtDate(u.created_at)}</td>
+      <td>
+        ${u.role !== 'admin'
+          ? `<button class="btn btn-error btn-xs" onclick="openDelM('user','${u.id}','${(u.full_name||'').replace(/'/g,"\\'")}')">🗑️ Supprimer</button>`
+          : '<span style="font-size:11px;color:var(--text-muted);">Protégé</span>'}
+      </td>
+    </tr>`).join('');
+}
+
+/* ─── Technicians ────────────────────────────────────────── */
+async function loadTechs() {
+  document.getElementById('techs-tbody').innerHTML = '<tr class="loading-row"><td colspan="7">Chargement…</td></tr>';
+  try {
+    ALL_TECHS = await api('GET', '/api/admin/technicians');
+    renderTechs();
+  } catch (e) {
+    document.getElementById('techs-tbody').innerHTML = `<tr class="loading-row"><td colspan="7">❌ ${e.message}</td></tr>`;
+  }
+}
+
+function renderTechs() {
+  const q     = document.getElementById('tf-q')?.value?.toLowerCase() || '';
+  const verif = document.getElementById('tf-verif')?.value || '';
+  let list = ALL_TECHS;
+  if (verif === '1') list = list.filter(t => t.verified);
+  if (verif === '0') list = list.filter(t => !t.verified);
+  if (q) list = list.filter(t => (t.user?.full_name||'').toLowerCase().includes(q) || (t.user?.email||'').toLowerCase().includes(q));
+
+  const tb = document.getElementById('techs-tbody');
+  if (!list.length) { tb.innerHTML = '<tr class="loading-row"><td colspan="7">Aucun technicien trouvé.</td></tr>'; return; }
+
+  const avail = a => ({ available:'b-green', busy:'b-amber', offline:'b-gray' })[a] || 'b-gray';
+  const availLbl = a => ({ available:'Disponible', busy:'Occupé', offline:'Hors ligne' })[a] || a;
+  const stars = r => r ? '⭐'.repeat(Math.round(r))+` <small style="color:var(--text-muted)">${Number(r).toFixed(1)}</small>` : '<span style="color:var(--text-muted)">—</span>';
+
+  tb.innerHTML = list.map(t => {
+    const cats = (t.categories||[]).map(c=>c.category?.name).filter(Boolean);
+    return `
+      <tr>
+        <td><div style="font-weight:600;">${t.user?.full_name||'—'}</div><div style="font-size:12px;color:var(--text-muted);">${t.user?.email||''}</div></td>
+        <td style="font-size:13px;">${t.city?.name||'—'}${t.city?.region?`<div style="font-size:11px;color:var(--text-muted);">${t.city.region.name}</div>`:''}</td>
+        <td style="font-size:12px;max-width:160px;">${cats.length?cats.map(c=>`<span class="badge b-gray" style="margin:2px;">${c}</span>`).join(''):'—'}</td>
+        <td style="font-size:13px;color:var(--text-muted);">${t.years_experience??0} ans</td>
+        <td style="font-size:13px;">${stars(t.rating_avg)} <small style="color:var(--text-muted)">(${t.rating_count||0})</small></td>
+        <td><span class="badge ${t.verified?'b-green':'b-amber'}">${t.verified?'✅ Vérifié':'⏳ Non vérifié'}</span><br/><span class="badge ${avail(t.availability)}" style="margin-top:4px;">${availLbl(t.availability)}</span></td>
+        <td style="font-size:12px;color:var(--text-muted);">${t.price_min||0} – ${t.price_max||0}</td>
+      </tr>`;
+  }).join('');
+}
+
+/* ─── Categories ─────────────────────────────────────────── */
+async function loadCats() {
+  document.getElementById('cats-tbody').innerHTML = '<tr class="loading-row"><td colspan="4">Chargement…</td></tr>';
+  try {
+    ALL_CATS = await api('GET', '/api/admin/categories');
+    renderCats();
+  } catch (e) {
+    document.getElementById('cats-tbody').innerHTML = `<tr class="loading-row"><td colspan="4">❌ ${e.message}</td></tr>`;
+  }
+}
+
+function renderCats() {
+  const q = document.getElementById('cf-q')?.value?.toLowerCase() || '';
+  const list = q ? ALL_CATS.filter(c => c.name.toLowerCase().includes(q)) : ALL_CATS;
+  const tb = document.getElementById('cats-tbody');
+  if (!list.length) { tb.innerHTML = '<tr class="loading-row"><td colspan="4">Aucune catégorie trouvée.</td></tr>'; return; }
+
+  tb.innerHTML = list.map(c => `
+    <tr>
+      <td style="text-align:center;font-size:22px;">${iconEmoji(c.icon)}</td>
+      <td><div style="font-weight:600;">${c.name}</div><div style="font-size:11px;color:var(--text-muted);">icon: ${c.icon||'—'}</div></td>
+      <td style="font-size:13px;color:var(--text-muted);max-width:260px;">${c.description||'—'}</td>
+      <td>
+        <button class="btn btn-outline btn-xs" onclick="openCatModal('${c.id}')">✏️ Modifier</button>
+        <button class="btn btn-error btn-xs" style="margin-left:4px;" onclick="openDelM('cat','${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function openCatModal(id = null) {
+  const cat = id ? ALL_CATS.find(c => c.id === id) : null;
+  document.getElementById('m-cat-title').textContent = cat ? 'Modifier la catégorie' : 'Nouvelle catégorie';
+  document.getElementById('c-id').value   = id || '';
+  document.getElementById('c-name').value = cat?.name || '';
+  document.getElementById('c-icon').value = cat?.icon || '';
+  document.getElementById('c-desc').value = cat?.description || '';
+  openM('m-cat');
+}
+
+async function saveCat() {
+  const id   = document.getElementById('c-id').value;
+  const name = document.getElementById('c-name').value.trim();
+  const icon = document.getElementById('c-icon').value.trim();
+  const desc = document.getElementById('c-desc').value.trim();
+  if (!name) { toast('Le nom de la catégorie est requis', 'err'); return; }
+  try {
+    if (id) {
+      await api('PUT', `/api/admin/categories/${id}`, { name, icon, description: desc });
+      toast('Catégorie mise à jour !', 'ok');
+    } else {
+      await api('POST', '/api/admin/categories', { name, icon, description: desc });
+      toast('Nouvelle catégorie créée !', 'ok');
+    }
+    closeM('m-cat');
+    loadCats();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+/* ─── Delete ─────────────────────────────────────────────── */
+function openDelM(type, id, name) {
+  PENDING_DEL = { type, id };
+  const lbl = { user:'l\'utilisateur', cat:'la catégorie' };
+  document.getElementById('m-delete-msg').textContent =
+    `Êtes-vous sûr de vouloir supprimer ${lbl[type]||type} « ${name} » ? Cette action est irréversible et supprime toutes les données associées.`;
+  openM('m-delete');
+}
+
+async function doDelete() {
+  const { type, id } = PENDING_DEL;
+  try {
+    if (type === 'user') {
+      await api('DELETE', `/api/admin/users/${id}`);
+      toast('Utilisateur supprimé.', 'ok');
+      loadUsers(); loadDashboard();
+    } else if (type === 'cat') {
+      await api('DELETE', `/api/admin/categories/${id}`);
+      toast('Catégorie supprimée.', 'ok');
+      loadCats();
+    }
+    closeM('m-delete');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+/* ─── Regions ────────────────────────────────────────────── */
+async function loadRegions() {
+  document.getElementById('reg-acc').innerHTML = '<div class="empty-state"><div class="es-icon">⏳</div><p>Chargement…</p></div>';
+  try {
+    const regs = await api('GET', '/api/admin/regions');
+    document.getElementById('r-count').textContent = regs.length + ' régions';
+    document.getElementById('reg-acc').innerHTML = regs.map(r => `
+      <div class="acc-item">
+        <button class="acc-toggle" onclick="accToggle(this)">
+          <span>🌍 ${r.name} <span style="font-weight:400;color:var(--text-muted);font-size:12px;">(${(r.cities||[]).length} ville${r.cities?.length!==1?'s':''})</span></span>
+          <span class="chev">▼</span>
+        </button>
+        <div class="acc-body">
+          ${(r.cities||[]).map(c=>`<span class="city-tag">🏙️ ${c.name}</span>`).join('') || '<span style="color:var(--text-muted);font-size:13px;">Aucune ville enregistrée.</span>'}
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    document.getElementById('reg-acc').innerHTML = `<div class="empty-state"><div class="es-icon">❌</div><p>${e.message}</p></div>`;
+  }
+}
+
+function accToggle(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+</script>
 </body>
 </html>

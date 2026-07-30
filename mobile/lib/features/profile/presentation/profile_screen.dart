@@ -100,6 +100,17 @@ class ProfileScreen extends ConsumerWidget {
               const Divider(height: 32, color: AppColors.border),
               _buildInfoRow(Icons.phone_outlined, 'Téléphone', user.phone ?? 'Non renseigné'),
               
+              if (user.technicianProfile != null) ...[
+                const Divider(height: 32, color: AppColors.border),
+                _buildInfoRow(Icons.location_on_outlined, 'Ville', user.technicianProfile!.cityName ?? 'Non renseignée'),
+                const Divider(height: 32, color: AppColors.border),
+                _buildInfoRow(Icons.chat_rounded, 'WhatsApp', user.technicianProfile!.whatsapp ?? 'Non renseigné'),
+                const Divider(height: 32, color: AppColors.border),
+                _buildInfoRow(Icons.work_outline_rounded, 'Années d\'expérience', '${user.technicianProfile!.yearsExperience} ans'),
+                const Divider(height: 32, color: AppColors.border),
+                _buildInfoRow(Icons.payments_outlined, 'Fourchette de prix', '${user.technicianProfile!.priceMin.toStringAsFixed(0)} - ${user.technicianProfile!.priceMax.toStringAsFixed(0)} XAF'),
+              ],
+              
               const SizedBox(height: 48),
               SizedBox(
                 width: double.infinity,

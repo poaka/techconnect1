@@ -225,7 +225,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
                           text: 'WhatsApp',
                           icon: Icons.chat_rounded,
                           color: const Color(0xFF25D366),
-                          onPressed: () => _openWhatsApp(context, profile.phone),
+                          onPressed: () => _openWhatsApp(context, profile.whatsapp ?? profile.phone),
                         ),
                       ),
                       const SizedBox(width: 10),

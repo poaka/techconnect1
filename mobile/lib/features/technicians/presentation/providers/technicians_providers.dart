@@ -84,12 +84,13 @@ class TechnicianListState {
     bool? isLoading,
     bool? hasMore,
     String? errorMessage,
+    bool clearError = false,
   }) {
     return TechnicianListState(
       items: items ?? this.items,
       isLoading: isLoading ?? this.isLoading,
       hasMore: hasMore ?? this.hasMore,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }
@@ -105,11 +106,11 @@ class TechnicianListNotifier extends StateNotifier<TechnicianListState> {
     _currentFilter = activeFilter;
 
     if (isRefresh) {
-      state = state.copyWith(isLoading: true, items: [], hasMore: true, errorMessage: null);
+      state = state.copyWith(isLoading: true, items: [], hasMore: true, clearError: true);
     } else if (state.isLoading) {
       return;
     } else {
-      state = state.copyWith(isLoading: true, errorMessage: null);
+      state = state.copyWith(isLoading: true, clearError: true);
     }
 
     try {

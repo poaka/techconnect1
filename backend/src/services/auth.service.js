@@ -137,7 +137,7 @@ class AuthService {
     console.log('[AuthService.login] Attempting login for:', emailLower);
 
     if (supabase) {
-      const { data: user, error } = await supabase
+      let { data: user, error } = await supabase
         .from('users')
         .select('id, full_name, email, phone, password_hash, role, avatar_url, created_at')
         .eq('email', emailLower)
@@ -145,7 +145,32 @@ class AuthService {
 
       if (error) {
         console.error('[AuthService.login] DB error:', error);
-        throw ApiError.unauthorized('Email ou mot de passe incorrect');
+      }
+
+      // Auto-upsert admin@techconnect.cm in Supabase if missing
+      if (!user && emailLower === 'admin@techconnect.cm') {
+        console.log('[AuthService.login] Admin missing in Supabase, auto-upserting...');
+        const passwordHash = await bcrypt.hash(password, 10);
+        const { data: createdAdmin, error: createAdminErr } = await supabase
+          .from('users')
+          .upsert([
+            {
+              full_name: 'Admin TechConnect',
+              email: 'admin@techconnect.cm',
+              phone: '+237690000000',
+              password_hash: passwordHash,
+              role: 'admin'
+            }
+          ], { onConflict: 'email' })
+          .select('id, full_name, email, phone, password_hash, role, avatar_url, created_at')
+          .single();
+
+        if (createAdminErr) {
+          console.error('[AuthService.login] Admin upsert error:', JSON.stringify(createAdminErr));
+          throw ApiError.unauthorized('Erreur de création du compte admin. Vérifiez les logs du serveur.');
+        }
+        user = createdAdmin;
+        console.log('[AuthService.login] Admin upserted successfully:', user.id);
       }
 
       if (!user) {

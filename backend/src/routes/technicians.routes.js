@@ -17,6 +17,7 @@ const validateRequest = (req, res, next) => {
 
 // ─── Public routes ───────────────────────────────────────────────────────────
 router.get('/categories', TechniciansController.getCategories);
+router.get('/cities', TechniciansController.getCities);
 router.get('/regions', TechniciansController.getRegions);
 
 // ─── Protected /me/* routes (MUST be before /:id to avoid 'me' being an id) ─

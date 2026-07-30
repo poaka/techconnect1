@@ -11,6 +11,15 @@ class TechniciansController {
     }
   }
 
+  static async getCities(req, res, next) {
+    try {
+      const cities = await TechniciansService.getCities();
+      res.status(200).json({ data: cities });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getRegions(req, res, next) {
     try {
       const regions = await TechniciansService.getRegions();

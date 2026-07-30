@@ -24,6 +24,8 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
   final _priceMinController = TextEditingController();
   final _priceMaxController = TextEditingController();
   final _whatsappController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   String? _selectedCityId;
   String? _selectedCategoryId;
@@ -50,6 +52,10 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
           _selectedCategoryId = profile.categories.first.id;
         }
       }
+      if (user != null) {
+        _fullNameController.text = user.fullName;
+        _phoneController.text = user.phone ?? '';
+      }
     });
   }
 
@@ -60,6 +66,8 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
     _priceMinController.dispose();
     _priceMaxController.dispose();
     _whatsappController.dispose();
+    _fullNameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -80,6 +88,8 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
       'whatsapp': _whatsappController.text.trim(),
       'cityId': _selectedCityId,
       'categoryIds': [_selectedCategoryId],
+      'fullName': _fullNameController.text.trim(),
+      'phone': _phoneController.text.trim(),
     };
 
     final profile = await ref.read(updateProfileProvider.notifier).updateProfile(data);
@@ -91,6 +101,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
         );
         // Refresh auth state to get updated user with profile
         ref.read(authNotifierProvider.notifier).checkAuthStatus();
+        ref.invalidate(technicianListNotifierProvider);
         context.pop();
       }
     } else {
@@ -119,6 +130,30 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 24),
+              
+              const Text(
+                'Informations Personnelles',
+                style: AppTypography.heading3,
+              ),
+              const SizedBox(height: 16),
+              
+              AppTextField(
+                controller: _fullNameController,
+                label: 'Nom complet',
+                hint: 'Entrez votre nom',
+                validator: (val) => val == null || val.isEmpty ? 'Champ requis' : null,
+              ),
+              const SizedBox(height: 16),
+              
+              AppTextField(
+                controller: _phoneController,
+                label: 'Numéro de téléphone principal',
+                hint: 'Ex: +237 6XX XX XX XX',
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 32),
+              
               const Text(
                 'Informations Professionnelles',
                 style: AppTypography.heading3,
@@ -193,21 +228,33 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
               const SizedBox(height: 8),
               categoriesState.isLoading
                   ? const CircularProgressIndicator()
-                  : DropdownButtonFormField<String>(
-                      value: _selectedCategoryId,
-                      hint: const Text('Sélectionnez votre métier'),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                      items: categoriesState.value?.map((c) {
-                        return DropdownMenuItem(
-                          value: c.id,
-                          child: Text(c.name),
-                        );
-                      }).toList() ?? [],
-                      onChanged: (val) => setState(() => _selectedCategoryId = val),
-                    ),
+                  : categoriesState.hasError
+                      ? Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.red),
+                            const SizedBox(width: 8),
+                            const Text('Erreur de chargement'),
+                            TextButton(
+                              onPressed: () => ref.invalidate(categoriesProvider),
+                              child: const Text('Réessayer'),
+                            )
+                          ],
+                        )
+                      : DropdownButtonFormField<String>(
+                          value: _selectedCategoryId,
+                          hint: const Text('Sélectionnez votre métier'),
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          items: categoriesState.value?.map((c) {
+                            return DropdownMenuItem(
+                              value: c.id,
+                              child: Text(c.name),
+                            );
+                          }).toList() ?? [],
+                          onChanged: (val) => setState(() => _selectedCategoryId = val),
+                        ),
                     
               const SizedBox(height: 24),
 
@@ -215,21 +262,33 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
               const SizedBox(height: 8),
               citiesState.isLoading
                   ? const CircularProgressIndicator()
-                  : DropdownButtonFormField<String>(
-                      value: _selectedCityId,
-                      hint: const Text('Sélectionnez votre ville'),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                      items: citiesState.value?.map((c) {
-                        return DropdownMenuItem(
-                          value: c.id,
-                          child: Text(c.name),
-                        );
-                      }).toList() ?? [],
-                      onChanged: (val) => setState(() => _selectedCityId = val),
-                    ),
+                  : citiesState.hasError
+                      ? Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.red),
+                            const SizedBox(width: 8),
+                            const Text('Erreur de chargement'),
+                            TextButton(
+                              onPressed: () => ref.invalidate(citiesProvider),
+                              child: const Text('Réessayer'),
+                            )
+                          ],
+                        )
+                      : DropdownButtonFormField<String>(
+                          value: _selectedCityId,
+                          hint: const Text('Sélectionnez votre ville'),
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          items: citiesState.value?.map((c) {
+                            return DropdownMenuItem(
+                              value: c.id,
+                              child: Text(c.name),
+                            );
+                          }).toList() ?? [],
+                          onChanged: (val) => setState(() => _selectedCityId = val),
+                        ),
 
               const SizedBox(height: 32),
               

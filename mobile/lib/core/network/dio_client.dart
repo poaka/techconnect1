@@ -31,8 +31,8 @@ class DioClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl ?? defaultApiBaseUrl,
-        connectTimeout: const Duration(seconds: 4),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 2), // Optimized timeout
+        receiveTimeout: const Duration(seconds: 6),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -50,6 +50,12 @@ class DioClient {
         onError: (DioException error, handler) async {
           if (error.type == DioExceptionType.connectionError ||
               error.type == DioExceptionType.connectionTimeout) {
+            
+            // Prevent infinite fallback loop
+            if (error.requestOptions.extra['isFallback'] == true) {
+              return handler.next(error);
+            }
+
             final currentBase = _dio.options.baseUrl;
             String? fallbackBase;
 
@@ -68,6 +74,8 @@ class DioClient {
 
                 final opts = error.requestOptions;
                 opts.baseUrl = fallbackBase;
+                opts.extra['isFallback'] = true; // Mark as fallback to prevent infinite loop
+                
                 final response = await _dio.fetch(opts);
                 return handler.resolve(response);
               } catch (_) {

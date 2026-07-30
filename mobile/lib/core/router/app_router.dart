@@ -211,7 +211,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               routes: [
                 GoRoute(
                   path: 'edit',
-                  builder: (context, state) => const EditProfileScreen(),
+                  builder: (context, state) => const TechnicianOnboardingScreen(),
                 ),
               ],
             ),

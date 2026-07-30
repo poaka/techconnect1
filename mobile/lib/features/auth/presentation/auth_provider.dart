@@ -57,7 +57,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> login(String email, String password) async {
-    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    state = state.copyWith(status: AuthStatus.loading, clearError: true);
     try {
       final user = await _repository.login(email: email, password: password);
       state = state.copyWith(status: AuthStatus.authenticated, user: user);
@@ -75,7 +75,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     required UserRole role,
   }) async {
-    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    state = state.copyWith(status: AuthStatus.loading, clearError: true);
     try {
       final user = await _repository.register(
         fullName: fullName,
@@ -101,7 +101,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? fullName,
     String? phone,
   }) async {
-    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    state = state.copyWith(status: AuthStatus.loading, clearError: true);
     try {
       final user = await _repository.updateProfile(
         fullName: fullName,

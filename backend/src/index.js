@@ -22,8 +22,11 @@ app.use(cors({ origin: env.corsOrigin }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static admin stand-in tool
-app.use('/admin/verify', express.static(path.join(__dirname, '../public/admin.html')));
+// Serve static admin dashboard
+app.use('/admin/public', express.static(path.join(__dirname, '../public')));
+app.get('/admin/verify', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
 
 // Root welcome route
 app.get('/', (req, res) => {
@@ -32,6 +35,36 @@ app.get('/', (req, res) => {
     health: '/health',
     version: '1.0.0'
   });
+});
+
+// One-time admin seed/reset (development only – remove in production)
+app.get('/setup-admin', async (req, res) => {
+  const supabase = require('./config/supabase');
+  const bcrypt = require('bcryptjs');
+  if (!supabase) {
+    return res.json({ ok: false, message: 'Supabase not connected (running in local mode). Admin mock user is available.' });
+  }
+  try {
+    const hash = await bcrypt.hash('Password123!', 10);
+    const { data, error } = await supabase
+      .from('users')
+      .upsert([{
+        full_name: 'Admin TechConnect',
+        email: 'admin@techconnect.cm',
+        phone: '+237690000000',
+        password_hash: hash,
+        role: 'admin'
+      }], { onConflict: 'email' })
+      .select('id, email, role')
+      .single();
+
+    if (error) {
+      return res.json({ ok: false, error: error.message, details: error });
+    }
+    return res.json({ ok: true, message: '✅ Admin upserted successfully!', user: data });
+  } catch (err) {
+    return res.json({ ok: false, error: err.message });
+  }
 });
 
 // Health check endpoint
