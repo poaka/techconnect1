@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../storage/secure_storage_service.dart';
@@ -43,6 +44,17 @@ class DioClient {
     _dio.interceptors.add(
       JwtInterceptor(storageService, onUnauthorized: onUnauthorized),
     );
+
+    // Add Network Logging Interceptor
+    _dio.interceptors.add(LogInterceptor(
+      request: true,
+      requestHeader: true,
+      requestBody: true,
+      responseHeader: false,
+      responseBody: true,
+      error: true,
+      logPrint: (obj) => developer.log('[Dio] $obj', name: 'Network'),
+    ));
 
     // Add Automatic Connection Error Fallback Interceptor (10.0.2.2 <-> 127.0.0.1)
     _dio.interceptors.add(

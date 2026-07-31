@@ -84,4 +84,19 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> logout() async {
     await _storageService.deleteToken();
   }
+
+  @override
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _remoteDataSource.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
 }

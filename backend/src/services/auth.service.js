@@ -287,6 +287,65 @@ class AuthService {
 
     return this.getMe(userId);
   }
+
+  static async changePassword(userId, oldPassword, newPassword) {
+    console.log(`[AuthService.changePassword] Request to change password for user: ${userId}`);
+    if (supabase) {
+      const { data: user, error: fetchError } = await supabase
+        .from('users')
+        .select('id, password_hash')
+        .eq('id', userId)
+        .single();
+        
+      if (fetchError || !user) {
+        console.error('[AuthService.changePassword] User not found:', fetchError);
+        throw ApiError.notFound('Utilisateur non trouvé');
+      }
+
+      const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
+      if (!isMatch) {
+        console.warn('[AuthService.changePassword] Old password mismatch');
+        throw ApiError.unauthorized('L\'ancien mot de passe est incorrect');
+      }
+
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ password_hash: newPasswordHash })
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error('[AuthService.changePassword] Update error:', updateError);
+        throw ApiError.internal('Erreur lors du changement de mot de passe');
+      }
+      
+      console.log('[AuthService.changePassword] Password changed successfully in Supabase');
+      return true;
+    }
+
+    // Local fallback
+    let userFound = false;
+    for (const u of mockUsers.values()) {
+      if (u.id === userId) {
+        const isMatch = await bcrypt.compare(oldPassword, u.password_hash);
+        if (!isMatch) {
+          console.warn('[AuthService.changePassword] Local old password mismatch');
+          throw ApiError.unauthorized('L\'ancien mot de passe est incorrect');
+        }
+        u.password_hash = await bcrypt.hash(newPassword, 10);
+        userFound = true;
+        console.log('[AuthService.changePassword] Password changed successfully in local mock');
+        break;
+      }
+    }
+
+    if (!userFound) {
+      console.error('[AuthService.changePassword] User not found in local mock');
+      throw ApiError.notFound('Utilisateur non trouvé');
+    }
+
+    return true;
+  }
 }
 
 module.exports = AuthService;

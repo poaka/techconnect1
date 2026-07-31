@@ -22,4 +22,9 @@ abstract class AuthRepository {
   });
 
   Future<void> logout();
+
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  });
 }

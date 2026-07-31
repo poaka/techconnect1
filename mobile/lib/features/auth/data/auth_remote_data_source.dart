@@ -61,4 +61,17 @@ class AuthRemoteDataSource {
     final userData = response.data['data'] as Map<String, dynamic>;
     return AppUser.fromJson(userData);
   }
+
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    await _client.post(
+      '/auth/change-password',
+      data: {
+        'oldPassword': oldPassword,
+        'newPassword': newPassword,
+      },
+    );
+  }
 }

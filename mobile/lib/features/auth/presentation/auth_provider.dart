@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/error/failures.dart';
@@ -112,6 +113,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: failure.message);
     } catch (e) {
       state = state.copyWith(status: AuthStatus.error, errorMessage: 'Échec de la mise à jour');
+    }
+  }
+
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      debugPrint('[AuthNotifier.changePassword] Requesting password change');
+      await _repository.changePassword(
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+      );
+      debugPrint('[AuthNotifier.changePassword] Success');
+    } on Failure catch (failure) {
+      debugPrint('[AuthNotifier.changePassword] Failure: ${failure.message}');
+      throw failure.message;
+    } catch (e) {
+      debugPrint('[AuthNotifier.changePassword] Exception: $e');
+      throw 'Échec du changement de mot de passe';
     }
   }
 

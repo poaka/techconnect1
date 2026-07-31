@@ -52,4 +52,16 @@ router.put(
   AuthController.updateMe
 );
 
+router.post(
+  '/change-password',
+  requireAuth,
+  authLimiter,
+  [
+    body('oldPassword').notEmpty().withMessage('L\'ancien mot de passe est requis'),
+    body('newPassword').isLength({ min: 6 }).withMessage('Le nouveau mot de passe doit contenir au moins 6 caractères'),
+    validateRequest
+  ],
+  AuthController.changePassword
+);
+
 module.exports = router;
