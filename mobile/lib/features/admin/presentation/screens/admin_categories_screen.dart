@@ -68,6 +68,7 @@ class AdminCategoriesScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCategoryDialog(context, ref),
         backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );
@@ -79,80 +80,134 @@ class AdminCategoriesScreen extends ConsumerWidget {
     final descController = TextEditingController(text: category?.description ?? '');
     final iconController = TextEditingController(text: category?.iconName ?? '');
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return AlertDialog(
-          title: Text(isEditing ? 'Modifier la catégorie' : 'Nouvelle catégorie'),
-          content: Column(
+        return Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            left: 24,
+            right: 24,
+            top: 24,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Text(
+                isEditing ? 'Modifier la catégorie' : 'Nouvelle catégorie',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Nom de la catégorie'),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               TextField(
                 controller: descController,
                 decoration: const InputDecoration(labelText: 'Description'),
                 maxLines: 2,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               TextField(
                 controller: iconController,
                 decoration: const InputDecoration(labelText: 'Emoji (ex: 🔧)'),
               ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Annuler'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        final data = {
+                          'name': nameController.text.trim(),
+                          'description': descController.text.trim(),
+                          'icon_name': iconController.text.trim(),
+                        };
+                        if (data['name']!.isEmpty) return;
+                        
+                        if (isEditing) {
+                          ref.read(categoryActionsProvider.notifier).updateCategory(category.id, data);
+                        } else {
+                          ref.read(categoryActionsProvider.notifier).createCategory(data);
+                        }
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Enregistrer'),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final data = {
-                  'name': nameController.text.trim(),
-                  'description': descController.text.trim(),
-                  'icon_name': iconController.text.trim(),
-                };
-                if (data['name']!.isEmpty) return;
-                
-                if (isEditing) {
-                  ref.read(categoryActionsProvider.notifier).updateCategory(category.id, data);
-                } else {
-                  ref.read(categoryActionsProvider.notifier).createCategory(data);
-                }
-                Navigator.pop(context);
-              },
-              child: const Text('Enregistrer'),
-            ),
-          ],
         );
       },
     );
   }
 
   void _confirmDelete(BuildContext context, WidgetRef ref, Category category) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Supprimer la catégorie ?'),
-        content: Text('Voulez-vous vraiment supprimer "${category.name}" ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            onPressed: () {
-              ref.read(categoryActionsProvider.notifier).deleteCategory(category.id);
-              Navigator.pop(context);
-            },
-            child: const Text('Supprimer'),
-          ),
-        ],
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Supprimer la catégorie ?',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Voulez-vous vraiment supprimer "${category.name}" ?',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Annuler'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                    onPressed: () {
+                      ref.read(categoryActionsProvider.notifier).deleteCategory(category.id);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Supprimer'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

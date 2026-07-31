@@ -68,25 +68,54 @@ class AdminCitiesScreen extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(Icons.delete_outline, color: AppColors.error),
                         onPressed: () {
-                          showDialog(
+                          showModalBottomSheet(
                             context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Supprimer la ville'),
-                              content: Text('Êtes-vous sûr de vouloir supprimer ${city.name} ?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('Annuler'),
-                                ),
-                                FilledButton(
-                                  style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    ref.read(cityActionsProvider.notifier).deleteCity(city.id);
-                                  },
-                                  child: const Text('Supprimer'),
-                                ),
-                              ],
+                            backgroundColor: Colors.transparent,
+                            builder: (ctx) => Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                    'Supprimer la ville',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Êtes-vous sûr de vouloir supprimer ${city.name} ?',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          child: const Text('Annuler'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: FilledButton(
+                                          style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            ref.read(cityActionsProvider.notifier).deleteCity(city.id);
+                                          },
+                                          child: const Text('Supprimer'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -111,6 +140,8 @@ class AdminCitiesScreen extends ConsumerWidget {
             );
           }
         },
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );
@@ -125,15 +156,33 @@ class AdminCitiesScreen extends ConsumerWidget {
     final controller = TextEditingController(text: initialName);
     String? selectedRegionId = initialRegionId;
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
-          return AlertDialog(
-            title: Text(cityId == null ? 'Nouvelle ville' : 'Modifier la ville'),
-            content: Column(
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              left: 24,
+              right: 24,
+              top: 24,
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Text(
+                  cityId == null ? 'Nouvelle ville' : 'Modifier la ville',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
                 TextField(
                   controller: controller,
                   decoration: const InputDecoration(labelText: 'Nom de la ville'),
@@ -152,37 +201,45 @@ class AdminCitiesScreen extends ConsumerWidget {
                     });
                   },
                 ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Annuler'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () {
+                          if (controller.text.isNotEmpty && selectedRegionId != null) {
+                            if (cityId == null) {
+                              ref.read(cityActionsProvider.notifier).createCity({
+                                'name': controller.text,
+                                'regionId': selectedRegionId,
+                              });
+                            } else {
+                              ref.read(cityActionsProvider.notifier).updateCity(cityId, {
+                                'name': controller.text,
+                                'regionId': selectedRegionId,
+                              });
+                            }
+                            Navigator.pop(ctx);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Veuillez remplir tous les champs')),
+                            );
+                          }
+                        },
+                        child: const Text('Enregistrer'),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Annuler'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  if (controller.text.isNotEmpty && selectedRegionId != null) {
-                    if (cityId == null) {
-                      ref.read(cityActionsProvider.notifier).createCity({
-                        'name': controller.text,
-                        'regionId': selectedRegionId,
-                      });
-                    } else {
-                      ref.read(cityActionsProvider.notifier).updateCity(cityId, {
-                        'name': controller.text,
-                        'regionId': selectedRegionId,
-                      });
-                    }
-                    Navigator.pop(ctx);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Veuillez remplir tous les champs')),
-                    );
-                  }
-                },
-                child: const Text('Enregistrer'),
-              ),
-            ],
           );
         }
       ),

@@ -169,14 +169,32 @@ class _ReportCard extends ConsumerWidget {
 
   void _showResolveDialog(BuildContext context, WidgetRef ref, Report report) {
     final actionController = TextEditingController();
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Résoudre le signalement'),
-          content: Column(
+        return Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            left: 24,
+            right: 24,
+            top: 24,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const Text(
+                'Résoudre le signalement',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
               const Text('Quelle action avez-vous prise concernant ce technicien ? (ex: Avertissement envoyé, Compte suspendu, etc.)'),
               const SizedBox(height: 16),
               TextField(
@@ -184,27 +202,33 @@ class _ReportCard extends ConsumerWidget {
                 maxLines: 3,
                 decoration: const InputDecoration(
                   hintText: 'Action prise...',
-                  border: OutlineInputBorder(),
                 ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Annuler'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        final action = actionController.text.trim();
+                        if (action.isEmpty) return;
+                        ref.read(reportActionsProvider.notifier).resolveReport(report.id, action);
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Résoudre'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final action = actionController.text.trim();
-                if (action.isEmpty) return;
-                ref.read(reportActionsProvider.notifier).resolveReport(report.id, action);
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-              child: const Text('Résoudre'),
-            ),
-          ],
         );
       },
     );

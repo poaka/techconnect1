@@ -50,25 +50,53 @@ class AdminRegionsScreen extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(Icons.delete_outline, color: AppColors.error),
                         onPressed: () {
-                          showDialog(
+                          showModalBottomSheet(
                             context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Supprimer la région'),
-                              content: Text('Êtes-vous sûr de vouloir supprimer ${region.name} ? Toutes les villes associées pourraient être affectées.'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('Annuler'),
-                                ),
-                                FilledButton(
-                                  style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    ref.read(regionActionsProvider.notifier).deleteRegion(region.id);
-                                  },
-                                  child: const Text('Supprimer'),
-                                ),
-                              ],
+                            backgroundColor: Colors.transparent,
+                            builder: (ctx) => Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                    'Supprimer la région',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Êtes-vous sûr de vouloir supprimer ${region.name} ? Toutes les villes associées pourraient être affectées.',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          child: const Text('Annuler'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: FilledButton(
+                                          style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            ref.read(regionActionsProvider.notifier).deleteRegion(region.id);
+                                          },
+                                          child: const Text('Supprimer'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -85,6 +113,8 @@ class AdminRegionsScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showRegionDialog(context, ref),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );
@@ -92,33 +122,64 @@ class AdminRegionsScreen extends ConsumerWidget {
 
   void _showRegionDialog(BuildContext context, WidgetRef ref, {String? regionId, String? initialName}) {
     final controller = TextEditingController(text: initialName);
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(regionId == null ? 'Nouvelle région' : 'Modifier la région'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: 'Nom de la région'),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          left: 24,
+          right: 24,
+          top: 24,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                if (regionId == null) {
-                  ref.read(regionActionsProvider.notifier).createRegion({'name': controller.text});
-                } else {
-                  ref.read(regionActionsProvider.notifier).updateRegion(regionId, {'name': controller.text});
-                }
-                Navigator.pop(ctx);
-              }
-            },
-            child: const Text('Enregistrer'),
-          ),
-        ],
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              regionId == null ? 'Nouvelle région' : 'Modifier la région',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(labelText: 'Nom de la région'),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Annuler'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () {
+                      if (controller.text.isNotEmpty) {
+                        if (regionId == null) {
+                          ref.read(regionActionsProvider.notifier).createRegion({'name': controller.text});
+                        } else {
+                          ref.read(regionActionsProvider.notifier).updateRegion(regionId, {'name': controller.text});
+                        }
+                        Navigator.pop(ctx);
+                      }
+                    },
+                    child: const Text('Enregistrer'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

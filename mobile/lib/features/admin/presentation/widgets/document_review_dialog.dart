@@ -52,8 +52,14 @@ class _DocumentReviewDialogState extends ConsumerState<DocumentReviewDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -105,7 +111,6 @@ class _DocumentReviewDialogState extends ConsumerState<DocumentReviewDialog> {
                   decoration: const InputDecoration(
                     labelText: 'Motif de rejet',
                     hintText: 'Ex: Document flou, expiré, etc.',
-                    border: OutlineInputBorder(),
                   ),
                   maxLines: 2,
                 ),

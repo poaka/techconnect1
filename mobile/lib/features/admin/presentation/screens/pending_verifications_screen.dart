@@ -92,8 +92,10 @@ class PendingVerificationsScreen extends ConsumerWidget {
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
-                      showDialog(
+                      showModalBottomSheet(
                         context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
                         builder: (context) => DocumentReviewDialog(document: doc),
                       );
                     },

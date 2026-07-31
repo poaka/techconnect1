@@ -59,37 +59,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final horizontalPadding = screenWidth < 360 ? 14.0 : 18.0;
 
     return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(categoriesProvider);
-            await ref
-                .read(technicianListNotifierProvider.notifier)
-                .fetchTechnicians(isRefresh: true);
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding, vertical: 14.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Bar (Greeting & Profile/Logout)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(categoriesProvider);
+          await ref
+              .read(technicianListNotifierProvider.notifier)
+              .fetchTechnicians(isRefresh: true);
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ----------------------------------------------------
+              // HERO HEADER WITH BRAND GRADIENT
+              // ----------------------------------------------------
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 20,
+                  left: horizontalPadding,
+                  right: horizontalPadding,
+                  bottom: 30,
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primaryDark, AppColors.primaryLight],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            'assets/images/logo.png',
-                            width: 36,
-                            height: 36,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                width: 32,
+                                height: 32,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -97,119 +123,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ? 'Bonjour, ${user.fullName} 👋'
                                       : 'Bonjour ! 👋',
                                   style: AppTypography.heading2.copyWith(
+                                      color: Colors.white,
                                       fontSize: screenWidth < 360 ? 18 : 20),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   'TechConnect Cameroun',
-                                  style: AppTypography.bodyMedium.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                                 ),
                               ],
                             ),
+                          ],
+                        ),
+                        Stack(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
+                              onPressed: () => context.push('/notifications'),
+                            ),
+                            if (unreadCount > 0)
+                              Positioned(
+                                right: 10,
+                                top: 10,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.error,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    unreadCount > 9 ? '9+' : unreadCount.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // SEARCH BAR INSIDE HEADER
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: unreadCount > 0
-                              ? Badge(
-                                  label: Text('$unreadCount'),
-                                  child: const Icon(Icons.notifications_outlined,
-                                      color: AppColors.textSecondary),
-                                )
-                              : const Icon(Icons.notifications_outlined,
-                                  color: AppColors.textSecondary),
-                          onPressed: () => context.push('/notifications'),
-                        ),
-
-                        /*IconButton(
-                          icon: const Icon(Icons.assignment_outlined, color: AppColors.textSecondary),
-                          onPressed: () => context.push('/requests'),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.favorite_border_rounded, color: AppColors.textSecondary),
-                          onPressed: () => context.push('/favorites'),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.person_outline_rounded, color: AppColors.textSecondary),
-                          onPressed: () => context.push('/profile'),
-                        ),*/
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Search Header Card
-                Container(
-                  padding: const EdgeInsets.all(14.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(16.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.25),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Quel artisan cherchez-vous ?',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'Électricien, Plombier, Frigoriste...',
-                        style: TextStyle(fontSize: 12.5, color: Colors.white70),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Search Input Field
-                      TextField(
+                      child: TextField(
                         controller: _searchController,
                         textInputAction: TextInputAction.search,
                         onSubmitted: _onSearchSubmitted,
-                        style: const TextStyle(fontSize: 13.5),
                         decoration: InputDecoration(
-                          hintText: 'Rechercher un service ou nom...',
-                          hintStyle: const TextStyle(
-                              fontSize: 13, color: AppColors.textSecondary),
-                          fillColor: Colors.white,
-                          filled: true,
-                          prefixIcon: const Icon(Icons.search,
-                              color: AppColors.textSecondary, size: 20),
+                          hintText: 'Que recherchez-vous ? (ex: Plombier)',
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          prefixIcon: const Icon(Icons.search, color: AppColors.primary),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                           suffixIcon: IconButton(
-                            icon: const Icon(Icons.arrow_forward,
-                                color: AppColors.primary, size: 20),
-                            onPressed: () =>
-                                _onSearchSubmitted(_searchController.text),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                            icon: const Icon(Icons.tune, color: AppColors.primary),
+                            onPressed: () => context.push('/directory'),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 24),
+              // END HERO HEADER
+              
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
 
                 // Categories Section Header (Responsive Row)
                 Row(
@@ -343,8 +342,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
           ),
-        ),
+        ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

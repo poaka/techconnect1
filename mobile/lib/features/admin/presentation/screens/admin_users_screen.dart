@@ -81,25 +81,53 @@ class AdminUsersScreen extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(Icons.delete_outline, color: AppColors.error),
                         onPressed: () {
-                          showDialog(
+                          showModalBottomSheet(
                             context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Supprimer l\'utilisateur'),
-                              content: Text('Êtes-vous sûr de vouloir supprimer ${user.fullName} ? Cette action est irréversible.'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('Annuler'),
-                                ),
-                                FilledButton(
-                                  style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    ref.read(userActionsProvider.notifier).deleteUser(user.id);
-                                  },
-                                  child: const Text('Supprimer'),
-                                ),
-                              ],
+                            backgroundColor: Colors.transparent,
+                            builder: (ctx) => Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                    'Supprimer l\'utilisateur',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Êtes-vous sûr de vouloir supprimer ${user.fullName} ? Cette action est irréversible.',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          child: const Text('Annuler'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: FilledButton(
+                                          style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            ref.read(userActionsProvider.notifier).deleteUser(user.id);
+                                          },
+                                          child: const Text('Supprimer'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },

@@ -431,65 +431,89 @@ class TechnicianProfileScreen extends ConsumerWidget {
     final reasonController = TextEditingController();
     final detailsController = TextEditingController();
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Signaler l\'artisan'),
-          content: Column(
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const Text(
+                'Signaler l\'artisan',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
               const Text('Veuillez expliquer pourquoi vous signalez cet artisan. Notre équipe examinera votre demande.'),
               const SizedBox(height: 16),
               TextField(
                 controller: reasonController,
                 decoration: const InputDecoration(
                   labelText: 'Raison (ex: Arnaque, Comportement inapproprié)',
-                  border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               TextField(
                 controller: detailsController,
                 decoration: const InputDecoration(
                   labelText: 'Détails supplémentaires...',
-                  border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Annuler'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                      onPressed: () async {
+                        final reason = reasonController.text.trim();
+                        if (reason.isEmpty) return;
+                        
+                        final reportFn = ref.read(reportTechnicianProvider);
+                        try {
+                          await reportFn(technicianId, reason, detailsController.text.trim());
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Signalement envoyé avec succès. Merci.')),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Erreur: $e')),
+                            );
+                          }
+                        }
+                      },
+                      child: const Text('Signaler'),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final reason = reasonController.text.trim();
-                if (reason.isEmpty) return;
-                
-                final reportFn = ref.read(reportTechnicianProvider);
-                try {
-                  await reportFn(technicianId, reason, detailsController.text.trim());
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Signalement envoyé avec succès. Merci.')),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Erreur: $e')),
-                    );
-                  }
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              child: const Text('Signaler'),
-            ),
-          ],
         );
       },
     );
