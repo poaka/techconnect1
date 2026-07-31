@@ -85,6 +85,49 @@ class AdminController {
       res.status(200).json({ data: regions });
     } catch (error) { next(error); }
   }
+
+  static async createRegion(req, res, next) {
+    try {
+      const region = await AdminService.createRegion(req.body);
+      res.status(201).json({ data: region });
+    } catch (error) { next(error); }
+  }
+
+  static async updateRegion(req, res, next) {
+    try {
+      const region = await AdminService.updateRegion(req.params.regionId, req.body);
+      res.status(200).json({ data: region });
+    } catch (error) { next(error); }
+  }
+
+  static async deleteRegion(req, res, next) {
+    try {
+      const result = await AdminService.deleteRegion(req.params.regionId);
+      res.status(200).json({ data: result });
+    } catch (error) { next(error); }
+  }
+
+  // Cities
+  static async createCity(req, res, next) {
+    try {
+      const city = await AdminService.createCity(req.body);
+      res.status(201).json({ data: city });
+    } catch (error) { next(error); }
+  }
+
+  static async updateCity(req, res, next) {
+    try {
+      const city = await AdminService.updateCity(req.params.cityId, req.body);
+      res.status(200).json({ data: city });
+    } catch (error) { next(error); }
+  }
+
+  static async deleteCity(req, res, next) {
+    try {
+      const result = await AdminService.deleteCity(req.params.cityId);
+      res.status(200).json({ data: result });
+    } catch (error) { next(error); }
+  }
 }
 
 module.exports = AdminController;

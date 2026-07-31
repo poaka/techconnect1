@@ -313,10 +313,10 @@ INSERT INTO categories (id, name, icon, description) VALUES
     ('20000000-0000-0000-0000-000000000021', 'Maintenance Électroménager', 'kitchen', 'Réparation de machines à laver, micro-ondes et gazinières')
 ON CONFLICT (name) DO NOTHING;
 
--- Seed Default Test Accounts (Passwords hashed with bcrypt 10 rounds: "Password123!")
--- Hash for "Password123!" is "$2a$10$v7.YmB/T22iMvS2/Z/Jv8O1Z3D4XqP89S/4nSg5dY5g6g7g8g9g0a"
+-- Seed Default Test Accounts (Passwords hashed with bcrypt 10 rounds)
+-- Hash for "admin" is "$2a$10$TtTqE0qamOh3UC4OgIUPK.fJVaCPSFxqUMaPmAMbtS1sSXEohvhqm"
 INSERT INTO users (id, full_name, email, phone, password_hash, role) VALUES
-    ('30000000-0000-0000-0000-000000000001', 'Admin TechConnect', 'admin@techconnect.cm', '+237690000000', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'admin'),
+    ('30000000-0000-0000-0000-000000000001', 'Admin TechConnect', 'admin@gmail.com', '+237690000000', '$2a$10$TtTqE0qamOh3UC4OgIUPK.fJVaCPSFxqUMaPmAMbtS1sSXEohvhqm', 'admin'),
     ('30000000-0000-0000-0000-000000000002', 'Jean Client', 'client@techconnect.cm', '+237691111111', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'client'),
     ('30000000-0000-0000-0000-000000000003', 'Samuel Électricien', 'samuel@techconnect.cm', '+237692222222', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'technician')
 ON CONFLICT (email) DO NOTHING;
@@ -342,3 +342,48 @@ FROM technician_profiles
 WHERE user_id = '30000000-0000-0000-0000-000000000003'
 ON CONFLICT DO NOTHING;
 
+
+-- ==========================================
+-- Reports (Manage Reported Users)
+-- ==========================================
+CREATE TABLE public.reports (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    client_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    technician_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    reason TEXT NOT NULL,
+    details TEXT,
+    status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'resolved'
+    action_taken TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    resolved_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Clients can create reports
+CREATE POLICY "Clients can create reports"
+ON public.reports
+FOR INSERT
+WITH CHECK (auth.uid() = client_id);
+
+-- Policy: Admins can view and update all reports
+CREATE POLICY "Admins can view all reports"
+ON public.reports
+FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.users
+    WHERE users.id = auth.uid() AND users.role = 'admin'
+  )
+);
+
+CREATE POLICY "Admins can update reports"
+ON public.reports
+FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.users
+    WHERE users.id = auth.uid() AND users.role = 'admin'
+  )
+);

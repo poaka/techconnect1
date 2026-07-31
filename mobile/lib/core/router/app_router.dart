@@ -22,7 +22,14 @@ import '../../features/client_dashboard/presentation/screens/client_dashboard_sc
 import '../../features/technicians/presentation/screens/technician_onboarding_screen.dart';
 import '../../features/reviews/presentation/screens/create_review_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/admin/presentation/screens/admin_categories_screen.dart';
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/admin_reports_screen.dart';
+import '../../features/admin/presentation/screens/admin_technicians_screen.dart';
+import '../../features/admin/presentation/screens/admin_users_screen.dart';
+import '../../features/admin/presentation/screens/pending_verifications_screen.dart';
 import '../../features/auth/domain/user_role.dart';
+import '../../shared/widgets/admin_shell.dart';
 import '../../shared/widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -43,15 +50,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (authState.isAuthenticated) {
-        final isTechnician = authState.user?.role == UserRole.technician;
+        final role = authState.user?.role;
+        final isAdmin = role == UserRole.admin;
+        final isTechnician = role == UserRole.technician;
 
         // Redirect away from auth/splash after login
         if (isAuthPage || isSplash) {
-          return isTechnician ? '/technician/dashboard' : '/home';
+          if (isAdmin) return '/admin/dashboard';
+          if (isTechnician) return '/technician/dashboard';
+          return '/home';
         }
+        
         // Enforce role boundaries
+        if (loc.startsWith('/admin') && !isAdmin) return '/home';
         if (loc.startsWith('/technician/dashboard') && !isTechnician) return '/home';
-        if (loc == '/home' && isTechnician) return '/technician/dashboard';
+        if (loc == '/home' && (isTechnician || isAdmin)) {
+          return isAdmin ? '/admin/dashboard' : '/technician/dashboard';
+        }
       } else {
         // Unauthenticated: allow public-access routes
         const publicPrefixes = [
@@ -214,6 +229,52 @@ final routerProvider = Provider<GoRouter>((ref) {
                   builder: (context, state) => const TechnicianOnboardingScreen(),
                 ),
               ],
+            ),
+          ]),
+        ],
+      ),
+
+      // ─── Admin Shell — 3-tab bottom nav ─────────────────────────────────────
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, shell) => AdminShell(navigationShell: shell),
+        branches: [
+          // Tab 0: Admin Dashboard
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/admin/dashboard',
+              builder: (context, state) => const AdminDashboardScreen(),
+              routes: [
+                GoRoute(
+                  path: 'users',
+                  builder: (context, state) => const AdminUsersScreen(),
+                ),
+                GoRoute(
+                  path: 'technicians',
+                  builder: (context, state) => const AdminTechniciansScreen(),
+                ),
+                GoRoute(
+                  path: 'categories',
+                  builder: (context, state) => const AdminCategoriesScreen(),
+                ),
+                GoRoute(
+                  path: 'reports',
+                  builder: (context, state) => const AdminReportsScreen(),
+                ),
+              ],
+            ),
+          ]),
+          // Tab 1: Pending Verifications
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/admin/verifications',
+              builder: (context, state) => const PendingVerificationsScreen(),
+            ),
+          ]),
+          // Tab 2: Profile
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/admin/profile',
+              builder: (context, state) => const ProfileScreen(),
             ),
           ]),
         ],

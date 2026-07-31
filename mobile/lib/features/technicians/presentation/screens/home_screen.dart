@@ -91,7 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     Row(
                       children: [
-                        IconButton(
+                        /*IconButton(
                           icon: const Icon(Icons.assignment_outlined, color: AppColors.textSecondary),
                           onPressed: () => context.push('/requests'),
                         ),
@@ -102,7 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         IconButton(
                           icon: const Icon(Icons.person_outline_rounded, color: AppColors.textSecondary),
                           onPressed: () => context.push('/profile'),
-                        ),
+                        ),*/
                       ],
                     ),
                   ],

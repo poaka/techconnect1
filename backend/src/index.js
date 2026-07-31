@@ -13,6 +13,7 @@ const reviewsRoutes = require('./routes/reviews.routes');
 const favoritesRoutes = require('./routes/favorites.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
 const adminRoutes = require('./routes/admin.routes');
+const reportsRoutes = require('./routes/report.routes');
 
 const app = express();
 
@@ -45,12 +46,12 @@ app.get('/setup-admin', async (req, res) => {
     return res.json({ ok: false, message: 'Supabase not connected (running in local mode). Admin mock user is available.' });
   }
   try {
-    const hash = await bcrypt.hash('Password123!', 10);
+    const hash = await bcrypt.hash('admin', 10);
     const { data, error } = await supabase
       .from('users')
       .upsert([{
         full_name: 'Admin TechConnect',
-        email: 'admin@techconnect.cm',
+        email: 'admin@gmail.com',
         phone: '+237690000000',
         password_hash: hash,
         role: 'admin'
@@ -85,6 +86,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/favorites', favoritesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/reports', reportsRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {

@@ -90,6 +90,11 @@ class TechnicianProfileScreen extends ConsumerWidget {
               }
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.report_problem_outlined, color: Colors.orange),
+            tooltip: 'Signaler cet artisan',
+            onPressed: () => _showReportDialog(context, ref),
+          ),
         ],
       ),
       body: profileAsync.when(
@@ -379,7 +384,15 @@ class TechnicianProfileScreen extends ConsumerWidget {
           body: Center(child: CircularProgressIndicator()),
         ),
         error: (err, stack) => Scaffold(
-          appBar: AppBar(title: const Text('Erreur')),
+          appBar: AppBar(
+            title: const Text('Erreur'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.flag_outlined),
+                onPressed: () => _showReportDialog(context, ref),
+              ),
+            ],
+          ),
           body: Center(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -411,6 +424,74 @@ class TechnicianProfileScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showReportDialog(BuildContext context, WidgetRef ref) {
+    final reasonController = TextEditingController();
+    final detailsController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Signaler l\'artisan'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Veuillez expliquer pourquoi vous signalez cet artisan. Notre équipe examinera votre demande.'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: reasonController,
+                decoration: const InputDecoration(
+                  labelText: 'Raison (ex: Arnaque, Comportement inapproprié)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: detailsController,
+                decoration: const InputDecoration(
+                  labelText: 'Détails supplémentaires...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final reason = reasonController.text.trim();
+                if (reason.isEmpty) return;
+                
+                final reportFn = ref.read(reportTechnicianProvider);
+                try {
+                  await reportFn(technicianId, reason, detailsController.text.trim());
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Signalement envoyé avec succès. Merci.')),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erreur: $e')),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              child: const Text('Signaler'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

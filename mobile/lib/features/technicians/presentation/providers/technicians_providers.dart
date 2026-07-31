@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../auth/presentation/auth_provider.dart';
 import '../../data/technicians_remote_data_source.dart';
 import '../../data/technicians_repository_impl.dart';
@@ -146,6 +147,17 @@ final FutureProviderFamily<TechnicianProfile, String> technicianDetailProvider =
     FutureProviderFamily<TechnicianProfile, String>((ref, id) async {
   final repo = ref.watch(techniciansRepositoryProvider);
   return await repo.getTechnicianById(id);
+});
+
+final reportTechnicianProvider = Provider((ref) {
+  return (String technicianId, String reason, String details) async {
+    final client = ref.read(dioClientProvider);
+    await client.post('/reports', data: {
+      'technician_id': technicianId,
+      'reason': reason,
+      'details': details,
+    });
+  };
 });
 
 class UpdateProfileNotifier extends StateNotifier<AsyncValue<TechnicianProfile?>> {

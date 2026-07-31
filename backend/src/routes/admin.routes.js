@@ -67,4 +67,42 @@ router.delete('/categories/:categoryId', AdminController.deleteCategory);
 // ── Regions & Cities ──────────────────────────────────────────────────────
 router.get('/regions', AdminController.getRegions);
 
+router.post(
+  '/regions',
+  [
+    body('name').trim().notEmpty().withMessage('Le nom est requis'),
+    validate
+  ],
+  AdminController.createRegion
+);
+router.put(
+  '/regions/:regionId',
+  [
+    body('name').trim().notEmpty().withMessage('Le nom est requis'),
+    validate
+  ],
+  AdminController.updateRegion
+);
+router.delete('/regions/:regionId', AdminController.deleteRegion);
+
+router.post(
+  '/cities',
+  [
+    body('name').trim().notEmpty().withMessage('Le nom est requis'),
+    body('regionId').notEmpty().withMessage('L\'ID de la région est requis'),
+    validate
+  ],
+  AdminController.createCity
+);
+router.put(
+  '/cities/:cityId',
+  [
+    body('name').optional().trim().notEmpty().withMessage('Le nom ne peut pas être vide'),
+    body('regionId').optional().notEmpty().withMessage('L\'ID de la région ne peut pas être vide'),
+    validate
+  ],
+  AdminController.updateCity
+);
+router.delete('/cities/:cityId', AdminController.deleteCity);
+
 module.exports = router;

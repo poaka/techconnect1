@@ -93,7 +93,7 @@ class AdminService {
   // ── Platform Stats ────────────────────────────────────────────────────────
   static async getPlatformStats() {
     if (!supabase) {
-      return { usersCount: 0, techniciansCount: 0, verifiedTechniciansCount: 0, serviceRequestsCount: 0, completedRequestsCount: 0, reviewsCount: 0, pendingVerificationsCount: 0 };
+      return { usersCount: 0, techniciansCount: 0, verifiedTechniciansCount: 0, serviceRequestsCount: 0, completedRequestsCount: 0, reviewsCount: 0, pendingVerificationsCount: 0, reportsCount: 0, pendingReportsCount: 0 };
     }
 
     const [
@@ -103,7 +103,9 @@ class AdminService {
       { count: requestsCount },
       { count: completedCount },
       { count: reviewsCount },
-      { count: pendingVerifCount }
+      { count: pendingVerifCount },
+      { count: reportsCount },
+      { count: pendingReportsCount }
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
       supabase.from('technician_profiles').select('*', { count: 'exact', head: true }),
@@ -111,7 +113,9 @@ class AdminService {
       supabase.from('service_requests').select('*', { count: 'exact', head: true }),
       supabase.from('service_requests').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
       supabase.from('reviews').select('*', { count: 'exact', head: true }),
-      supabase.from('technician_documents').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+      supabase.from('technician_documents').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('reports').select('*', { count: 'exact', head: true }),
+      supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending')
     ]);
 
     return {
@@ -121,7 +125,9 @@ class AdminService {
       serviceRequestsCount: requestsCount || 0,
       completedRequestsCount: completedCount || 0,
       reviewsCount: reviewsCount || 0,
-      pendingVerificationsCount: pendingVerifCount || 0
+      pendingVerificationsCount: pendingVerifCount || 0,
+      reportsCount: reportsCount || 0,
+      pendingReportsCount: pendingReportsCount || 0
     };
   }
 
@@ -253,6 +259,97 @@ class AdminService {
 
     if (error) throw ApiError.internal('Erreur lors de la récupération des régions');
     return data || [];
+  }
+
+  static async createRegion({ name }) {
+    if (!supabase) throw ApiError.internal('Base de données indisponible');
+    if (!name || !name.trim()) throw ApiError.badRequest('Le nom de la région est requis');
+
+    const { data, error } = await supabase
+      .from('regions')
+      .insert([{ name: name.trim() }])
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '23505') throw ApiError.conflict('Une région avec ce nom existe déjà');
+      throw ApiError.internal('Erreur lors de la création de la région');
+    }
+    return data;
+  }
+
+  static async updateRegion(regionId, { name }) {
+    if (!supabase) throw ApiError.internal('Base de données indisponible');
+    if (!name || !name.trim()) throw ApiError.badRequest('Le nom de la région est requis');
+
+    const { data, error } = await supabase
+      .from('regions')
+      .update({ name: name.trim() })
+      .eq('id', regionId)
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '23505') throw ApiError.conflict('Une région avec ce nom existe déjà');
+      throw ApiError.internal('Erreur lors de la mise à jour de la région');
+    }
+    if (!data) throw ApiError.notFound('Région non trouvée');
+    return data;
+  }
+
+  static async deleteRegion(regionId) {
+    if (!supabase) throw ApiError.internal('Base de données indisponible');
+    const { error } = await supabase.from('regions').delete().eq('id', regionId);
+    if (error) throw ApiError.internal('Erreur lors de la suppression de la région');
+    return { success: true };
+  }
+
+  // ── Cities ────────────────────────────────────────────────────────────────
+  static async createCity({ name, regionId }) {
+    if (!supabase) throw ApiError.internal('Base de données indisponible');
+    if (!name || !name.trim()) throw ApiError.badRequest('Le nom de la ville est requis');
+    if (!regionId) throw ApiError.badRequest('L\'ID de la région est requis');
+
+    const { data, error } = await supabase
+      .from('cities')
+      .insert([{ name: name.trim(), region_id: regionId }])
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '23505') throw ApiError.conflict('Cette ville existe déjà dans cette région');
+      throw ApiError.internal('Erreur lors de la création de la ville');
+    }
+    return data;
+  }
+
+  static async updateCity(cityId, { name, regionId }) {
+    if (!supabase) throw ApiError.internal('Base de données indisponible');
+    
+    const updates = {};
+    if (name !== undefined) updates.name = name.trim();
+    if (regionId !== undefined) updates.region_id = regionId;
+
+    const { data, error } = await supabase
+      .from('cities')
+      .update(updates)
+      .eq('id', cityId)
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '23505') throw ApiError.conflict('Cette ville existe déjà dans cette région');
+      throw ApiError.internal('Erreur lors de la mise à jour de la ville');
+    }
+    if (!data) throw ApiError.notFound('Ville non trouvée');
+    return data;
+  }
+
+  static async deleteCity(cityId) {
+    if (!supabase) throw ApiError.internal('Base de données indisponible');
+    const { error } = await supabase.from('cities').delete().eq('id', cityId);
+    if (error) throw ApiError.internal('Erreur lors de la suppression de la ville');
+    return { success: true };
   }
 }
 
