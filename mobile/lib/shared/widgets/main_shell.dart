@@ -53,24 +53,10 @@ class MainShell extends ConsumerWidget {
           selectedIcon: Icon(Icons.assignment_rounded),
           label: 'Demandes',
         ),
-        NavigationDestination(
-          icon: Badge(
-            isLabelVisible: unreadCount > 0,
-            label: Text(
-              unreadCount > 9 ? '9+' : '$unreadCount',
-              style: const TextStyle(fontSize: 10),
-            ),
-            child: const Icon(Icons.notifications_outlined),
-          ),
-          selectedIcon: Badge(
-            isLabelVisible: unreadCount > 0,
-            label: Text(
-              unreadCount > 9 ? '9+' : '$unreadCount',
-              style: const TextStyle(fontSize: 10),
-            ),
-            child: const Icon(Icons.notifications_rounded),
-          ),
-          label: 'Notifs',
+        const NavigationDestination(
+          icon: Icon(Icons.favorite_border_rounded),
+          selectedIcon: Icon(Icons.favorite_rounded),
+          label: 'Favoris',
         ),
         const NavigationDestination(
           icon: Icon(Icons.person_outline_rounded),

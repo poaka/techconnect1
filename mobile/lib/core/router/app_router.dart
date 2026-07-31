@@ -105,6 +105,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // ─── Full-screen overlay routes (no shell needed) ──────────────────────
       GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
         path: '/requests/:id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
@@ -165,14 +169,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               builder: (context, state) => const RequestListScreen(),
             ),
           ]),
-          // Tab 2: Notifications
+          // Tab 2: Favorites
           StatefulShellBranch(routes: [
             GoRoute(
-              path: '/notifications',
-              builder: (context, state) => const NotificationsScreen(),
+              path: '/favorites',
+              builder: (context, state) => const FavoritesScreen(),
             ),
           ]),
-          // Tab 3: Profile + Favorites
+          // Tab 3: Profile
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/profile',
@@ -183,10 +187,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                   builder: (context, state) => const EditProfileScreen(),
                 ),
               ],
-            ),
-            GoRoute(
-              path: '/favorites',
-              builder: (context, state) => const FavoritesScreen(),
             ),
           ]),
         ],

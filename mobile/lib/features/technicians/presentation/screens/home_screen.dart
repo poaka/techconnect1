@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/auth_provider.dart';
+import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../providers/technicians_providers.dart';
 import '../widgets/category_item.dart';
 import '../widgets/technician_card.dart';
@@ -23,7 +24,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(technicianListNotifierProvider.notifier).fetchTechnicians(isRefresh: true);
+      ref
+          .read(technicianListNotifierProvider.notifier)
+          .fetchTechnicians(isRefresh: true);
     });
   }
 
@@ -37,7 +40,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (query.trim().isNotEmpty) {
       ref.read(technicianFilterProvider.notifier).setQuery(query.trim());
       final filter = ref.read(technicianFilterProvider);
-      ref.read(technicianListNotifierProvider.notifier).fetchTechnicians(filter: filter, isRefresh: true);
+      ref
+          .read(technicianListNotifierProvider.notifier)
+          .fetchTechnicians(filter: filter, isRefresh: true);
       context.push('/directory');
     }
   }
@@ -48,6 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final user = authState.user;
     final categoriesAsync = ref.watch(categoriesProvider);
     final technicianListState = ref.watch(technicianListNotifierProvider);
+    final unreadCount = ref.watch(unreadCountProvider);
 
     final screenWidth = MediaQuery.of(context).size.width;
     final horizontalPadding = screenWidth < 360 ? 14.0 : 18.0;
@@ -57,11 +63,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(categoriesProvider);
-            await ref.read(technicianListNotifierProvider.notifier).fetchTechnicians(isRefresh: true);
+            await ref
+                .read(technicianListNotifierProvider.notifier)
+                .fetchTechnicians(isRefresh: true);
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 14.0),
+            padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding, vertical: 14.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -74,8 +83,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            user != null ? 'Bonjour, ${user.fullName} 👋' : 'Bonjour ! 👋',
-                            style: AppTypography.heading2.copyWith(fontSize: screenWidth < 360 ? 18 : 20),
+                            user != null
+                                ? 'Bonjour, ${user.fullName} 👋'
+                                : 'Bonjour ! 👋',
+                            style: AppTypography.heading2.copyWith(
+                                fontSize: screenWidth < 360 ? 18 : 20),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -91,6 +103,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     Row(
                       children: [
+                        IconButton(
+                          icon: unreadCount > 0
+                              ? Badge(
+                                  label: Text('$unreadCount'),
+                                  child: const Icon(Icons.notifications_outlined,
+                                      color: AppColors.textSecondary),
+                                )
+                              : const Icon(Icons.notifications_outlined,
+                                  color: AppColors.textSecondary),
+                          onPressed: () => context.push('/notifications'),
+                        ),
+
                         /*IconButton(
                           icon: const Icon(Icons.assignment_outlined, color: AppColors.textSecondary),
                           onPressed: () => context.push('/requests'),
@@ -149,15 +173,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: const TextStyle(fontSize: 13.5),
                         decoration: InputDecoration(
                           hintText: 'Rechercher un service ou nom...',
-                          hintStyle: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          hintStyle: const TextStyle(
+                              fontSize: 13, color: AppColors.textSecondary),
                           fillColor: Colors.white,
                           filled: true,
-                          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary, size: 20),
+                          prefixIcon: const Icon(Icons.search,
+                              color: AppColors.textSecondary, size: 20),
                           suffixIcon: IconButton(
-                            icon: const Icon(Icons.arrow_forward, color: AppColors.primary, size: 20),
-                            onPressed: () => _onSearchSubmitted(_searchController.text),
+                            icon: const Icon(Icons.arrow_forward,
+                                color: AppColors.primary, size: 20),
+                            onPressed: () =>
+                                _onSearchSubmitted(_searchController.text),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -175,7 +204,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: Text(
                         'Métiers & Catégories',
-                        style: AppTypography.heading3.copyWith(fontSize: screenWidth < 360 ? 15 : 16),
+                        style: AppTypography.heading3
+                            .copyWith(fontSize: screenWidth < 360 ? 15 : 16),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -185,11 +215,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         context.push('/categories');
                       },
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 4),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text('Voir tout', style: TextStyle(fontSize: 13)),
+                      child: const Text('Voir tout',
+                          style: TextStyle(fontSize: 13)),
                     ),
                   ],
                 ),
@@ -207,17 +239,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         return CategoryItem(
                           category: cat,
                           onTap: () {
-                            ref.read(technicianFilterProvider.notifier).resetFilters();
-                            ref.read(technicianFilterProvider.notifier).setCategory(cat.id);
+                            ref
+                                .read(technicianFilterProvider.notifier)
+                                .resetFilters();
+                            ref
+                                .read(technicianFilterProvider.notifier)
+                                .setCategory(cat.id);
                             final filter = ref.read(technicianFilterProvider);
-                            ref.read(technicianListNotifierProvider.notifier).fetchTechnicians(filter: filter, isRefresh: true);
+                            ref
+                                .read(technicianListNotifierProvider.notifier)
+                                .fetchTechnicians(
+                                    filter: filter, isRefresh: true);
                             context.push('/directory');
                           },
                         );
                       },
                     ),
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (_, __) => const Text('Impossible de charger les catégories'),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (_, __) =>
+                        const Text('Impossible de charger les catégories'),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -228,7 +269,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: Text(
                         'Artisans recommandés',
-                        style: AppTypography.heading3.copyWith(fontSize: screenWidth < 360 ? 15 : 16),
+                        style: AppTypography.heading3
+                            .copyWith(fontSize: screenWidth < 360 ? 15 : 16),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -236,18 +278,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     TextButton(
                       onPressed: () => context.push('/directory'),
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 4),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text('Tout explorer', style: TextStyle(fontSize: 13)),
+                      child: const Text('Tout explorer',
+                          style: TextStyle(fontSize: 13)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
 
                 // Featured Technicians List
-                if (technicianListState.isLoading && technicianListState.items.isEmpty)
+                if (technicianListState.isLoading &&
+                    technicianListState.items.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(32.0),
                     child: Center(child: CircularProgressIndicator()),
@@ -271,7 +316,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: technicianListState.items.length > 5 ? 5 : technicianListState.items.length,
+                    itemCount: technicianListState.items.length > 5
+                        ? 5
+                        : technicianListState.items.length,
                     itemBuilder: (context, index) {
                       final profile = technicianListState.items[index];
                       return TechnicianCard(
