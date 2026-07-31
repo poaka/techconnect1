@@ -19,8 +19,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'client@techconnect.cm');
-  final _passwordController = TextEditingController(text: 'Password123!');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   late TapGestureRecognizer _registerTapRecognizer;
 
   @override
