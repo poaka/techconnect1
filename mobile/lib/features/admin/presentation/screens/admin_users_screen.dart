@@ -5,13 +5,19 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/admin_providers.dart';
 
-class AdminUsersScreen extends ConsumerWidget {
+class AdminUsersScreen extends ConsumerStatefulWidget {
   const AdminUsersScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // We fetch all users by passing null as role
-    final usersAsync = ref.watch(adminUsersProvider(null));
+  ConsumerState<AdminUsersScreen> createState() => _AdminUsersScreenState();
+}
+
+class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
+  String? _selectedRole;
+
+  @override
+  Widget build(BuildContext context) {
+    final usersAsync = ref.watch(adminUsersProvider(_selectedRole));
 
     return Scaffold(
       appBar: AppBar(
@@ -22,6 +28,25 @@ class AdminUsersScreen extends ConsumerWidget {
             onPressed: () => ref.invalidate(adminUsersProvider),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: SegmentedButton<String?>(
+              segments: const [
+                ButtonSegment<String?>(value: null, label: Text('Tous')),
+                ButtonSegment<String?>(value: 'client', label: Text('Clients')),
+                ButtonSegment<String?>(value: 'technician', label: Text('Techniciens')),
+              ],
+              selected: {_selectedRole},
+              onSelectionChanged: (Set<String?> newSelection) {
+                setState(() {
+                  _selectedRole = newSelection.first;
+                });
+              },
+            ),
+          ),
+        ),
       ),
       body: usersAsync.when(
         data: (users) {

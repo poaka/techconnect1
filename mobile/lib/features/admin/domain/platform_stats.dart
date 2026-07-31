@@ -6,6 +6,7 @@ class PlatformStats {
   final int completedRequestsCount;
   final int reviewsCount;
   final int pendingVerificationsCount;
+  final int rejectedVerificationsCount;
   final int reportsCount;
   final int pendingReportsCount;
 
@@ -17,6 +18,7 @@ class PlatformStats {
     required this.completedRequestsCount,
     required this.reviewsCount,
     required this.pendingVerificationsCount,
+    required this.rejectedVerificationsCount,
     required this.reportsCount,
     required this.pendingReportsCount,
   });
@@ -30,6 +32,7 @@ class PlatformStats {
       completedRequestsCount: json['completedRequestsCount'] ?? 0,
       reviewsCount: json['reviewsCount'] ?? 0,
       pendingVerificationsCount: json['pendingVerificationsCount'] ?? 0,
+      rejectedVerificationsCount: json['rejectedVerificationsCount'] ?? 0,
       reportsCount: json['reportsCount'] ?? 0,
       pendingReportsCount: json['pendingReportsCount'] ?? 0,
     );

@@ -25,6 +25,12 @@ class AdminRemoteDataSource {
     return data.map((json) => TechnicianDocument.fromJson(json)).toList();
   }
 
+  Future<List<TechnicianDocument>> getRejectedVerifications() async {
+    final response = await _client.get('/admin/verifications/rejected');
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((json) => TechnicianDocument.fromJson(json)).toList();
+  }
+
   Future<void> reviewDocument({
     required String documentId,
     required String status,

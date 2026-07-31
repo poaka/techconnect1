@@ -6,7 +6,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../providers/admin_providers.dart';
 
 class AdminTechniciansScreen extends ConsumerWidget {
-  const AdminTechniciansScreen({super.key});
+  final bool filterVerified;
+
+  const AdminTechniciansScreen({super.key, this.filterVerified = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -14,7 +16,7 @@ class AdminTechniciansScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Techniciens'),
+        title: Text(filterVerified ? 'Techniciens Vérifiés' : 'Techniciens'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -23,9 +25,17 @@ class AdminTechniciansScreen extends ConsumerWidget {
         ],
       ),
       body: techniciansAsync.when(
-        data: (technicians) {
+        data: (allTechnicians) {
+          final technicians = filterVerified 
+              ? allTechnicians.where((t) => t.isVerified).toList() 
+              : allTechnicians;
+              
           if (technicians.isEmpty) {
-            return const Center(child: Text('Aucun technicien trouvé.'));
+            return Center(
+              child: Text(filterVerified 
+                  ? 'Aucun technicien vérifié trouvé.' 
+                  : 'Aucun technicien trouvé.'),
+            );
           }
 
           return RefreshIndicator(

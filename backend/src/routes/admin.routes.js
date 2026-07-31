@@ -23,6 +23,7 @@ router.get('/stats', AdminController.getPlatformStats);
 
 // ── Verifications ─────────────────────────────────────────────────────────
 router.get('/verifications', AdminController.getPendingVerifications);
+router.get('/verifications/rejected', AdminController.getRejectedVerifications);
 router.patch(
   '/verifications/:documentId',
   [

@@ -27,6 +27,31 @@ class AdminService {
     return data || [];
   }
 
+  static async getRejectedVerifications() {
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+      .from('technician_documents')
+      .select(`
+        id, document_type, file_url, status, rejection_reason, uploaded_at, reviewed_at,
+        technician:technician_profiles!technician_id(
+          id, verified, years_experience, price_min, price_max, bio,
+          user:users!user_id(id, full_name, email, phone),
+          city:cities!city_id(id, name, region:regions!region_id(id, name)),
+          categories:technician_categories(category:categories!category_id(id, name, icon))
+        )
+      `)
+      .eq('status', 'rejected')
+      .order('reviewed_at', { ascending: false });
+
+    if (error) {
+      console.error('[AdminService.getRejectedVerifications error]', error);
+      throw ApiError.internal('Erreur lors de la récupération des documents rejetés');
+    }
+
+    return data || [];
+  }
+
   static async reviewDocument(documentId, status, rejectionReason = null) {
     if (!['approved', 'rejected'].includes(status)) {
       throw ApiError.badRequest('Statut de décision invalide');
@@ -93,7 +118,7 @@ class AdminService {
   // ── Platform Stats ────────────────────────────────────────────────────────
   static async getPlatformStats() {
     if (!supabase) {
-      return { usersCount: 0, techniciansCount: 0, verifiedTechniciansCount: 0, serviceRequestsCount: 0, completedRequestsCount: 0, reviewsCount: 0, pendingVerificationsCount: 0, reportsCount: 0, pendingReportsCount: 0 };
+      return { usersCount: 0, techniciansCount: 0, verifiedTechniciansCount: 0, serviceRequestsCount: 0, completedRequestsCount: 0, reviewsCount: 0, pendingVerificationsCount: 0, rejectedVerificationsCount: 0, reportsCount: 0, pendingReportsCount: 0 };
     }
 
     const [
@@ -104,6 +129,7 @@ class AdminService {
       { count: completedCount },
       { count: reviewsCount },
       { count: pendingVerifCount },
+      { count: rejectedVerifCount },
       { count: reportsCount },
       { count: pendingReportsCount }
     ] = await Promise.all([
@@ -114,6 +140,7 @@ class AdminService {
       supabase.from('service_requests').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
       supabase.from('reviews').select('*', { count: 'exact', head: true }),
       supabase.from('technician_documents').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('technician_documents').select('*', { count: 'exact', head: true }).eq('status', 'rejected'),
       supabase.from('reports').select('*', { count: 'exact', head: true }),
       supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending')
     ]);
@@ -126,6 +153,7 @@ class AdminService {
       completedRequestsCount: completedCount || 0,
       reviewsCount: reviewsCount || 0,
       pendingVerificationsCount: pendingVerifCount || 0,
+      rejectedVerificationsCount: rejectedVerifCount || 0,
       reportsCount: reportsCount || 0,
       pendingReportsCount: pendingReportsCount || 0
     };

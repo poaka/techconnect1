@@ -4,9 +4,20 @@ class AdminController {
   // Verifications
   static async getPendingVerifications(req, res, next) {
     try {
-      const verifications = await AdminService.getPendingVerifications();
-      res.status(200).json({ data: verifications });
-    } catch (error) { next(error); }
+      const documents = await AdminService.getPendingVerifications();
+      res.status(200).json({ data: documents });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getRejectedVerifications(req, res, next) {
+    try {
+      const documents = await AdminService.getRejectedVerifications();
+      res.status(200).json({ data: documents });
+    } catch (error) {
+      next(error);
+    }
   }
 
   static async reviewDocument(req, res, next) {

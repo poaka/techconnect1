@@ -26,6 +26,11 @@ final pendingVerificationsProvider = FutureProvider.autoDispose<List<TechnicianD
   return dataSource.getPendingVerifications();
 });
 
+final rejectedVerificationsProvider = FutureProvider.autoDispose<List<TechnicianDocument>>((ref) async {
+  final dataSource = ref.watch(adminRemoteDataSourceProvider);
+  return dataSource.getRejectedVerifications();
+});
+
 final adminUsersProvider = FutureProvider.autoDispose.family<List<AppUser>, String?>((ref, role) async {
   final dataSource = ref.watch(adminRemoteDataSourceProvider);
   return dataSource.getUsers(role: role);

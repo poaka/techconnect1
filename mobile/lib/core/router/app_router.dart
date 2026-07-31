@@ -30,6 +30,7 @@ import '../../features/admin/presentation/screens/admin_cities_screen.dart';
 import '../../features/admin/presentation/screens/admin_technicians_screen.dart';
 import '../../features/admin/presentation/screens/admin_users_screen.dart';
 import '../../features/admin/presentation/screens/pending_verifications_screen.dart';
+import '../../features/admin/presentation/screens/rejected_verifications_screen.dart';
 import '../../features/auth/domain/user_role.dart';
 import '../../shared/widgets/admin_shell.dart';
 import '../../shared/widgets/main_shell.dart';
@@ -252,7 +253,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
                 GoRoute(
                   path: 'technicians',
-                  builder: (context, state) => const AdminTechniciansScreen(),
+                  builder: (context, state) {
+                    final verifiedParam = state.uri.queryParameters['verified'];
+                    final isVerified = verifiedParam == 'true';
+                    return AdminTechniciansScreen(filterVerified: isVerified);
+                  },
                 ),
                 GoRoute(
                   path: 'categories',
@@ -278,6 +283,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: '/admin/verifications',
               builder: (context, state) => const PendingVerificationsScreen(),
+              routes: [
+                GoRoute(
+                  path: 'rejected',
+                  builder: (context, state) => const RejectedVerificationsScreen(),
+                ),
+              ],
             ),
           ]),
           // Tab 2: Profile
