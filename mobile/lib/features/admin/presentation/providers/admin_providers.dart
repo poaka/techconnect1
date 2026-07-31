@@ -5,6 +5,7 @@ import '../../../auth/domain/app_user.dart';
 import '../../../auth/presentation/auth_provider.dart';
 import '../../../technicians/domain/category.dart';
 import '../../../technicians/domain/technician_profile.dart';
+import '../../../technicians/presentation/providers/technicians_providers.dart';
 import '../../data/admin_remote_data_source.dart';
 import '../../domain/platform_stats.dart';
 import '../../domain/report.dart';
@@ -143,4 +144,118 @@ class ReviewDocumentNotifier extends StateNotifier<AsyncValue<void>> {
 final reviewDocumentProvider = StateNotifierProvider<ReviewDocumentNotifier, AsyncValue<void>>((ref) {
   final dataSource = ref.watch(adminRemoteDataSourceProvider);
   return ReviewDocumentNotifier(dataSource, ref);
+});
+
+class UserActionsNotifier extends StateNotifier<AsyncValue<void>> {
+  final AdminRemoteDataSource _dataSource;
+  final Ref _ref;
+
+  UserActionsNotifier(this._dataSource, this._ref) : super(const AsyncValue.data(null));
+
+  Future<void> deleteUser(String id) async {
+    state = const AsyncValue.loading();
+    try {
+      await _dataSource.deleteUser(id);
+      state = const AsyncValue.data(null);
+      _ref.invalidate(adminUsersProvider);
+      _ref.invalidate(platformStatsProvider);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}
+
+final userActionsProvider = StateNotifierProvider<UserActionsNotifier, AsyncValue<void>>((ref) {
+  final dataSource = ref.watch(adminRemoteDataSourceProvider);
+  return UserActionsNotifier(dataSource, ref);
+});
+
+class RegionActionsNotifier extends StateNotifier<AsyncValue<void>> {
+  final AdminRemoteDataSource _dataSource;
+  final Ref _ref;
+
+  RegionActionsNotifier(this._dataSource, this._ref) : super(const AsyncValue.data(null));
+
+  Future<void> createRegion(Map<String, dynamic> data) async {
+    state = const AsyncValue.loading();
+    try {
+      await _dataSource.createRegion(data);
+      state = const AsyncValue.data(null);
+      _ref.invalidate(regionsProvider);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> updateRegion(String id, Map<String, dynamic> data) async {
+    state = const AsyncValue.loading();
+    try {
+      await _dataSource.updateRegion(id, data);
+      state = const AsyncValue.data(null);
+      _ref.invalidate(regionsProvider);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> deleteRegion(String id) async {
+    state = const AsyncValue.loading();
+    try {
+      await _dataSource.deleteRegion(id);
+      state = const AsyncValue.data(null);
+      _ref.invalidate(regionsProvider);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}
+
+final regionActionsProvider = StateNotifierProvider<RegionActionsNotifier, AsyncValue<void>>((ref) {
+  final dataSource = ref.watch(adminRemoteDataSourceProvider);
+  return RegionActionsNotifier(dataSource, ref);
+});
+
+class CityActionsNotifier extends StateNotifier<AsyncValue<void>> {
+  final AdminRemoteDataSource _dataSource;
+  final Ref _ref;
+
+  CityActionsNotifier(this._dataSource, this._ref) : super(const AsyncValue.data(null));
+
+  Future<void> createCity(Map<String, dynamic> data) async {
+    state = const AsyncValue.loading();
+    try {
+      await _dataSource.createCity(data);
+      state = const AsyncValue.data(null);
+      _ref.invalidate(citiesProvider);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> updateCity(String id, Map<String, dynamic> data) async {
+    state = const AsyncValue.loading();
+    try {
+      await _dataSource.updateCity(id, data);
+      state = const AsyncValue.data(null);
+      _ref.invalidate(citiesProvider);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> deleteCity(String id) async {
+    state = const AsyncValue.loading();
+    try {
+      await _dataSource.deleteCity(id);
+      state = const AsyncValue.data(null);
+      _ref.invalidate(citiesProvider);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}
+
+final cityActionsProvider = StateNotifierProvider<CityActionsNotifier, AsyncValue<void>>((ref) {
+  final dataSource = ref.watch(adminRemoteDataSourceProvider);
+  return CityActionsNotifier(dataSource, ref);
 });

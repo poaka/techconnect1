@@ -2,6 +2,8 @@ import '../../../core/network/dio_client.dart';
 import '../../auth/domain/app_user.dart';
 import '../../technicians/domain/category.dart';
 import '../../technicians/domain/technician_profile.dart';
+import '../../technicians/domain/region.dart';
+import '../../technicians/domain/city.dart';
 import '../domain/platform_stats.dart';
 import '../domain/report.dart';
 import '../domain/technician_document.dart';
@@ -83,5 +85,37 @@ class AdminRemoteDataSource {
       'action_taken': actionTaken,
     });
     return Report.fromJson(response.data['data']);
+  }
+
+  Future<void> deleteUser(String id) async {
+    await _client.delete('/admin/users/$id');
+  }
+
+  Future<Region> createRegion(Map<String, dynamic> data) async {
+    final response = await _client.post('/admin/regions', data: data);
+    return Region.fromJson(response.data['data']);
+  }
+
+  Future<Region> updateRegion(String id, Map<String, dynamic> data) async {
+    final response = await _client.put('/admin/regions/$id', data: data);
+    return Region.fromJson(response.data['data']);
+  }
+
+  Future<void> deleteRegion(String id) async {
+    await _client.delete('/admin/regions/$id');
+  }
+
+  Future<City> createCity(Map<String, dynamic> data) async {
+    final response = await _client.post('/admin/cities', data: data);
+    return City.fromJson(response.data['data']);
+  }
+
+  Future<City> updateCity(String id, Map<String, dynamic> data) async {
+    final response = await _client.put('/admin/cities/$id', data: data);
+    return City.fromJson(response.data['data']);
+  }
+
+  Future<void> deleteCity(String id) async {
+    await _client.delete('/admin/cities/$id');
   }
 }

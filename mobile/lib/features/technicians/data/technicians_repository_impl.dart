@@ -4,6 +4,7 @@ import '../domain/city.dart';
 import '../domain/region.dart';
 import '../domain/technician_filter.dart';
 import '../domain/technician_profile.dart';
+import '../domain/technician_document.dart';
 import '../domain/technicians_repository.dart';
 import 'technicians_remote_data_source.dart';
 
@@ -61,6 +62,24 @@ class TechniciansRepositoryImpl implements TechniciansRepository {
   Future<List<Region>> getRegions() async {
     try {
       return await _remoteDataSource.getRegions();
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<List<TechnicianDocument>> getMyDocuments() async {
+    try {
+      return await _remoteDataSource.getMyDocuments();
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<TechnicianDocument> uploadDocument(String filePath, String documentType, String fileName) async {
+    try {
+      return await _remoteDataSource.uploadDocument(filePath, documentType, fileName);
     } catch (e) {
       throw ErrorMapper.mapExceptionToFailure(e);
     }

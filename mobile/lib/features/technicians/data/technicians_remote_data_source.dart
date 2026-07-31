@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
 import '../domain/category.dart';
 import '../domain/city.dart';
 import '../domain/region.dart';
+import '../domain/technician_document.dart';
 import '../domain/technician_filter.dart';
 import '../domain/technician_profile.dart';
 
@@ -51,5 +53,26 @@ class TechniciansRemoteDataSource {
     final response = await _client.get('/technicians/regions');
     final dataList = response.data['data'] as List<dynamic>;
     return dataList.map((item) => Region.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<TechnicianDocument>> getMyDocuments() async {
+    final response = await _client.get('/technicians/me/documents');
+    final dataList = response.data['data'] as List<dynamic>;
+    return dataList.map((item) => TechnicianDocument.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<TechnicianDocument> uploadDocument(String filePath, String documentType, String fileName) async {
+    final formData = FormData.fromMap({
+      'documentType': documentType,
+      'file': await MultipartFile.fromFile(filePath, filename: fileName),
+    });
+    
+    final response = await _client.post(
+      '/technicians/me/documents',
+      data: formData,
+    );
+    
+    final data = response.data['data'] as Map<String, dynamic>;
+    return TechnicianDocument.fromJson(data);
   }
 }

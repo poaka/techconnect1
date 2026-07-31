@@ -66,13 +66,45 @@ class AdminUsersScreen extends ConsumerWidget {
                       Text('Inscrit le: $dateFormatted', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     ],
                   ),
-                  trailing: Chip(
-                    label: Text(
-                      user.role.name.toUpperCase(),
-                      style: TextStyle(color: roleColor, fontSize: 10, fontWeight: FontWeight.bold),
-                    ),
-                    backgroundColor: roleColor.withOpacity(0.1),
-                    side: BorderSide.none,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Chip(
+                        label: Text(
+                          user.role.name.toUpperCase(),
+                          style: TextStyle(color: roleColor, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                        backgroundColor: roleColor.withOpacity(0.1),
+                        side: BorderSide.none,
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Supprimer l\'utilisateur'),
+                              content: Text('Êtes-vous sûr de vouloir supprimer ${user.fullName} ? Cette action est irréversible.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Annuler'),
+                                ),
+                                FilledButton(
+                                  style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    ref.read(userActionsProvider.notifier).deleteUser(user.id);
+                                  },
+                                  child: const Text('Supprimer'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 );
               },

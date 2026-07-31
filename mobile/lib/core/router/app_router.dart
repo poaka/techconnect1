@@ -25,6 +25,8 @@ import '../../features/notifications/presentation/screens/notifications_screen.d
 import '../../features/admin/presentation/screens/admin_categories_screen.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/screens/admin_reports_screen.dart';
+import '../../features/admin/presentation/screens/admin_regions_screen.dart';
+import '../../features/admin/presentation/screens/admin_cities_screen.dart';
 import '../../features/admin/presentation/screens/admin_technicians_screen.dart';
 import '../../features/admin/presentation/screens/admin_users_screen.dart';
 import '../../features/admin/presentation/screens/pending_verifications_screen.dart';
@@ -259,6 +261,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                 GoRoute(
                   path: 'reports',
                   builder: (context, state) => const AdminReportsScreen(),
+                ),
+                GoRoute(
+                  path: 'regions',
+                  builder: (context, state) => const AdminRegionsScreen(),
+                ),
+                GoRoute(
+                  path: 'cities',
+                  builder: (context, state) => const AdminCitiesScreen(),
                 ),
               ],
             ),

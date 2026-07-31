@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../auth/presentation/auth_provider.dart';
+import '../../technicians/presentation/providers/technician_documents_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -147,6 +150,8 @@ class ProfileScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 32),
+                const _TechnicianDocumentsSection(),
               ],
               
               // Paramètres & Support
@@ -449,3 +454,142 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     );
   }
 }
+
+class _TechnicianDocumentsSection extends ConsumerWidget {
+  const _TechnicianDocumentsSection();
+
+  Future<void> _uploadDocument(BuildContext context, WidgetRef ref, String documentType) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: ImageSource.gallery);
+    if (file == null) return;
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Téléchargement en cours...')),
+      );
+    }
+
+    try {
+      await ref.read(uploadDocumentProvider)(file.path, documentType, file.name);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Document téléchargé avec succès'), backgroundColor: AppColors.success),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erreur lors du téléchargement'), backgroundColor: AppColors.error),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final docsAsync = ref.watch(technicianDocumentsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(bottom: 12, left: 4),
+          child: Text(
+            'MES DOCUMENTS',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textSecondary,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: docsAsync.when(
+            data: (docs) {
+              if (docs.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(
+                    child: Text('Aucun document fourni', style: TextStyle(color: AppColors.textSecondary)),
+                  ),
+                );
+              }
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: docs.length,
+                separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.border),
+                itemBuilder: (context, index) {
+                  final doc = docs[index];
+                  Color statusColor = AppColors.textSecondary;
+                  IconData statusIcon = Icons.hourglass_empty;
+                  if (doc.status == 'approved') {
+                    statusColor = AppColors.success;
+                    statusIcon = Icons.check_circle;
+                  } else if (doc.status == 'rejected') {
+                    statusColor = AppColors.error;
+                    statusIcon = Icons.cancel;
+                  }
+
+                  return ListTile(
+                    leading: const Icon(Icons.description_outlined, color: AppColors.primary),
+                    title: Text(doc.documentTypeLabel, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(DateFormat('dd MMM yyyy').format(doc.uploadedAt), style: const TextStyle(fontSize: 12)),
+                        if (doc.rejectionReason != null && doc.status == 'rejected')
+                          Text('Motif: ${doc.rejectionReason}', style: const TextStyle(color: AppColors.error, fontSize: 12)),
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(doc.statusLabel, style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 4),
+                        Icon(statusIcon, color: statusColor, size: 16),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            error: (err, stack) => const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: Text('Erreur de chargement', style: TextStyle(color: AppColors.error))),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            OutlinedButton.icon(
+              icon: const Icon(Icons.badge_outlined),
+              label: const Text('CNI / Passeport'),
+              onPressed: () => _uploadDocument(context, ref, 'id_card'),
+            ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.school_outlined),
+              label: const Text('Certificat'),
+              onPressed: () => _uploadDocument(context, ref, 'certificate'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
