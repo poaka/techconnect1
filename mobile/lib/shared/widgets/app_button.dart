@@ -27,10 +27,10 @@ class AppButton extends StatelessWidget {
       return OutlinedButton(
         onPressed: isLoading ? null : onPressed,
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: buttonColor, width: 1.5),
-          padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
+          side: BorderSide(color: buttonColor, width: 2.0),
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(12.0),
           ),
         ),
         child: _buildChild(buttonColor),
@@ -42,10 +42,11 @@ class AppButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: buttonColor,
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
-        elevation: 0,
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+        elevation: 3,
+        shadowColor: buttonColor.withValues(alpha: 0.5),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(12.0),
         ),
       ),
       child: _buildChild(Colors.white),

@@ -165,12 +165,12 @@ class AdminCitiesScreen extends ConsumerWidget {
                     if (cityId == null) {
                       ref.read(cityActionsProvider.notifier).createCity({
                         'name': controller.text,
-                        'region_id': selectedRegionId,
+                        'regionId': selectedRegionId,
                       });
                     } else {
                       ref.read(cityActionsProvider.notifier).updateCity(cityId, {
                         'name': controller.text,
-                        'region_id': selectedRegionId,
+                        'regionId': selectedRegionId,
                       });
                     }
                     Navigator.pop(ctx);

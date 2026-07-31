@@ -79,24 +79,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text(
-                            user != null
-                                ? 'Bonjour, ${user.fullName} 👋'
-                                : 'Bonjour ! 👋',
-                            style: AppTypography.heading2.copyWith(
-                                fontSize: screenWidth < 360 ? 18 : 20),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Image.asset(
+                            'assets/images/logo.png',
+                            width: 36,
+                            height: 36,
+                            fit: BoxFit.contain,
                           ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Trouvez un artisan qualifié au Cameroun',
-                            style: AppTypography.bodyMedium,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user != null
+                                      ? 'Bonjour, ${user.fullName} 👋'
+                                      : 'Bonjour ! 👋',
+                                  style: AppTypography.heading2.copyWith(
+                                      fontSize: screenWidth < 360 ? 18 : 20),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'TechConnect Cameroun',
+                                  style: AppTypography.bodyMedium.copyWith(color: AppColors.primary, fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

@@ -41,12 +41,11 @@ class TechnicianCard extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 14.0),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14.0),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 15,
             offset: const Offset(0, 4),
           ),
         ],

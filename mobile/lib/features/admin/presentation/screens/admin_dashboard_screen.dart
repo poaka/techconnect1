@@ -15,7 +15,23 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tableau de Bord Administrateur'),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              width: 32,
+              height: 32,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Tableau de Bord',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.category),

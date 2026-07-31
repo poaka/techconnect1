@@ -77,19 +77,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         SizedBox(height: screenHeight * 0.03),
 
-                        // Logo Header
                         Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(16.0),
-                            decoration: const BoxDecoration(
-                              color: AppColors.primarySubtle,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.handyman_rounded,
-                              size: 44,
-                              color: AppColors.primary,
-                            ),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            width: 64,
+                            height: 64,
+                            fit: BoxFit.contain,
                           ),
                         ),
                         const SizedBox(height: 16),

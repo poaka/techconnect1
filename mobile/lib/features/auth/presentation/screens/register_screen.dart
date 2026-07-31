@@ -80,6 +80,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Center(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 const Text(
                   'Rejoignez TechConnect',
                   style: AppTypography.display,

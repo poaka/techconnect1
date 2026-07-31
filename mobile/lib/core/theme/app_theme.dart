@@ -27,27 +27,28 @@ abstract class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 0,
+        elevation: 3,
+        shadowColor: Colors.black.withValues(alpha: 0.2),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          side: const BorderSide(color: AppColors.border, width: 1.0),
+          borderRadius: BorderRadius.circular(16.0),
+          side: BorderSide.none,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.inputBg,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
         hintStyle: AppTypography.bodyMedium,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(12.0),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(12.0),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
