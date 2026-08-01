@@ -187,11 +187,39 @@ class AdminService {
     if (!user) throw ApiError.notFound('Utilisateur non trouvé');
     if (user.role === 'admin') throw ApiError.forbidden('Impossible de supprimer un compte administrateur');
 
+    console.log(`[AdminService.deleteUser] Deleting user ${userId} (role: ${user.role})...`);
+
+    // Clean up dependent technician records if user is a technician
+    const { data: techProfile } = await supabase
+      .from('technician_profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (techProfile) {
+      console.log(`[AdminService.deleteUser] Deleting technician_profile ${techProfile.id} and child tables...`);
+      await supabase.from('technician_documents').delete().eq('technician_id', techProfile.id);
+      await supabase.from('technician_categories').delete().eq('technician_id', techProfile.id);
+      await supabase.from('reviews').delete().eq('technician_id', techProfile.id);
+      await supabase.from('favorites').delete().eq('technician_id', techProfile.id);
+      await supabase.from('service_requests').delete().eq('technician_id', techProfile.id);
+      await supabase.from('technician_profiles').delete().eq('id', techProfile.id);
+    }
+
+    // Clean up dependent client records
+    await supabase.from('notifications').delete().eq('user_id', userId);
+    await supabase.from('favorites').delete().eq('client_id', userId);
+    await supabase.from('reviews').delete().eq('client_id', userId);
+    await supabase.from('service_requests').delete().eq('client_id', userId);
+
+    // Delete user row
     const { error } = await supabase.from('users').delete().eq('id', userId);
     if (error) {
       console.error('[AdminService.deleteUser error]', error);
       throw ApiError.internal('Erreur lors de la suppression de l\'utilisateur');
     }
+
+    console.log(`[AdminService.deleteUser] User ${userId} deleted successfully.`);
     return { success: true };
   }
 
