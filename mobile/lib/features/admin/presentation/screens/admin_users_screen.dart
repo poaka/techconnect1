@@ -21,7 +21,18 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Utilisateurs'),
+        title: usersAsync.when(
+          data: (users) {
+            if (_selectedRole == 'client') {
+              return Text('Clients (${users.length})');
+            } else if (_selectedRole == 'technician') {
+              return Text('Techniciens (${users.length})');
+            }
+            return Text('Utilisateurs (${users.length})');
+          },
+          loading: () => const Text('Utilisateurs'),
+          error: (_, __) => const Text('Utilisateurs'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

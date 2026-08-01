@@ -60,6 +60,15 @@ class AdminController {
     } catch (error) { next(error); }
   }
 
+  // Service Requests
+  static async getServiceRequests(req, res, next) {
+    try {
+      const { status } = req.query;
+      const requests = await AdminService.getServiceRequests({ status });
+      res.status(200).json({ data: requests });
+    } catch (error) { next(error); }
+  }
+
   // Categories
   static async getCategories(req, res, next) {
     try {

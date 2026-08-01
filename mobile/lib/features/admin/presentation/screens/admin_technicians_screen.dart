@@ -15,7 +15,16 @@ class AdminTechniciansScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(filterVerified ? 'Techniciens Vérifiés' : 'Techniciens'),
+        title: techniciansAsync.when(
+          data: (allTechnicians) {
+            final count = filterVerified 
+                ? allTechnicians.where((t) => t.isVerified).length 
+                : allTechnicians.length;
+            return Text(filterVerified ? 'Techniciens Vérifiés ($count)' : 'Techniciens ($count)');
+          },
+          loading: () => Text(filterVerified ? 'Techniciens Vérifiés' : 'Techniciens'),
+          error: (_, __) => Text(filterVerified ? 'Techniciens Vérifiés' : 'Techniciens'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

@@ -25,6 +25,56 @@ class _DocumentReviewDialogState extends ConsumerState<DocumentReviewDialog> {
     super.dispose();
   }
 
+  String _resolveUrl(String rawUrl) {
+    if (rawUrl.isEmpty) return '';
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      return rawUrl;
+    }
+    const base = 'https://techconnect1-api.onrender.com';
+    final cleanPath = rawUrl.startsWith('/') ? rawUrl : '/$rawUrl';
+    return '$base$cleanPath';
+  }
+
+  void _openFullScreenViewer(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) => const CircularProgressIndicator(color: Colors.white),
+                  errorWidget: (context, url, error) => const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text('Impossible de charger le document en haute résolution.', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _approve() {
     ref.read(reviewDocumentProvider.notifier).reviewDocument(
       documentId: widget.document.id,
@@ -52,6 +102,9 @@ class _DocumentReviewDialogState extends ConsumerState<DocumentReviewDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final fullUrl = _resolveUrl(widget.document.fileUrl);
+    final isPdf = widget.document.fileUrl.toLowerCase().endsWith('.pdf');
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -67,40 +120,136 @@ class _DocumentReviewDialogState extends ConsumerState<DocumentReviewDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Vérification: ${widget.document.documentType.toUpperCase()}',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Vérification: ${widget.document.documentType.toUpperCase()}',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               
               if (widget.document.technician != null) ...[
-                Text(
-                  'Technicien: ${widget.document.technician!.fullName}',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Technicien: ${widget.document.technician!.fullName}',
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text('Email: ${widget.document.technician!.email ?? "N/A"}'),
+                      Text('Ville: ${widget.document.technician!.cityName ?? "N/A"}'),
+                    ],
+                  ),
                 ),
-                Text('Email: ${widget.document.technician!.email ?? "N/A"}'),
-                Text('Ville: ${widget.document.technician!.cityName ?? "N/A"}'),
                 const SizedBox(height: 16),
               ],
 
-              // Document Preview
-              Container(
-                height: 250,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+              // Document Preview Card
+              GestureDetector(
+                onTap: (!isPdf && fullUrl.isNotEmpty) ? () => _openFullScreenViewer(context, fullUrl) : null,
+                child: Container(
+                  height: 250,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: isPdf
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.picture_as_pdf, size: 64, color: Colors.red),
+                              SizedBox(height: 8),
+                              Text('Document PDF', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        )
+                      : fullUrl.isEmpty
+                          ? const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.file_present_outlined, size: 64, color: Colors.grey),
+                                  SizedBox(height: 8),
+                                  Text('Aucun fichier joint'),
+                                ],
+                              ),
+                            )
+                          : Stack(
+                              children: [
+                                InteractiveViewer(
+                                  minScale: 1.0,
+                                  maxScale: 3.0,
+                                  child: Center(
+                                    child: CachedNetworkImage(
+                                      imageUrl: fullUrl,
+                                      fit: BoxFit.contain,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      placeholder: (context, url) => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                      errorWidget: (context, url, error) => Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.broken_image, size: 56, color: Colors.grey),
+                                          const SizedBox(height: 8),
+                                          const Text(
+                                            'Aperçu indisponible',
+                                            style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            fullUrl,
+                                            style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 8,
+                                  right: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.6),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.fullscreen, color: Colors.white, size: 16),
+                                        SizedBox(width: 4),
+                                        Text('Toucher pour agrandir', style: TextStyle(color: Colors.white, fontSize: 11)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: widget.document.fileUrl.toLowerCase().endsWith('.pdf')
-                  ? const Center(child: Icon(Icons.picture_as_pdf, size: 64, color: Colors.red))
-                  : CachedNetworkImage(
-                      imageUrl: widget.document.fileUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 64, color: Colors.grey),
-                    ),
               ),
 
               const SizedBox(height: 24),
@@ -126,7 +275,7 @@ class _DocumentReviewDialogState extends ConsumerState<DocumentReviewDialog> {
                         foregroundColor: AppColors.error,
                         side: const BorderSide(color: AppColors.error),
                       ),
-                      child: const Text('Rejeter'),
+                      child: Text(_isRejecting ? 'Confirmer le rejet' : 'Rejeter'),
                     ),
                   ),
                   const SizedBox(width: 16),

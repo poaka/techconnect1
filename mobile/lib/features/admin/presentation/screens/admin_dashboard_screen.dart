@@ -61,7 +61,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   _StatItem('Techniciens', stats.techniciansCount, Icons.engineering_outlined, Colors.orange, () => context.go('/admin/dashboard/technicians')),
                   _StatItem('Vérifiés', stats.verifiedTechniciansCount, Icons.verified_user_outlined, Colors.green, () => context.go('/admin/dashboard/technicians?verified=true')),
                   _StatItem('Vérifications en attente', stats.pendingVerificationsCount, Icons.fact_check_outlined, Colors.orange, () => context.go('/admin/verifications')),
-                  _StatItem('Demandes', stats.serviceRequestsCount, Icons.assignment_outlined, Colors.purple, null),
+                  _StatItem('Demandes', stats.serviceRequestsCount, Icons.assignment_outlined, Colors.purple, () => context.go('/admin/dashboard/requests')),
                   _StatItem('Rejetées', stats.rejectedVerificationsCount, Icons.cancel_outlined, Colors.red, () => context.go('/admin/verifications/rejected')),
                   _StatItem('Signalements', stats.reportsCount, Icons.report_problem, Colors.redAccent, () => context.go('/admin/dashboard/reports')),
                 ]),

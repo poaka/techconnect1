@@ -244,6 +244,36 @@ class AdminService {
     return data || [];
   }
 
+  // ── Service Requests ──────────────────────────────────────────────────────
+  static async getServiceRequests({ status = '' } = {}) {
+    if (!supabase) return [];
+
+    let query = supabase
+      .from('service_requests')
+      .select(`
+        id, status, description, address, created_at, updated_at, completed_at,
+        category:categories(id, name, icon),
+        client:users!client_id(id, full_name, email, phone, avatar_url),
+        technician:technician_profiles!technician_id(
+          id, user:users!user_id(id, full_name, email, phone, avatar_url),
+          city:cities(id, name)
+        ),
+        review:reviews(id, rating, comment)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error('[AdminService.getServiceRequests error]', error);
+      throw ApiError.internal('Erreur lors de la récupération des demandes de service');
+    }
+    return data || [];
+  }
+
   // ── Categories ────────────────────────────────────────────────────────────
   static async getCategories() {
     if (!supabase) return [];

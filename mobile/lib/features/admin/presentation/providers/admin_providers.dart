@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/dio_client.dart';
+import '../../../../shared/models/service_request.dart';
 import '../../../auth/domain/app_user.dart';
 import '../../../auth/presentation/auth_provider.dart';
 import '../../../technicians/domain/category.dart';
@@ -39,6 +40,11 @@ final adminUsersProvider = FutureProvider.autoDispose.family<List<AppUser>, Stri
 final adminTechniciansProvider = FutureProvider.autoDispose<List<TechnicianProfile>>((ref) async {
   final dataSource = ref.watch(adminRemoteDataSourceProvider);
   return dataSource.getTechnicians();
+});
+
+final adminServiceRequestsProvider = FutureProvider.autoDispose.family<List<ServiceRequest>, String?>((ref, status) async {
+  final dataSource = ref.watch(adminRemoteDataSourceProvider);
+  return dataSource.getServiceRequests(status: status);
 });
 
 final adminCategoriesProvider = FutureProvider.autoDispose<List<Category>>((ref) async {

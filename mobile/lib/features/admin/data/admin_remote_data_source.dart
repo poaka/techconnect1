@@ -1,4 +1,5 @@
 import '../../../core/network/dio_client.dart';
+import '../../../shared/models/service_request.dart';
 import '../../auth/domain/app_user.dart';
 import '../../technicians/domain/category.dart';
 import '../../technicians/domain/technician_profile.dart';
@@ -12,6 +13,13 @@ class AdminRemoteDataSource {
   final DioClient _client;
 
   AdminRemoteDataSource(this._client);
+
+  Future<List<ServiceRequest>> getServiceRequests({String? status}) async {
+    final queryParams = status != null && status.isNotEmpty ? {'status': status} : null;
+    final response = await _client.get('/admin/requests', queryParameters: queryParams);
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((json) => ServiceRequest.fromJson(json as Map<String, dynamic>)).toList();
+  }
 
   Future<PlatformStats> getPlatformStats() async {
     final response = await _client.get('/admin/stats');

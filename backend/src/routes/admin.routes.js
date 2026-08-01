@@ -41,6 +41,9 @@ router.delete('/users/:userId', AdminController.deleteUser);
 // ── Technicians ───────────────────────────────────────────────────────────
 router.get('/technicians', AdminController.getTechnicians);
 
+// ── Service Requests ──────────────────────────────────────────────────────
+router.get('/requests', AdminController.getServiceRequests);
+
 // ── Categories ────────────────────────────────────────────────────────────
 router.get('/categories', AdminController.getCategories);
 router.post(

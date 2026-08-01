@@ -29,6 +29,7 @@ import '../../features/admin/presentation/screens/admin_regions_screen.dart';
 import '../../features/admin/presentation/screens/admin_cities_screen.dart';
 import '../../features/admin/presentation/screens/admin_technicians_screen.dart';
 import '../../features/admin/presentation/screens/admin_users_screen.dart';
+import '../../features/admin/presentation/screens/admin_service_requests_screen.dart';
 import '../../features/admin/presentation/screens/pending_verifications_screen.dart';
 import '../../features/admin/presentation/screens/rejected_verifications_screen.dart';
 import '../../features/auth/domain/user_role.dart';
@@ -262,6 +263,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 GoRoute(
                   path: 'categories',
                   builder: (context, state) => const AdminCategoriesScreen(),
+                ),
+                GoRoute(
+                  path: 'requests',
+                  builder: (context, state) => const AdminServiceRequestsScreen(),
                 ),
                 GoRoute(
                   path: 'reports',
