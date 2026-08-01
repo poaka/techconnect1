@@ -20,14 +20,22 @@ class TechnicianProfileScreen extends ConsumerWidget {
   });
 
   Future<void> _openWhatsApp(BuildContext context, String? rawPhone) async {
-    if (rawPhone == null || rawPhone.isEmpty) {
+    if (rawPhone == null || rawPhone.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Numéro de téléphone non renseigné pour cet artisan.')),
       );
       return;
     }
-    final cleanPhone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
-    final url = 'https://wa.me/$cleanPhone?text=Bonjour,%20je%20vous%20contacte%20depuis%20l\'application%20TechConnect%20Cameroun.';
+    String digits = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Auto-formatting for Cameroonian numbers (+237)
+    if (digits.startsWith('0') && digits.length == 10) {
+      digits = '237${digits.substring(1)}';
+    } else if (digits.length == 9 && (digits.startsWith('6') || digits.startsWith('2'))) {
+      digits = '237$digits';
+    }
+
+    final url = 'https://wa.me/$digits?text=Bonjour,%20je%20vous%20contacte%20depuis%20l\'application%20TechConnect%20Cameroun.';
 
     try {
       final launched = await launchUrlString(url, mode: LaunchMode.externalApplication);

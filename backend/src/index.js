@@ -15,7 +15,15 @@ const notificationsRoutes = require('./routes/notifications.routes');
 const adminRoutes = require('./routes/admin.routes');
 const reportsRoutes = require('./routes/report.routes');
 
+const fs = require('fs');
+
 const app = express();
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Security and utility middlewares
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -23,8 +31,10 @@ app.use(cors({ origin: env.corsOrigin }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static admin dashboard
+// Serve static admin dashboard & uploaded documents
 app.use('/admin/public', express.static(path.join(__dirname, '../public')));
+app.use('/uploads', express.static(uploadsDir));
+app.use('/api/uploads', express.static(uploadsDir));
 app.get('/admin/verify', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });

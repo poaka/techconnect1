@@ -80,16 +80,29 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
       return;
     }
 
+    String cleanPhoneNumber(String input) {
+      if (input.trim().isEmpty) return '';
+      String digits = input.replaceAll(RegExp(r'[^0-9]'), '');
+      if (digits.startsWith('0') && digits.length == 10) {
+        return '+237${digits.substring(1)}';
+      } else if (digits.length == 9 && (digits.startsWith('6') || digits.startsWith('2'))) {
+        return '+237$digits';
+      } else if (digits.startsWith('237')) {
+        return '+$digits';
+      }
+      return input.trim();
+    }
+
     final data = {
       'bio': _bioController.text.trim(),
       'yearsExperience': int.tryParse(_yearsController.text) ?? 0,
       'priceMin': double.tryParse(_priceMinController.text) ?? 0.0,
       'priceMax': double.tryParse(_priceMaxController.text) ?? 0.0,
-      'whatsapp': _whatsappController.text.trim(),
+      'whatsapp': cleanPhoneNumber(_whatsappController.text),
       'cityId': _selectedCityId,
       'categoryIds': [_selectedCategoryId],
       'fullName': _fullNameController.text.trim(),
-      'phone': _phoneController.text.trim(),
+      'phone': cleanPhoneNumber(_phoneController.text),
     };
 
     final profile = await ref.read(updateProfileProvider.notifier).updateProfile(data);

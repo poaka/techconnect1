@@ -339,11 +339,31 @@ class TechniciansService {
       throw ApiError.badRequest('Fichier manquant');
     }
 
+    const fs = require('fs');
+    const path = require('path');
+
+    // Save file buffer to uploads/ directory on disk
+    const ext = path.extname(file.originalname) || '.jpg';
+    const cleanOriginalName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filename = `${Date.now()}_${cleanOriginalName}${ext}`;
+    const uploadsDir = path.join(__dirname, '../../uploads');
+
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const filePath = path.join(uploadsDir, filename);
+    if (file.buffer) {
+      fs.writeFileSync(filePath, file.buffer);
+    }
+
+    const relativeUrl = `uploads/${filename}`;
+
     const doc = {
       id: `doc-${Date.now()}`,
       technician_id: `tech-${userId}`,
       document_type: documentType,
-      file_url: `uploads/${file.originalname}`,
+      file_url: relativeUrl,
       status: 'pending',
       uploaded_at: new Date().toISOString()
     };
@@ -358,14 +378,17 @@ class TechniciansService {
         {
           technician_id: profile.id,
           document_type: documentType,
-          file_url: doc.file_url,
+          file_url: relativeUrl,
           status: 'pending'
         }
       ])
       .select()
       .single();
 
-    if (error) throw ApiError.internal('Erreur lors de l\'enregistrement du document');
+    if (error) {
+      console.error('[TechniciansService.uploadDocument DB error]', error);
+      throw ApiError.internal('Erreur lors de l\'enregistrement du document');
+    }
     return savedDoc;
   }
 
