@@ -17,16 +17,13 @@ void main() async {
   
   final notifier = container.read(technicianListNotifierProvider.notifier);
   
-  print('Fetching without filter...');
-  await notifier.fetchTechnicians(isRefresh: true);
-  var state = container.read(technicianListNotifierProvider);
-  print('State items: ${state.items.length}, error: ${state.errorMessage}');
+  // ignore: avoid_print
+  print('Fetching technicians...');
+  await notifier.fetchTechnicians(filter: const TechnicianFilter(), isRefresh: true);
+  final state = container.read(technicianListNotifierProvider);
+  // ignore: avoid_print
+  print('Found ${state.items.length} technicians. Error: ${state.errorMessage}');
   
-  print('Fetching with category filter...');
-  final filter = const TechnicianFilter(categoryId: '20000000-0000-0000-0000-000000000001');
-  await notifier.fetchTechnicians(filter: filter, isRefresh: true);
-  state = container.read(technicianListNotifierProvider);
-  print('State items: ${state.items.length}, error: ${state.errorMessage}');
-  
+  // ignore: avoid_print
   print('Done.');
 }

@@ -5,9 +5,6 @@ import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/register_screen.dart';
 import 'package:mobile/shared/widgets/app_button.dart';
 import 'package:mobile/features/notifications/presentation/screens/notifications_screen.dart';
-import 'package:mobile/features/client_dashboard/presentation/screens/client_dashboard_screen.dart';
-import 'package:mobile/features/technician_dashboard/presentation/screens/technician_dashboard_screen.dart';
-import 'package:mobile/features/requests/presentation/screens/request_list_screen.dart';
 
 void main() {
   testWidgets('LoginScreen renders email, password fields and login button', (WidgetTester tester) async {

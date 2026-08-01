@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/failures.dart';
-import '../../../../core/network/dio_client.dart';
 import '../../../auth/presentation/auth_provider.dart';
 import '../../data/technicians_remote_data_source.dart';
 import '../../data/technicians_repository_impl.dart';
