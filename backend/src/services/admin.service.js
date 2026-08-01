@@ -17,6 +17,7 @@ class AdminService {
           categories:technician_categories(category:categories!category_id(id, name, icon))
         )
       `)
+      .eq('status', 'pending')
       .order('uploaded_at', { ascending: false });
 
     if (error) {
