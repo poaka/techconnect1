@@ -135,7 +135,7 @@ class AdminService {
       { count: pendingReportsCount }
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
-      supabase.from('technician_profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'technician'),
       supabase.from('technician_profiles').select('*', { count: 'exact', head: true }).eq('verified', true),
       supabase.from('service_requests').select('*', { count: 'exact', head: true }),
       supabase.from('service_requests').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
