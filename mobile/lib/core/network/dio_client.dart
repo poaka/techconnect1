@@ -9,16 +9,21 @@ String get defaultApiBaseUrl {
   const envUrl = String.fromEnvironment('API_BASE_URL');
   if (envUrl.isNotEmpty) return envUrl;
 
-  if (kIsWeb) {
+  if (kDebugMode) {
+    if (kIsWeb) {
+      return 'http://localhost:5000/api';
+    }
+
+    if (Platform.isAndroid) {
+      // 10.0.2.2 is the official QEMU host loopback alias for Android Emulators.
+      return 'http://10.0.2.2:5000/api';
+    }
+
     return 'http://localhost:5000/api';
   }
 
-  if (Platform.isAndroid) {
-    // 10.0.2.2 is the official QEMU host loopback alias for Android Emulators.
-    return 'http://10.0.2.2:5000/api';
-  }
-
-  return 'http://localhost:5000/api';
+  // Release mode / Production URL on Render
+  return 'https://techconnect1-api.onrender.com/api';
 }
 
 class DioClient {
