@@ -31,13 +31,9 @@ app.use(cors({ origin: env.corsOrigin }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static admin dashboard & uploaded documents
-app.use('/admin/public', express.static(path.join(__dirname, '../public')));
+// Serve local uploaded documents (fallback)
 app.use('/uploads', express.static(uploadsDir));
 app.use('/api/uploads', express.static(uploadsDir));
-app.get('/admin/verify', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/admin.html'));
-});
 
 // Root welcome route
 app.get('/', (req, res) => {

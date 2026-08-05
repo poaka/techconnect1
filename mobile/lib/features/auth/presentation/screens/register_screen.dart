@@ -156,18 +156,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: Icons.email_outlined,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) return 'L\'email est requis';
-                    if (!val.contains('@')) return 'Adresse email invalide';
+                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                    if (!emailRegex.hasMatch(val.trim())) {
+                      return 'Veuillez entrer une adresse email valide.';
+                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 14),
 
                 AppTextField(
-                  label: 'Téléphone (optionnel)',
+                  label: 'Téléphone',
                   hint: 'ex: +237699999999',
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   prefixIcon: Icons.phone_outlined,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) return 'Le numéro de téléphone est requis';
+                    final phoneRegex = RegExp(r'^\+?[0-9]{9,15}$');
+                    if (!phoneRegex.hasMatch(val.trim())) {
+                      return 'Veuillez entrer un numéro valide (min. 9 chiffres).';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 14),
 

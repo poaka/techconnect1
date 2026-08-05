@@ -118,8 +118,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             if (value == null || value.trim().isEmpty) {
                               return 'L\'email est requis';
                             }
-                            if (!value.contains('@')) {
-                              return 'Adresse email invalide';
+                            final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                            if (!emailRegex.hasMatch(value.trim())) {
+                              return 'Veuillez entrer une adresse email valide.';
                             }
                             return null;
                           },

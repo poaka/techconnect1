@@ -6,6 +6,7 @@ import '../../features/auth/presentation/auth_provider.dart';
 import '../../features/auth/presentation/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/technicians/presentation/screens/categories_screen.dart';
 import '../../features/technicians/presentation/screens/home_screen.dart';
@@ -45,7 +46,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final authState = ref.read(authNotifierProvider);
       final loc = state.matchedLocation;
-      final isAuthPage = loc == '/login' || loc == '/register';
+      final isAuthPage = loc == '/login' || loc == '/register' || loc == '/welcome';
       final isSplash = loc == '/';
 
       // Stay on splash while loading
@@ -72,17 +73,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           return isAdmin ? '/admin/dashboard' : '/technician/dashboard';
         }
       } else {
-        // Unauthenticated: allow public-access routes
+        // Unauthenticated: strictly enforce gateway
         const publicPrefixes = [
           '/login',
           '/register',
-          '/home',
-          '/directory',
-          '/technicians/',
+          '/welcome',
         ];
-        if (isSplash) return null;
+        
+        // After splash loading finishes, if still unauth -> redirect to welcome
+        if (isSplash) return '/welcome';
+        
         final isPublic = publicPrefixes.any((p) => loc.startsWith(p));
-        if (!isPublic) return '/login';
+        if (!isPublic) return '/welcome'; // Strict enforcement
       }
       return null;
     },
@@ -99,6 +101,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/welcome',
+        builder: (context, state) => const WelcomeScreen(),
       ),
 
       // ─── Technician Onboarding (full-screen, outside shell) ────────────────
