@@ -131,6 +131,7 @@ class TechniciansService {
     }
 
     query = query
+      .order('verified', { ascending: false, nullsFirst: false })
       .order('rating_avg', { ascending: false })
       .range(offset, offset + limitNum - 1);
 

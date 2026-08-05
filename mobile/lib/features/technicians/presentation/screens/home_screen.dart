@@ -287,17 +287,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => context.push('/directory'),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text('Tout explorer',
-                          style: TextStyle(fontSize: 13)),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -328,9 +317,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: technicianListState.items.length > 5
-                        ? 5
-                        : technicianListState.items.length,
+                    itemCount: technicianListState.items.length,
                     itemBuilder: (context, index) {
                       final profile = technicianListState.items[index];
                       return TechnicianCard(
