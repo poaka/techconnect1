@@ -256,7 +256,7 @@ export default function App() {
       <section id="features" className="features-section">
         <div className="container">
           <div className="section-header">
-            <div className="badge-tag">Fonctionnalités V1</div>
+            <div className="badge-tag">Fonctionnalités </div>
             <h2 className="section-title">La confiance au cœur du produit</h2>
             <p className="section-subtitle">
               Tout ce dont vous avez besoin pour trouver et gérer vos prestations en toute transparence.
@@ -333,7 +333,7 @@ export default function App() {
           <div className="download-box">
             <div className="apk-badge-info">
               <Smartphone size={18} />
-              <span>Version APK Officielle Android — MVP 1.0</span>
+              <span>Version APK Officielle Android </span>
             </div>
 
             <h2>Téléchargez l'application maintenant</h2>
@@ -343,7 +343,7 @@ export default function App() {
 
             <a href={apkUrl} download="TechConnect-Cameroun.apk" className="btn-primary" style={{ background: '#FFFFFF', color: 'var(--primary-dark)', fontSize: '1.1rem', padding: '1.1rem 2.5rem' }}>
               <Download size={24} color="var(--primary)" />
-              <span style={{ fontWeight: '800' }}>Télécharger l'APK (51.4 MB)</span>
+              <span style={{ fontWeight: '800' }}>Télécharger l'APK (58.9 MB)</span>
             </a>
 
             {/* Direct Install Instructions Box */}
@@ -413,9 +413,9 @@ export default function App() {
             <div>
               <h4 className="footer-heading">Projet</h4>
               <ul className="footer-links">
-                <li><span>Projet de Fin d'Études (Licence)</span></li>
+                <li><span>Projet de Fin d'Études (bachelor degree)</span></li>
                 <li><span>Ville pilote : Yaoundé</span></li>
-                <li><span>Statut : MVP V1.0 Live</span></li>
+                <li><span>Statut : MVP V1 </span></li>
               </ul>
             </div>
           </div>
