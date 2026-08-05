@@ -33,9 +33,7 @@ export default function App() {
         <div className="container">
           <div className="nav-wrapper">
             <a href="#" className="logo-container">
-              <div className="logo-icon">
-                <ShieldCheck size={26} />
-              </div>
+              <img src="/logo.png" alt="TechConnect Logo" style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'contain', background: 'white', padding: '2px', border: '1px solid var(--border)' }} />
               <div className="logo-text">
                 TechConnect <span>Cameroun</span>
               </div>
