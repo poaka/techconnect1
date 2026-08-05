@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>TechConnect a besoin d'accéder à votre galerie pour changer votre photo de profil ou uploader des documents.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>TechConnect a besoin d'accéder à votre caméra pour prendre une photo de profil ou des documents.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>

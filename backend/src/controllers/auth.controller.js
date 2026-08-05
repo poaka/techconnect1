@@ -59,6 +59,18 @@ class AuthController {
       next(error);
     }
   }
+
+  static async uploadAvatar(req, res, next) {
+    try {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const result = await AuthService.uploadAvatar(req.user.id, req.file, baseUrl);
+      res.status(200).json({
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = AuthController;

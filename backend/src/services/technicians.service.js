@@ -332,64 +332,91 @@ class TechniciansService {
 
   static async uploadDocument(userId, documentType, file) {
     if (!['id_card', 'certificate'].includes(documentType)) {
-      throw ApiError.badRequest('Type de document invalide');
+      throw ApiError.badRequest('Type de document invalide. Valeurs acceptées: id_card, certificate');
     }
 
     if (!file) {
       throw ApiError.badRequest('Fichier manquant');
     }
 
-    const fs = require('fs');
     const path = require('path');
-
-    // Save file buffer to uploads/ directory on disk
     const ext = path.extname(file.originalname) || '.jpg';
-    const cleanOriginalName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const filename = `${Date.now()}_${cleanOriginalName}${ext}`;
-    const uploadsDir = path.join(__dirname, '../../uploads');
+    const cleanName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filename = `${Date.now()}_${cleanName}${ext}`;
 
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    // ── Supabase Storage path ─────────────────────────────────────────────────
+    const storagePath = `technicians/${userId}/${filename}`;
+    let fileUrl;
+
+    if (supabase) {
+      console.log(`[TechniciansService.uploadDocument] Uploading to Supabase Storage: ${storagePath}`);
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(storagePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('[TechniciansService.uploadDocument] Storage upload error:', uploadError);
+        throw ApiError.internal('Erreur lors du téléversement du fichier dans le stockage');
+      }
+
+      console.log(`[TechniciansService.uploadDocument] File uploaded: ${uploadData.path}`);
+
+      // Generate a signed URL valid for 1 year (admins/technician views)
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from('documents')
+        .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
+
+      if (signedError) {
+        console.error('[TechniciansService.uploadDocument] Signed URL error:', signedError);
+        // Still store the path so admin can generate a URL later
+        fileUrl = storagePath;
+      } else {
+        fileUrl = signedData.signedUrl;
+      }
+
+      // ── Insert into technician_documents table ────────────────────────────
+      const profile = await this._ensureProfileExists(userId);
+
+      const { data: savedDoc, error: dbError } = await supabase
+        .from('technician_documents')
+        .insert([{
+          technician_id: profile.id,
+          document_type: documentType,
+          file_url: fileUrl,
+          status: 'pending',
+        }])
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('[TechniciansService.uploadDocument] DB insert error:', dbError);
+        throw ApiError.internal('Erreur lors de l\'enregistrement du document en base de données');
+      }
+
+      console.log(`[TechniciansService.uploadDocument] Document saved. id=${savedDoc.id} type=${documentType}`);
+      return savedDoc;
     }
 
-    const filePath = path.join(uploadsDir, filename);
-    if (file.buffer) {
-      fs.writeFileSync(filePath, file.buffer);
-    }
+    // ── Local fallback (no Supabase) — write to disk ──────────────────────────
+    const fs = require('fs');
+    const uploadsDir = require('path').join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+    const filePath = require('path').join(uploadsDir, filename);
+    if (file.buffer) fs.writeFileSync(filePath, file.buffer);
+    fileUrl = `uploads/${filename}`;
 
-    const relativeUrl = `uploads/${filename}`;
-
-    const doc = {
+    return {
       id: `doc-${Date.now()}`,
       technician_id: `tech-${userId}`,
       document_type: documentType,
-      file_url: relativeUrl,
+      file_url: fileUrl,
       status: 'pending',
-      uploaded_at: new Date().toISOString()
+      uploaded_at: new Date().toISOString(),
     };
-
-    if (!supabase) return doc;
-
-    const profile = await this._ensureProfileExists(userId);
-
-    const { data: savedDoc, error } = await supabase
-      .from('technician_documents')
-      .insert([
-        {
-          technician_id: profile.id,
-          document_type: documentType,
-          file_url: relativeUrl,
-          status: 'pending'
-        }
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('[TechniciansService.uploadDocument DB error]', error);
-      throw ApiError.internal('Erreur lors de l\'enregistrement du document');
-    }
-    return savedDoc;
   }
 
   static async getMyDocuments(userId) {
@@ -403,9 +430,31 @@ class TechniciansService {
       .eq('technician_id', profile.id)
       .order('uploaded_at', { ascending: false });
 
-    if (error) throw ApiError.internal('Erreur lors de la récupération des documents');
-    return data;
+    if (error) {
+      console.error('[TechniciansService.getMyDocuments] DB error:', error);
+      throw ApiError.internal('Erreur lors de la récupération des documents');
+    }
+
+    // Refresh signed URLs so they don't expire (each call gives fresh 1-year URLs)
+    if (!data || data.length === 0) return [];
+
+    const refreshed = await Promise.all(
+      data.map(async (doc) => {
+        // Only refresh if the file_url looks like a storage path (no http)
+        if (!doc.file_url || doc.file_url.startsWith('http')) return doc;
+
+        const { data: signed, error: signErr } = await supabase.storage
+          .from('documents')
+          .createSignedUrl(doc.file_url, 60 * 60 * 24 * 365);
+
+        if (signErr || !signed) return doc;
+        return { ...doc, file_url: signed.signedUrl };
+      })
+    );
+
+    return refreshed;
   }
+
 
   /**
    * GET /api/technicians/me/stats

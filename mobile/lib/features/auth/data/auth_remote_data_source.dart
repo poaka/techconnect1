@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/network/dio_client.dart';
 import '../domain/app_user.dart';
 import '../domain/user_role.dart';
@@ -73,5 +75,17 @@ class AuthRemoteDataSource {
         'newPassword': newPassword,
       },
     );
+  }
+
+  Future<String> uploadAvatar(String filePath) async {
+    final formData = FormData.fromMap({
+      'avatar': await MultipartFile.fromFile(filePath),
+    });
+
+    final response = await _client.post(
+      '/auth/me/avatar',
+      data: formData,
+    );
+    return response.data['data']['avatarUrl'] as String;
   }
 }

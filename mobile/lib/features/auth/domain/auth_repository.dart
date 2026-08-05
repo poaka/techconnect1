@@ -27,4 +27,6 @@ abstract class AuthRepository {
     required String oldPassword,
     required String newPassword,
   });
+
+  Future<String> uploadAvatar(String filePath);
 }

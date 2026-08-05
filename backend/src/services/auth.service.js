@@ -183,6 +183,24 @@ class AuthService {
       }
 
       delete user.password_hash;
+      
+      // Fetch technician profile if applicable, so frontend knows it's complete
+      if (user.role === 'technician') {
+        const { data: techProfile } = await supabase
+          .from('technician_profiles')
+          .select(`
+            id, bio, years_experience, price_min, price_max, whatsapp, verified, availability, rating_avg, rating_count,
+            city:cities(id, name, region:regions(id, name)),
+            categories:technician_categories(category:categories(id, name, icon))
+          `)
+          .eq('user_id', user.id)
+          .single();
+
+        if (techProfile) {
+          user.technician_profile = techProfile;
+        }
+      }
+
       const token = this.generateToken(user);
       console.log('[AuthService.login] Login successful for user:', user.id);
 
@@ -287,6 +305,74 @@ class AuthService {
 
     return this.getMe(userId);
   }
+
+  static async uploadAvatar(userId, file, baseUrl = '') {
+    if (!file) {
+      throw ApiError.badRequest('Fichier image manquant');
+    }
+
+    const path = require('path');
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw ApiError.badRequest('Format non autorisé. Formats acceptés: JPEG, PNG, WEBP');
+    }
+
+    const ext = path.extname(file.originalname) || '.jpg';
+    const filename = `avatar_${userId}_${Date.now()}${ext}`;
+
+    if (supabase) {
+      // ── Upload to Supabase Storage (avatars — public bucket) ───────────────
+      const storagePath = `users/${filename}`;
+      console.log(`[AuthService.uploadAvatar] Uploading to Supabase Storage: ${storagePath}`);
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(storagePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true, // overwrite previous avatar with same name
+        });
+
+      if (uploadError) {
+        console.error('[AuthService.uploadAvatar] Storage upload error:', uploadError);
+        throw ApiError.internal('Erreur lors du téléversement de la photo de profil');
+      }
+
+      // Get the public URL (avatars bucket is public)
+      const { data: publicUrlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(storagePath);
+
+      const avatarUrl = publicUrlData.publicUrl;
+      console.log(`[AuthService.uploadAvatar] Public URL: ${avatarUrl}`);
+
+      const { error: dbError } = await supabase
+        .from('users')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', userId);
+
+      if (dbError) {
+        console.error('[AuthService.uploadAvatar] DB update error:', dbError);
+        throw ApiError.internal('Erreur lors de la mise à jour de l\'avatar');
+      }
+
+      return { avatarUrl };
+    }
+
+    // ── Local fallback — write to disk ────────────────────────────────────────
+    const fs = require('fs');
+    const uploadsDir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+    if (file.buffer) fs.writeFileSync(path.join(uploadsDir, filename), file.buffer);
+    const avatarUrl = baseUrl ? `${baseUrl}/uploads/${filename}` : `uploads/${filename}`;
+
+    for (const u of mockUsers.values()) {
+      if (u.id === userId) { u.avatar_url = avatarUrl; break; }
+    }
+
+    console.log(`[AuthService.uploadAvatar] Avatar saved locally for user ${userId}: ${avatarUrl}`);
+    return { avatarUrl };
+  }
+
 
   static async changePassword(userId, oldPassword, newPassword) {
     console.log(`[AuthService.changePassword] Request to change password for user: ${userId}`);

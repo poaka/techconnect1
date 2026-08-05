@@ -12,7 +12,7 @@ class AdminService {
         id, document_type, file_url, status, rejection_reason, uploaded_at, reviewed_at,
         technician:technician_profiles!technician_id(
           id, verified, years_experience, price_min, price_max, bio,
-          user:users!user_id(id, full_name, email, phone),
+          user:users!user_id(id, full_name, email, phone, avatar_url),
           city:cities!city_id(id, name, region:regions!region_id(id, name)),
           categories:technician_categories(category:categories!category_id(id, name, icon))
         )
@@ -25,7 +25,18 @@ class AdminService {
       throw ApiError.internal('Erreur lors de la récupération des documents de vérification');
     }
 
-    return data || [];
+    if (!data || data.length === 0) return [];
+
+    return await Promise.all(
+      data.map(async (doc) => {
+        if (!doc.file_url || doc.file_url.startsWith('http')) return doc;
+        const { data: signed } = await supabase.storage
+          .from('documents')
+          .createSignedUrl(doc.file_url, 60 * 60 * 24 * 365);
+        if (signed) doc.file_url = signed.signedUrl;
+        return doc;
+      })
+    );
   }
 
   static async getRejectedVerifications() {
@@ -37,7 +48,7 @@ class AdminService {
         id, document_type, file_url, status, rejection_reason, uploaded_at, reviewed_at,
         technician:technician_profiles!technician_id(
           id, verified, years_experience, price_min, price_max, bio,
-          user:users!user_id(id, full_name, email, phone),
+          user:users!user_id(id, full_name, email, phone, avatar_url),
           city:cities!city_id(id, name, region:regions!region_id(id, name)),
           categories:technician_categories(category:categories!category_id(id, name, icon))
         )
@@ -50,8 +61,20 @@ class AdminService {
       throw ApiError.internal('Erreur lors de la récupération des documents rejetés');
     }
 
-    return data || [];
+    if (!data || data.length === 0) return [];
+
+    return await Promise.all(
+      data.map(async (doc) => {
+        if (!doc.file_url || doc.file_url.startsWith('http')) return doc;
+        const { data: signed } = await supabase.storage
+          .from('documents')
+          .createSignedUrl(doc.file_url, 60 * 60 * 24 * 365);
+        if (signed) doc.file_url = signed.signedUrl;
+        return doc;
+      })
+    );
   }
+
 
   static async reviewDocument(documentId, status, rejectionReason = null) {
     if (!['approved', 'rejected'].includes(status)) {

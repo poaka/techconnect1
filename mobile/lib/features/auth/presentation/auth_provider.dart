@@ -136,6 +136,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> uploadAvatar(String filePath) async {
+    state = state.copyWith(status: AuthStatus.loading, clearError: true);
+    try {
+      await _repository.uploadAvatar(filePath);
+      // Refresh user to get the new avatar URL
+      final user = await _repository.getMe();
+      state = state.copyWith(status: AuthStatus.authenticated, user: user);
+    } on Failure catch (failure) {
+      state = state.copyWith(status: AuthStatus.error, errorMessage: failure.message);
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'Échec de l\'upload de l\'avatar');
+    }
+  }
+
   void handleUnauthorized() {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }

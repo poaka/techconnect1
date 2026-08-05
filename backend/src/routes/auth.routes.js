@@ -52,6 +52,8 @@ router.put(
   AuthController.updateMe
 );
 
+const upload = require('../middleware/upload');
+
 router.post(
   '/change-password',
   requireAuth,
@@ -62,6 +64,14 @@ router.post(
     validateRequest
   ],
   AuthController.changePassword
+);
+
+router.post(
+  '/me/avatar',
+  requireAuth,
+  authLimiter,
+  upload.single('avatar'),
+  AuthController.uploadAvatar
 );
 
 module.exports = router;

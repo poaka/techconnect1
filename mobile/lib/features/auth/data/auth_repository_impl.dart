@@ -99,4 +99,13 @@ class AuthRepositoryImpl implements AuthRepository {
       throw ErrorMapper.mapExceptionToFailure(e);
     }
   }
+
+  @override
+  Future<String> uploadAvatar(String filePath) async {
+    try {
+      return await _remoteDataSource.uploadAvatar(filePath);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
 }

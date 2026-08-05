@@ -7,10 +7,73 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../auth/presentation/auth_provider.dart';
+import '../../auth/presentation/auth_state.dart';
 import '../../technicians/presentation/providers/technician_documents_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _pickAndUploadAvatar(BuildContext context, WidgetRef ref) async {
+    final ImageSource? source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'Photo de profil',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined, color: AppColors.primary),
+              title: const Text('Prendre une photo'),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+              title: const Text('Choisir dans la galerie'),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: source);
+    if (file == null) return;
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mise à jour de la photo...')),
+      );
+    }
+    
+    await ref.read(authNotifierProvider.notifier).uploadAvatar(file.path);
+    
+    if (context.mounted) {
+      final authState = ref.read(authNotifierProvider);
+      if (authState.status == AuthStatus.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authState.errorMessage ?? 'Erreur'), backgroundColor: AppColors.error),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Photo mise à jour'), backgroundColor: AppColors.success),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,6 +89,18 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mon Profil'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () {
+              if (user.role.name == 'technician') {
+                context.go('/technician/profile/edit');
+              } else {
+                context.go('/profile/edit');
+              }
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -63,16 +138,10 @@ class ProfileScreen extends ConsumerWidget {
                         border: Border.all(color: Colors.white, width: 2),
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.white, size: 20),
+                        icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
                         constraints: const BoxConstraints(),
                         padding: const EdgeInsets.all(8),
-                        onPressed: () {
-                          if (user.role.name == 'technician') {
-                            context.go('/technician/profile/edit');
-                          } else {
-                            context.go('/profile/edit');
-                          }
-                        },
+                        onPressed: () => _pickAndUploadAvatar(context, ref),
                       ),
                     ),
                   ),
