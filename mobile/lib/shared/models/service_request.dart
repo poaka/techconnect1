@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import '../../core/localization/app_localizations.dart';
 import '../../features/technicians/domain/category.dart';
 import '../../features/auth/domain/app_user.dart';
 import '../../features/technicians/domain/technician_profile.dart';
@@ -24,6 +26,23 @@ enum RequestStatus {
         return 'Terminée';
       case RequestStatus.cancelled:
         return 'Annulée';
+    }
+  }
+
+  String getLocalizedLabel(BuildContext context) {
+    switch (this) {
+      case RequestStatus.pending:
+        return context.tr('status_pending');
+      case RequestStatus.accepted:
+        return context.tr('status_accepted');
+      case RequestStatus.rejected:
+        return context.tr('status_rejected');
+      case RequestStatus.inProgress:
+        return context.tr('status_in_progress');
+      case RequestStatus.completed:
+        return context.tr('status_completed');
+      case RequestStatus.cancelled:
+        return context.tr('status_cancelled');
     }
   }
 

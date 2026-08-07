@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/language_selector.dart';
@@ -81,6 +82,7 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (user == null) {
       return const Scaffold(
@@ -90,7 +92,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mon Profil'),
+        title: Text(context.tr('profile_title')),
         actions: [
           const ThemeToggleButton(),
           const Padding(
@@ -181,22 +183,22 @@ class ProfileScreen extends ConsumerWidget {
               // Informations personnelles
               Align(
                 alignment: Alignment.centerLeft,
-                child: _buildSectionHeader('Informations Personnelles'),
+                child: _buildSectionHeader(context, context.tr('personal_info')),
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
                 ),
                 child: Column(
                   children: [
-                    _buildListTile(Icons.email_outlined, 'Email', user.email),
-                    const Divider(height: 1, color: AppColors.border),
-                    _buildListTile(Icons.phone_outlined, 'Téléphone', user.phone ?? 'Non renseigné'),
+                    _buildListTile(context, Icons.email_outlined, context.tr('email'), user.email),
+                    Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.border),
+                    _buildListTile(context, Icons.phone_outlined, context.tr('phone'), user.phone ?? context.tr('not_provided')),
                     if (user.createdAt != null) ...[
-                      const Divider(height: 1, color: AppColors.border),
-                      _buildListTile(Icons.calendar_today_outlined, 'Membre depuis', DateFormat('dd MMM yyyy').format(user.createdAt!)),
+                      Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.border),
+                      _buildListTile(context, Icons.calendar_today_outlined, context.tr('member_since'), DateFormat('dd MMM yyyy').format(user.createdAt!)),
                     ],
                   ],
                 ),
@@ -205,23 +207,23 @@ class ProfileScreen extends ConsumerWidget {
               if (user.technicianProfile != null) ...[
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: _buildSectionHeader('Profil Professionnel'),
+                  child: _buildSectionHeader(context, context.tr('pro_profile')),
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: isDark ? AppColors.darkSurface : AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
                   ),
                   child: Column(
                     children: [
-                      _buildListTile(Icons.location_on_outlined, 'Ville', user.technicianProfile!.cityName ?? 'Non renseignée'),
-                      const Divider(height: 1, color: AppColors.border),
-                      _buildListTile(Icons.chat_rounded, 'WhatsApp', user.technicianProfile!.whatsapp ?? 'Non renseigné'),
-                      const Divider(height: 1, color: AppColors.border),
-                      _buildListTile(Icons.work_outline_rounded, 'Années d\'expérience', '${user.technicianProfile!.yearsExperience} ans'),
-                      const Divider(height: 1, color: AppColors.border),
-                      _buildListTile(Icons.payments_outlined, 'Fourchette de prix', '${user.technicianProfile!.priceMin.toStringAsFixed(0)} - ${user.technicianProfile!.priceMax.toStringAsFixed(0)} XAF'),
+                      _buildListTile(context, Icons.location_on_outlined, context.tr('city'), user.technicianProfile!.cityName ?? context.tr('not_provided')),
+                      Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.border),
+                      _buildListTile(context, Icons.chat_rounded, context.tr('whatsapp'), user.technicianProfile!.whatsapp ?? context.tr('not_provided')),
+                      Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.border),
+                      _buildListTile(context, Icons.work_outline_rounded, context.tr('years_exp'), '${user.technicianProfile!.yearsExperience} ${context.tr('years')}'),
+                      Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.border),
+                      _buildListTile(context, Icons.payments_outlined, context.tr('price_range'), '${user.technicianProfile!.priceMin.toStringAsFixed(0)} - ${user.technicianProfile!.priceMax.toStringAsFixed(0)} XAF'),
                     ],
                   ),
                 ),
@@ -232,17 +234,17 @@ class ProfileScreen extends ConsumerWidget {
               // Paramètres & Support
               Align(
                 alignment: Alignment.centerLeft,
-                child: _buildSectionHeader('Paramètres & Support'),
+                child: _buildSectionHeader(context, context.tr('settings_support')),
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
                 ),
                 child: Column(
                   children: [
-                    _buildActionTile(Icons.lock_outline_rounded, 'Changer de mot de passe', () async {
+                    _buildActionTile(context, Icons.lock_outline_rounded, context.tr('change_password'), () async {
                       final result = await showModalBottomSheet<bool>(
                         context: context,
                         isScrollControlled: true,
@@ -260,22 +262,22 @@ class ProfileScreen extends ConsumerWidget {
                         }
                       }
                     }),
-                    const Divider(height: 1, color: AppColors.border),
-                    _buildActionTile(Icons.notifications_outlined, 'Préférences de notifications', () {
+                    Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.border),
+                    _buildActionTile(context, Icons.notifications_outlined, context.tr('notification_prefs'), () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Préférences de notifications (bientôt disponible)')),
+                        const SnackBar(content: Text('Préférences de notifications')),
                       );
                     }),
-                    const Divider(height: 1, color: AppColors.border),
-                    _buildActionTile(Icons.help_outline_rounded, 'Centre d\'aide', () {
+                    Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.border),
+                    _buildActionTile(context, Icons.help_outline_rounded, context.tr('help_center'), () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Ouverture du centre d\'aide...')),
+                        const SnackBar(content: Text('Centre d\'aide')),
                       );
                     }),
-                    const Divider(height: 1, color: AppColors.border),
-                    _buildActionTile(Icons.privacy_tip_outlined, 'Politique de confidentialité', () {
+                    Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.border),
+                    _buildActionTile(context, Icons.privacy_tip_outlined, context.tr('privacy_policy'), () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Ouverture de la politique de confidentialité...')),
+                        const SnackBar(content: Text('Politique de confidentialité')),
                       );
                     }),
                   ],
@@ -287,7 +289,7 @@ class ProfileScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.logout, color: AppColors.error),
-                  label: const Text('Se déconnecter', style: TextStyle(color: AppColors.error)),
+                  label: Text(context.tr('logout'), style: const TextStyle(color: AppColors.error)),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.error),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -308,35 +310,37 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12, top: 24, left: 4),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: AppColors.textSecondary,
+          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
           letterSpacing: 1.2,
         ),
       ),
     );
   }
 
-  Widget _buildListTile(IconData icon, String label, String value) {
+  Widget _buildListTile(BuildContext context, IconData icon, String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primary, size: 22),
+          Icon(icon, color: isDark ? AppColors.primaryLight : AppColors.primary, size: 22),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                Text(label, style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary)),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary)),
               ],
             ),
           ),
@@ -345,22 +349,23 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionTile(IconData icon, String title, VoidCallback onTap) {
+  Widget _buildActionTile(BuildContext context, IconData icon, String title, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.textSecondary, size: 22),
+            Icon(icon, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary, size: 22),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+            Icon(Icons.chevron_right_rounded, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
           ],
         ),
       ),
@@ -422,13 +427,19 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppColors.darkSurface : Colors.white;
+    final inputBg = isDark ? AppColors.darkInputBg : AppColors.inputBg;
+    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final iconColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
     return Container(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         child: Padding(
@@ -442,9 +453,9 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Changer de mot de passe', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('Changer de mot de passe', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(Icons.close, color: iconColor),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -453,13 +464,15 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
                 TextFormField(
                   controller: _oldPasswordController,
                   obscureText: _obscureOld,
+                  style: TextStyle(color: textColor),
                   decoration: InputDecoration(
                     labelText: 'Ancien mot de passe',
+                    labelStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                     filled: true,
-                    fillColor: AppColors.inputBg,
+                    fillColor: inputBg,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscureOld ? Icons.visibility_off : Icons.visibility, color: AppColors.textSecondary),
+                      icon: Icon(_obscureOld ? Icons.visibility_off : Icons.visibility, color: iconColor),
                       onPressed: () => setState(() => _obscureOld = !_obscureOld),
                     ),
                   ),
@@ -472,13 +485,15 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
                 TextFormField(
                   controller: _newPasswordController,
                   obscureText: _obscureNew,
+                  style: TextStyle(color: textColor),
                   decoration: InputDecoration(
                     labelText: 'Nouveau mot de passe',
+                    labelStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                     filled: true,
-                    fillColor: AppColors.inputBg,
+                    fillColor: inputBg,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility, color: AppColors.textSecondary),
+                      icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility, color: iconColor),
                       onPressed: () => setState(() => _obscureNew = !_obscureNew),
                     ),
                   ),
@@ -492,13 +507,15 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirm,
+                  style: TextStyle(color: textColor),
                   decoration: InputDecoration(
                     labelText: 'Confirmer le mot de passe',
+                    labelStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                     filled: true,
-                    fillColor: AppColors.inputBg,
+                    fillColor: inputBg,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility, color: AppColors.textSecondary),
+                      icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility, color: iconColor),
                       onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
                     ),
                   ),

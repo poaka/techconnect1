@@ -31,14 +31,22 @@ class AppTextField extends StatefulWidget {
 class _AppTextFieldState extends State<AppTextField> {
   bool _obscureText = true;
 
-  @override Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final hintColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final iconColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final fillColor = isDark ? AppColors.darkInputBg : AppColors.inputBg;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           widget.label,
           style: AppTypography.caption.copyWith(
-            color: AppColors.textPrimary,
+            color: labelColor,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -49,17 +57,23 @@ class _AppTextFieldState extends State<AppTextField> {
           keyboardType: widget.keyboardType,
           maxLines: widget.isPassword ? 1 : widget.maxLines,
           obscureText: widget.isPassword ? _obscureText : false,
-          style: AppTypography.bodyLarge,
+          style: AppTypography.bodyLarge.copyWith(
+            color: textColor,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             hintText: widget.hint,
+            hintStyle: AppTypography.bodyMedium.copyWith(color: hintColor),
+            fillColor: fillColor,
+            filled: true,
             prefixIcon: widget.prefixIcon != null
-                ? Icon(widget.prefixIcon, color: AppColors.textSecondary, size: 20)
+                ? Icon(widget.prefixIcon, color: iconColor, size: 20)
                 : null,
             suffixIcon: widget.isPassword
                 ? IconButton(
                     icon: Icon(
                       _obscureText ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.textSecondary,
+                      color: iconColor,
                       size: 20,
                     ),
                     onPressed: () {

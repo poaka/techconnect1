@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/notifications/presentation/providers/notifications_provider.dart';
 
 /// The persistent bottom navigation shell wrapping all main screens.
-/// Uses [StatefulShellRoute] from go_router so each tab maintains its own
-/// navigation stack and scroll position.
 class MainShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
@@ -20,12 +19,6 @@ class MainShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unreadCount = ref.watch(unreadCountProvider);
 
-    // Determine which tab set to render based on the current branch
-    // Branch 0 → Home/Dashboard, Branch 1 → Requests, Branch 2 → Notifications,
-    // Branch 3 → Profile  (client gets Favorites as branch 3, Profile as 4)
-    // We use a single shell for both roles; the router controls which screens
-    // each branch maps to per role.
-
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: _buildBottomNav(context, unreadCount),
@@ -33,45 +26,46 @@ class MainShell extends ConsumerWidget {
   }
 
   Widget _buildBottomNav(BuildContext context, int unreadCount) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return NavigationBar(
       selectedIndex: navigationShell.currentIndex,
       onDestinationSelected: (index) {
         navigationShell.goBranch(
           index,
-          // Stay on the current page if re-tapping the active tab
           initialLocation: index == navigationShell.currentIndex,
         );
       },
       destinations: [
-        const NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home_rounded),
-          label: 'Accueil',
+        NavigationDestination(
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home_rounded),
+          label: context.tr('nav_home'),
         ),
-        const NavigationDestination(
-          icon: Icon(Icons.assignment_outlined),
-          selectedIcon: Icon(Icons.assignment_rounded),
-          label: 'Demandes',
+        NavigationDestination(
+          icon: const Icon(Icons.assignment_outlined),
+          selectedIcon: const Icon(Icons.assignment_rounded),
+          label: context.tr('nav_requests'),
         ),
-        const NavigationDestination(
-          icon: Icon(Icons.favorite_border_rounded),
-          selectedIcon: Icon(Icons.favorite_rounded),
-          label: 'Favoris',
+        NavigationDestination(
+          icon: const Icon(Icons.favorite_border_rounded),
+          selectedIcon: const Icon(Icons.favorite_rounded),
+          label: context.tr('nav_favorites'),
         ),
-        const NavigationDestination(
-          icon: Icon(Icons.person_outline_rounded),
-          selectedIcon: Icon(Icons.person_rounded),
-          label: 'Profil',
+        NavigationDestination(
+          icon: const Icon(Icons.person_outline_rounded),
+          selectedIcon: const Icon(Icons.person_rounded),
+          label: context.tr('nav_profile'),
         ),
       ],
-      backgroundColor: Colors.white,
-      indicatorColor: AppColors.primarySubtle,
+      backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+      indicatorColor: isDark ? AppColors.darkPrimarySubtle : AppColors.primarySubtle,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
     );
   }
 }
 
-/// Technician variant with 3 tabs: Dashboard / Requests / Profile
+/// Technician variant with 4 tabs: Dashboard / Requests / Notifications / Profile
 class TechnicianShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
@@ -83,6 +77,7 @@ class TechnicianShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unreadCount = ref.watch(unreadCountProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: navigationShell,
@@ -95,15 +90,15 @@ class TechnicianShell extends ConsumerWidget {
           );
         },
         destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard_rounded),
-            label: 'Tableau',
+          NavigationDestination(
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: const Icon(Icons.dashboard_rounded),
+            label: context.tr('nav_dashboard'),
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.assignment_outlined),
-            selectedIcon: Icon(Icons.assignment_rounded),
-            label: 'Demandes',
+          NavigationDestination(
+            icon: const Icon(Icons.assignment_outlined),
+            selectedIcon: const Icon(Icons.assignment_rounded),
+            label: context.tr('nav_requests'),
           ),
           NavigationDestination(
             icon: Badge(
@@ -122,16 +117,16 @@ class TechnicianShell extends ConsumerWidget {
               ),
               child: const Icon(Icons.notifications_rounded),
             ),
-            label: 'Notifs',
+            label: context.tr('nav_notifs'),
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profil',
+          NavigationDestination(
+            icon: const Icon(Icons.person_outline_rounded),
+            selectedIcon: const Icon(Icons.person_rounded),
+            label: context.tr('nav_profile'),
           ),
         ],
-        backgroundColor: Colors.white,
-        indicatorColor: AppColors.primarySubtle,
+        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+        indicatorColor: isDark ? AppColors.darkPrimarySubtle : AppColors.primarySubtle,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       ),
     );

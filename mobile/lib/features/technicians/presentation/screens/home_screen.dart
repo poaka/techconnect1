@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/language_selector.dart';
@@ -122,15 +123,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 Text(
                                   user != null
-                                      ? 'Bonjour, ${user.fullName} 👋'
-                                      : 'Bonjour ! 👋',
+                                      ? '${context.tr('hello_user')}${user.fullName} 👋'
+                                      : context.tr('hello_default'),
                                   style: AppTypography.heading2.copyWith(
                                       color: Colors.white,
                                       fontSize: screenWidth < 360 ? 18 : 20),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'TechConnect Cameroun',
+                                  context.tr('app_title'),
                                   style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
                                 ),
                               ],
@@ -192,7 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         textInputAction: TextInputAction.search,
                         onSubmitted: _onSearchSubmitted,
                         decoration: InputDecoration(
-                          hintText: 'Que recherchez-vous ? (ex: Plombier)',
+                          hintText: context.tr('search_placeholder'),
                           hintStyle: TextStyle(color: Colors.grey[400]),
                           prefixIcon: const Icon(Icons.search, color: AppColors.primary),
                           border: InputBorder.none,
@@ -223,7 +224,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Métiers & Catégories',
+                        context.tr('categories_header'),
                         style: AppTypography.heading3
                             .copyWith(fontSize: screenWidth < 360 ? 15 : 16),
                         maxLines: 1,
@@ -240,8 +241,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text('Voir tout',
-                          style: TextStyle(fontSize: 13)),
+                      child: Text(context.tr('see_all'),
+                          style: const TextStyle(fontSize: 13)),
                     ),
                   ],
                 ),
@@ -278,7 +279,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (_, __) =>
-                        const Text('Impossible de charger les catégories'),
+                        const Text('Error loading categories'),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -288,7 +289,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Artisans recommandés',
+                        context.tr('recommended_artisans'),
                         style: AppTypography.heading3
                             .copyWith(fontSize: screenWidth < 360 ? 15 : 16),
                         maxLines: 1,
@@ -303,8 +304,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text('Tout explorer',
-                          style: TextStyle(fontSize: 13)),
+                      child: Text(context.tr('explore_all'),
+                          style: const TextStyle(fontSize: 13)),
                     ),
                   ],
                 ),
@@ -326,8 +327,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: const Text(
-                      'Aucun technicien disponible pour le moment.',
+                    child: Text(
+                      context.tr('no_technician_found'),
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyMedium,
                     ),

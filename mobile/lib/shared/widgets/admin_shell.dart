@@ -20,13 +20,15 @@ class AdminShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -35,8 +37,8 @@ class AdminShell extends StatelessWidget {
         child: NavigationBar(
           selectedIndex: navigationShell.currentIndex,
           onDestinationSelected: _goBranch,
-          backgroundColor: AppColors.surface,
-          indicatorColor: AppColors.primarySubtle,
+          backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
+          indicatorColor: isDark ? AppColors.darkPrimarySubtle : AppColors.primarySubtle,
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.dashboard_outlined),

@@ -274,23 +274,40 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isSelected
+        ? (isDark ? AppColors.darkPrimarySubtle : AppColors.primarySubtle)
+        : (isDark ? AppColors.darkSurface : AppColors.surface);
+    final borderColor = isSelected
+        ? (isDark ? AppColors.primaryLight : AppColors.primary)
+        : (isDark ? AppColors.darkBorder : AppColors.border);
+    final iconColor = isSelected
+        ? (isDark ? AppColors.primaryLight : AppColors.primary)
+        : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary);
+    final titleColor = isSelected
+        ? (isDark ? AppColors.primaryLight : AppColors.primary)
+        : (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary);
+    final subtitleColor = isSelected
+        ? (isDark ? AppColors.primaryLight : AppColors.primaryDark)
+        : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10.0),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primarySubtle : AppColors.surface,
+          color: cardBg,
           borderRadius: BorderRadius.circular(12.0),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: borderColor,
             width: isSelected ? 2.0 : 1.0,
           ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: isSelected ? AppColors.primary : AppColors.textSecondary, size: 24),
+            Icon(icon, color: iconColor, size: 24),
             const SizedBox(height: 4),
             FittedBox(
               fit: BoxFit.scaleDown,
@@ -298,7 +315,7 @@ class _RoleCard extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  color: titleColor,
                   fontSize: 13.5,
                 ),
               ),
@@ -311,7 +328,7 @@ class _RoleCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 10.5,
-                color: isSelected ? AppColors.primaryDark : AppColors.textSecondary,
+                color: subtitleColor,
               ),
             ),
           ],

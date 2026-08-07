@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../domain/notification_model.dart';
@@ -10,15 +11,15 @@ import '../providers/notifications_provider.dart';
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
     final now = DateTime.now();
     final diff = now.difference(date);
 
-    if (diff.inMinutes < 1) return 'À l\'instant';
-    if (diff.inMinutes < 60) return 'Il y a ${diff.inMinutes} min';
-    if (diff.inHours < 24) return 'Il y a ${diff.inHours} h';
-    if (diff.inDays == 1) return 'Hier';
-    if (diff.inDays < 7) return 'Il y a ${diff.inDays} jours';
+    if (diff.inMinutes < 1) return context.tr('just_now');
+    if (diff.inMinutes < 60) return '${diff.inMinutes} ${context.tr('min_ago')}';
+    if (diff.inHours < 24) return '${diff.inHours} ${context.tr('hours_ago')}';
+    if (diff.inDays == 1) return context.tr('yesterday');
+    if (diff.inDays < 7) return '${diff.inDays} ${context.tr('days_ago')}';
     return DateFormat('dd/MM/yyyy').format(date);
   }
 
@@ -52,16 +53,19 @@ class NotificationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(notificationsNotifierProvider);
     final notifier = ref.read(notificationsNotifierProvider.notifier);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(context.tr('notifications_title')),
         actions: [
           if (state.unreadCount > 0)
             TextButton.icon(
               icon: const Icon(Icons.done_all_rounded, size: 18),
-              label: const Text('Tout lire'),
-              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              label: Text(context.tr('mark_all_read')),
+              style: TextButton.styleFrom(
+                foregroundColor: isDark ? AppColors.primaryLight : AppColors.primary,
+              ),
               onPressed: () => notifier.markAllAsRead(),
             ),
         ],
@@ -80,6 +84,8 @@ class NotificationsScreen extends ConsumerWidget {
     NotificationsState state,
     NotificationsNotifier notifier,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (state.isLoading && state.notifications.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -91,17 +97,17 @@ class NotificationsScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.wifi_off_rounded, size: 48, color: AppColors.border),
+              Icon(Icons.wifi_off_rounded, size: 48, color: isDark ? AppColors.darkBorder : AppColors.border),
               const SizedBox(height: 12),
               Text(
                 state.errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => notifier.fetch(),
-                child: const Text('Réessayer'),
+                child: Text(context.tr('retry')),
               ),
             ],
           ),
@@ -111,15 +117,14 @@ class NotificationsScreen extends ConsumerWidget {
 
     if (state.notifications.isEmpty) {
       return ListView(
-        // Needed for RefreshIndicator
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           SizedBox(
             height: 400,
-            child: const EmptyStateWidget(
+            child: EmptyStateWidget(
               icon: Icons.notifications_none_rounded,
-              title: 'Aucune notification',
-              subtitle: 'Vous verrez ici les mises à jour\nde vos demandes de service.',
+              title: context.tr('no_notifications'),
+              subtitle: context.tr('no_notifications_desc'),
             ),
           ),
         ],
@@ -131,12 +136,12 @@ class NotificationsScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: state.notifications.length,
       separatorBuilder: (_, __) =>
-          const Divider(height: 1, indent: 72, endIndent: 16),
+          Divider(height: 1, indent: 72, endIndent: 16, color: isDark ? AppColors.darkBorder : AppColors.border),
       itemBuilder: (context, index) {
         final notification = state.notifications[index];
         return _NotificationTile(
           notification: notification,
-          formattedDate: _formatDate(notification.createdAt),
+          formattedDate: _formatDate(context, notification.createdAt),
           icon: _getNotificationIcon(notification.type),
           iconColor: _getNotificationColor(notification.type),
           onTap: () {
@@ -168,13 +173,22 @@ class _NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUnread = !notification.isRead;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final unreadBg = isDark
+        ? AppColors.darkPrimarySubtle
+        : AppColors.primarySubtle.withValues(alpha: 0.6);
+    final titleColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final subtitleColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
 
     return InkWell(
       onTap: onTap,
       child: Container(
-        color: isUnread
-            ? AppColors.primarySubtle.withValues(alpha: 0.6)
-            : Colors.transparent,
+        color: isUnread ? unreadBg : Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +198,7 @@ class _NotificationTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.12),
+                color: iconColor.withValues(alpha: isDark ? 0.25 : 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 22, color: iconColor),
@@ -205,7 +219,7 @@ class _NotificationTile extends StatelessWidget {
                             fontWeight: isUnread
                                 ? FontWeight.bold
                                 : FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: titleColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -216,8 +230,8 @@ class _NotificationTile extends StatelessWidget {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.primaryLight : AppColors.primary,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -226,9 +240,9 @@ class _NotificationTile extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     notification.message,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.textSecondary,
+                      color: subtitleColor,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -236,9 +250,9 @@ class _NotificationTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     formattedDate,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: subtitleColor,
                     ),
                   ),
                 ],

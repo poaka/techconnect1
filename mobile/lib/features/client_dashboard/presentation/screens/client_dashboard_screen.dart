@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/auth_provider.dart';
@@ -19,6 +20,7 @@ class ClientDashboardScreen extends ConsumerWidget {
     final requestsAsync = ref.watch(requestListProvider);
     final favoritesAsync = ref.watch(favoriteTechniciansProvider);
     final unreadCount = ref.watch(unreadCountProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Compute active request count (pending + accepted + in_progress)
     final activeRequests = requestsAsync.valueOrNull?.where((r) {
@@ -33,7 +35,7 @@ class ClientDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tableau de Bord'),
+        title: Text(context.tr('dashboard_title')),
         actions: [
           Stack(
             alignment: Alignment.center,
@@ -91,26 +93,27 @@ class ClientDashboardScreen extends ConsumerWidget {
                 // ─── Greeting ─────────────────────────────────────────────
                 Text(
                   user != null
-                      ? 'Bonjour, ${user.fullName.split(' ').first} 👋'
-                      : 'Bonjour ! 👋',
+                      ? '${context.tr('hello_user')}${user.fullName.split(' ').first} 👋'
+                      : context.tr('hello_default'),
                   style: AppTypography.heading2,
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Bienvenue sur TechConnect Cameroun.',
+                Text(
+                  context.tr('login_welcome'),
                   style: AppTypography.bodyMedium,
                 ),
                 const SizedBox(height: 24),
 
                 // ─── Stats row ────────────────────────────────────────────
-                Text('Votre activité', style: AppTypography.heading3),
+                Text(context.tr('dashboard_title'), style: AppTypography.heading3),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
                       child: _buildStatCard(
+                        context: context,
                         icon: Icons.assignment_outlined,
-                        label: 'Demandes actives',
+                        label: context.tr('status_pending'),
                         value: '$activeRequests',
                         color: AppColors.primary,
                       ),
@@ -118,8 +121,9 @@ class ClientDashboardScreen extends ConsumerWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
+                        context: context,
                         icon: Icons.check_circle_outline_rounded,
-                        label: 'Terminées',
+                        label: context.tr('completed_requests'),
                         value: '$completedRequests',
                         color: AppColors.success,
                       ),
@@ -127,8 +131,9 @@ class ClientDashboardScreen extends ConsumerWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
+                        context: context,
                         icon: Icons.favorite_border_rounded,
-                        label: 'Favoris',
+                        label: context.tr('nav_favorites'),
                         value: '$favoritesCount',
                         color: AppColors.error,
                       ),
@@ -138,13 +143,13 @@ class ClientDashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // ─── Quick actions ────────────────────────────────────────
-                Text('Actions rapides', style: AppTypography.heading3),
+                Text(context.tr('app_title'), style: AppTypography.heading3),
                 const SizedBox(height: 12),
 
                 _buildActionCard(
                   context: context,
-                  title: 'Trouver un Artisan',
-                  subtitle: 'Recherchez dans l\'annuaire qualifié',
+                  title: context.tr('directory_title'),
+                  subtitle: context.tr('search_placeholder'),
                   icon: Icons.search_rounded,
                   color: AppColors.primary,
                   onTap: () => context.go('/home'),
@@ -152,31 +157,31 @@ class ClientDashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 _buildActionCard(
                   context: context,
-                  title: 'Mes Demandes',
-                  subtitle: 'Suivre vos demandes de service',
+                  title: context.tr('my_requests'),
+                  subtitle: context.tr('incoming_requests'),
                   icon: Icons.assignment_outlined,
                   color: AppColors.accent,
-                  badge: activeRequests > 0 ? '$activeRequests en cours' : null,
+                  badge: activeRequests > 0 ? '$activeRequests ${context.tr('status_in_progress')}' : null,
                   onTap: () => context.push('/requests'),
                 ),
                 const SizedBox(height: 12),
                 _buildActionCard(
                   context: context,
-                  title: 'Mes Favoris',
-                  subtitle: 'Retrouvez vos artisans enregistrés',
+                  title: context.tr('nav_favorites'),
+                  subtitle: context.tr('recommended_artisans'),
                   icon: Icons.favorite_border_rounded,
                   color: AppColors.error,
-                  badge: favoritesCount > 0 ? '$favoritesCount artisan${favoritesCount > 1 ? 's' : ''}' : null,
+                  badge: favoritesCount > 0 ? '$favoritesCount' : null,
                   onTap: () => context.push('/favorites'),
                 ),
                 const SizedBox(height: 12),
                 _buildActionCard(
                   context: context,
-                  title: 'Notifications',
-                  subtitle: 'Mises à jour de vos demandes',
+                  title: context.tr('notifications_title'),
+                  subtitle: context.tr('no_notifications_desc'),
                   icon: Icons.notifications_outlined,
                   color: unreadCount > 0 ? AppColors.warning : AppColors.textSecondary,
-                  badge: unreadCount > 0 ? '$unreadCount non lue${unreadCount > 1 ? 's' : ''}' : null,
+                  badge: unreadCount > 0 ? '$unreadCount' : null,
                   onTap: () => context.push('/notifications'),
                 ),
               ],
@@ -188,20 +193,23 @@ class ClientDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildStatCard({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
     required Color color,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -222,9 +230,9 @@ class ClientDashboardScreen extends ConsumerWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
-              color: AppColors.textSecondary,
+              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),

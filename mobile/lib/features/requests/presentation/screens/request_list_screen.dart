@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/service_request.dart';
-import '../../../auth/presentation/auth_provider.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
+import '../../../auth/presentation/auth_provider.dart';
 import '../providers/requests_providers.dart';
 
 class RequestListScreen extends ConsumerWidget {
@@ -32,9 +33,10 @@ class RequestListScreen extends ConsumerWidget {
     final requestsState = ref.watch(requestListProvider);
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     final isTechnician = user?.role.name.toLowerCase() == 'technician';
-    final title = isTechnician ? 'Demandes Entrantes' : 'Mes Demandes';
+    final title = isTechnician ? context.tr('incoming_requests') : context.tr('my_requests');
 
     return Scaffold(
       appBar: AppBar(
@@ -62,10 +64,10 @@ class RequestListScreen extends ConsumerWidget {
                     height: MediaQuery.of(context).size.height * 0.7,
                     child: EmptyStateWidget(
                       icon: Icons.assignment_outlined,
-                      title: 'Aucune demande',
+                      title: context.tr('no_requests'),
                       subtitle: isTechnician
-                          ? 'Vous n\'avez reçu aucune demande de service pour le moment.'
-                          : 'Vous n\'avez pas encore effectué de demande de service.',
+                          ? context.tr('no_requests_tech')
+                          : context.tr('no_requests_client'),
                     ),
                   ),
                 );
@@ -79,8 +81,8 @@ class RequestListScreen extends ConsumerWidget {
                   final statusColor = _getStatusColor(request.status);
                   
                   final otherPartyName = isTechnician
-                      ? (request.client?.fullName ?? 'Client inconnu')
-                      : (request.technician?.fullName ?? 'Artisan inconnu');
+                      ? (request.client?.fullName ?? context.tr('unknown_client'))
+                      : (request.technician?.fullName ?? context.tr('unknown_tech'));
 
                   final formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(request.createdAt);
 
@@ -103,7 +105,11 @@ class RequestListScreen extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     otherPartyName,
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -116,7 +122,7 @@ class RequestListScreen extends ConsumerWidget {
                                     border: Border.all(color: statusColor.withValues(alpha: 0.5)),
                                   ),
                                   child: Text(
-                                    request.status.label,
+                                    request.status.getLocalizedLabel(context),
                                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: statusColor),
                                   ),
                                 ),
@@ -126,24 +132,31 @@ class RequestListScreen extends ConsumerWidget {
                               const SizedBox(height: 4),
                               Text(
                                 request.category!.name,
-                                style: const TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  color: isDark ? AppColors.primaryLight : AppColors.primary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                             const SizedBox(height: 8),
                             Text(
-                              request.description ?? 'Pas de description',
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                              request.description ?? context.tr('no_description'),
+                              style: TextStyle(
+                                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                                fontSize: 14,
+                              ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                const Icon(Icons.access_time, size: 14, color: AppColors.textSecondary),
+                                Icon(Icons.access_time, size: 14, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                                 const SizedBox(width: 4),
                                 Text(
                                   formattedDate,
-                                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                  style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                                 ),
                               ],
                             ),
@@ -167,14 +180,14 @@ class RequestListScreen extends ConsumerWidget {
                     Text(
                       error.toString(),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         ref.read(requestListProvider.notifier).fetchRequests();
                       },
-                      child: const Text('Réessayer'),
+                      child: Text(context.tr('retry')),
                     ),
                   ],
                 ),
