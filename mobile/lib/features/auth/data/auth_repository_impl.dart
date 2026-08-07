@@ -1,6 +1,5 @@
-
 import '../../../core/network/error_mapper.dart';
-import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/storage/storage_service.dart';
 import '../domain/app_user.dart';
 import '../domain/auth_repository.dart';
 import '../domain/user_role.dart';
@@ -8,7 +7,7 @@ import 'auth_remote_data_source.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
-  final SecureStorageService _storageService;
+  final StorageService _storageService;
 
   AuthRepositoryImpl(this._remoteDataSource, this._storageService);
 
@@ -30,7 +29,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final user = AppUser.fromJson(res['user']);
       final token = res['token'] as String;
-      await _storageService.saveToken(token);
+      await _storageService.saveAuthData(token: token);
       return user;
     } catch (e) {
       throw ErrorMapper.mapExceptionToFailure(e);
@@ -49,7 +48,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final user = AppUser.fromJson(res['user']);
       final token = res['token'] as String;
-      await _storageService.saveToken(token);
+      await _storageService.saveAuthData(token: token);
       return user;
     } catch (e) {
       throw ErrorMapper.mapExceptionToFailure(e);
@@ -82,7 +81,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-    await _storageService.deleteToken();
+    await _storageService.clearAuthData();
   }
 
   @override

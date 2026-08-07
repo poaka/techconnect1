@@ -4,14 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/error/failures.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/storage/storage_service.dart';
 import '../data/auth_remote_data_source.dart';
 import '../data/auth_repository_impl.dart';
 import '../domain/auth_repository.dart';
 import '../domain/user_role.dart';
 import 'auth_state.dart';
 
+final Provider<StorageService> storageServiceProvider = Provider<StorageService>((ref) {
+  return StorageService();
+});
+
 final Provider<SecureStorageService> secureStorageProvider = Provider<SecureStorageService>((ref) {
-  return SecureStorageService();
+  return SecureStorageService(ref.watch(storageServiceProvider));
 });
 
 final Provider<DioClient> dioClientProvider = Provider<DioClient>((ref) {
@@ -26,7 +31,7 @@ final Provider<DioClient> dioClientProvider = Provider<DioClient>((ref) {
 
 final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>((ref) {
   final client = ref.watch(dioClientProvider);
-  final storage = ref.watch(secureStorageProvider);
+  final storage = ref.watch(storageServiceProvider);
   return AuthRepositoryImpl(
     AuthRemoteDataSource(client),
     storage,
@@ -35,7 +40,7 @@ final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
-  final SecureStorageService _storageService;
+  final StorageService _storageService;
 
   AuthNotifier(this._repository, this._storageService) : super(const AuthState()) {
     checkAuthStatus();
@@ -44,15 +49,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> checkAuthStatus() async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
-      final token = await _storageService.getToken();
-      if (token == null || token.isEmpty) {
+      final token = _storageService.getToken();
+      final isLoggedIn = _storageService.isLoggedIn();
+
+      if (!isLoggedIn || token == null || token.isEmpty) {
         state = state.copyWith(status: AuthStatus.unauthenticated);
         return;
       }
+
       final user = await _repository.getMe();
       state = state.copyWith(status: AuthStatus.authenticated, user: user);
     } catch (_) {
-      await _storageService.deleteToken();
+      await _storageService.clearAuthData();
       state = state.copyWith(status: AuthStatus.unauthenticated);
     }
   }
@@ -140,7 +148,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading, clearError: true);
     try {
       await _repository.uploadAvatar(filePath);
-      // Refresh user to get the new avatar URL
       final user = await _repository.getMe();
       state = state.copyWith(status: AuthStatus.authenticated, user: user);
     } on Failure catch (failure) {
@@ -151,6 +158,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void handleUnauthorized() {
+    _storageService.clearAuthData();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 }
@@ -158,6 +166,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 final StateNotifierProvider<AuthNotifier, AuthState> authNotifierProvider =
     StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repo = ref.watch(authRepositoryProvider);
-  final storage = ref.watch(secureStorageProvider);
+  final storage = ref.watch(storageServiceProvider);
   return AuthNotifier(repo, storage);
 });

@@ -1,21 +1,25 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'storage_service.dart';
 
+/// Legacy alias wrapping StorageService (GetStorage) for persistent auth compatibility.
 class SecureStorageService {
-  static const _tokenKey = 'jwt_auth_token';
-  final FlutterSecureStorage _storage;
+  final StorageService _storageService;
 
-  SecureStorageService([FlutterSecureStorage? storage])
-      : _storage = storage ?? const FlutterSecureStorage();
+  SecureStorageService([StorageService? storageService])
+      : _storageService = storageService ?? StorageService();
 
   Future<void> saveToken(String token) async {
-    await _storage.write(key: _tokenKey, value: token);
+    await _storageService.saveAuthData(token: token);
   }
 
   Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+    return _storageService.getToken();
   }
 
   Future<void> deleteToken() async {
-    await _storage.delete(key: _tokenKey);
+    await _storageService.clearAuthData();
+  }
+
+  bool isLoggedIn() {
+    return _storageService.isLoggedIn();
   }
 }

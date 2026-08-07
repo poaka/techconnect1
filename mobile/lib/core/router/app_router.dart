@@ -38,8 +38,11 @@ import '../../shared/widgets/admin_shell.dart';
 import '../../shared/widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final storageService = ref.watch(storageServiceProvider);
+  final bool initialLoggedIn = storageService.isLoggedIn();
+
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: initialLoggedIn ? '/home' : '/login',
     refreshListenable: _RiverpodRefreshStream(
       ref.watch(authNotifierProvider.notifier).stream,
     ),
@@ -80,11 +83,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           '/welcome',
         ];
         
-        // After splash loading finishes, if still unauth -> redirect to welcome
-        if (isSplash) return '/welcome';
+        // After splash loading finishes, if still unauth -> redirect to login
+        if (isSplash) return '/login';
         
         final isPublic = publicPrefixes.any((p) => loc.startsWith(p));
-        if (!isPublic) return '/welcome'; // Strict enforcement
+        if (!isPublic) return '/login'; // Strict enforcement
       }
       return null;
     },
