@@ -5,6 +5,8 @@ const { requireAuth } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimit');
 const { ApiError } = require('../middleware/errorHandler');
 
+const { isValidEmail, isValidPhoneNumber } = require('../utils/validators');
+
 const router = express.Router();
 
 const validateRequest = (req, res, next) => {
@@ -20,7 +22,18 @@ router.post(
   authLimiter,
   [
     body('fullName').trim().notEmpty().withMessage('Le nom complet est requis'),
-    body('email').trim().isEmail().withMessage('Adresse email invalide'),
+    body('email').trim().custom((value) => {
+      if (!isValidEmail(value)) {
+        throw new Error('Adresse email invalide (ex: nom@domaine.com)');
+      }
+      return true;
+    }),
+    body('phone').optional({ checkFalsy: true }).custom((value) => {
+      if (!isValidPhoneNumber(value)) {
+        throw new Error('Format de numéro de téléphone invalide (ex: +237690000000 ou 690000000)');
+      }
+      return true;
+    }),
     body('password').isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères'),
     body('role').optional().isIn(['client', 'technician']).withMessage('Rôle invalide'),
     validateRequest
@@ -46,7 +59,12 @@ router.put(
   requireAuth,
   [
     body('fullName').optional().trim().notEmpty().withMessage('Le nom complet ne peut pas être vide'),
-    body('phone').optional().trim(),
+    body('phone').optional({ checkFalsy: true }).custom((value) => {
+      if (!isValidPhoneNumber(value)) {
+        throw new Error('Format de numéro de téléphone invalide (ex: +237690000000)');
+      }
+      return true;
+    }),
     validateRequest
   ],
   AuthController.updateMe

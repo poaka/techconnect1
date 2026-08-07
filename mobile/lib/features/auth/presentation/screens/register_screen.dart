@@ -156,9 +156,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: Icons.email_outlined,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) return 'L\'email est requis';
-                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                    if (!emailRegex.hasMatch(val.trim())) {
-                      return 'Veuillez entrer une adresse email valide.';
+                    final trimmed = val.trim();
+                    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                    if (!emailRegex.hasMatch(trimmed) || trimmed.contains('..')) {
+                      return 'Veuillez entrer une adresse email valide (ex: nom@domaine.com)';
                     }
                     return null;
                   },
@@ -167,15 +168,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 AppTextField(
                   label: 'Téléphone',
-                  hint: 'ex: +237699999999',
+                  hint: 'ex: +237699999999 ou 699999999',
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   prefixIcon: Icons.phone_outlined,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) return 'Le numéro de téléphone est requis';
+                    final cleaned = val.trim().replaceAll(RegExp(r'[\s\-\(\)\.]'), '');
                     final phoneRegex = RegExp(r'^\+?[0-9]{9,15}$');
-                    if (!phoneRegex.hasMatch(val.trim())) {
-                      return 'Veuillez entrer un numéro valide (min. 9 chiffres).';
+                    if (!phoneRegex.hasMatch(cleaned)) {
+                      return 'Numéro invalide: 9 à 15 chiffres requis (ex: +237690000000)';
                     }
                     return null;
                   },

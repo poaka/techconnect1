@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const supabase = require('../config/supabase');
 const env = require('../config/env');
 const { ApiError } = require('../middleware/errorHandler');
+const { isValidEmail, isValidPhoneNumber, sanitizeEmail, sanitizePhone } = require('../utils/validators');
 
 // In-memory fallback store for local development/testing without live Supabase
 const mockUsers = new Map([
@@ -57,25 +58,50 @@ class AuthService {
       throw ApiError.badRequest('Rôle d\'utilisateur non valide');
     }
 
-    const emailLower = email.toLowerCase();
-    console.log('[AuthService.register] Starting registration for:', emailLower, 'role:', role);
+    const cleanEmail = sanitizeEmail(email);
+    if (!cleanEmail || !isValidEmail(cleanEmail)) {
+      throw ApiError.badRequest('Adresse email invalide (ex: nom@domaine.com)');
+    }
+
+    const cleanPhone = sanitizePhone(phone);
+    if (cleanPhone && !isValidPhoneNumber(cleanPhone)) {
+      throw ApiError.badRequest('Format de numéro de téléphone invalide (ex: +237690000000)');
+    }
+
+    console.log('[AuthService.register] Starting registration for:', cleanEmail, 'role:', role);
 
     if (supabase) {
-      console.log('[AuthService.register] Using Supabase — checking existing user...');
-      const { data: existingUser, error: lookupError } = await supabase
+      console.log('[AuthService.register] Using Supabase — checking existing user email...');
+      const { data: existingEmailUser, error: lookupError } = await supabase
         .from('users')
         .select('id')
-        .eq('email', emailLower)
+        .eq('email', cleanEmail)
         .maybeSingle();
 
       if (lookupError) {
-        console.error('[AuthService.register] Lookup error:', lookupError);
+        console.error('[AuthService.register] Email lookup error:', lookupError);
         throw ApiError.internal('Erreur lors de la vérification de l\'email');
       }
 
-      if (existingUser) {
-        console.log('[AuthService.register] User already exists:', existingUser.id);
+      if (existingEmailUser) {
+        console.log('[AuthService.register] User email already exists:', existingEmailUser.id);
         throw ApiError.conflict('Un utilisateur avec cet email existe déjà');
+      }
+
+      if (cleanPhone) {
+        console.log('[AuthService.register] Checking existing phone number in Supabase...');
+        const { data: existingPhoneUser, error: phoneLookupError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('phone', cleanPhone)
+          .maybeSingle();
+
+        if (phoneLookupError) {
+          console.error('[AuthService.register] Phone lookup error:', phoneLookupError);
+        } else if (existingPhoneUser) {
+          console.log('[AuthService.register] Phone number already registered:', existingPhoneUser.id);
+          throw ApiError.conflict('Un utilisateur avec ce numéro de téléphone existe déjà');
+        }
       }
 
       console.log('[AuthService.register] No existing user found. Hashing password...');
@@ -87,8 +113,8 @@ class AuthService {
         .insert([
           {
             full_name: fullName,
-            email: emailLower,
-            phone: phone || null,
+            email: cleanEmail,
+            phone: cleanPhone || null,
             password_hash: passwordHash,
             role: role
           }
@@ -107,23 +133,31 @@ class AuthService {
     }
 
     // Local fallback
-    if (mockUsers.has(emailLower)) {
+    if (mockUsers.has(cleanEmail)) {
       throw ApiError.conflict('Un utilisateur avec cet email existe déjà');
+    }
+
+    if (cleanPhone) {
+      for (const u of mockUsers.values()) {
+        if (u.phone === cleanPhone) {
+          throw ApiError.conflict('Un utilisateur avec ce numéro de téléphone existe déjà');
+        }
+      }
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
     const newUser = {
       id: `user-${Date.now()}`,
       full_name: fullName,
-      email: emailLower,
-      phone: phone || null,
+      email: cleanEmail,
+      phone: cleanPhone || null,
       password_hash: passwordHash,
       role: role,
       avatar_url: null,
       created_at: new Date().toISOString()
     };
 
-    mockUsers.set(emailLower, newUser);
+    mockUsers.set(cleanEmail, newUser);
 
     const userToReturn = { ...newUser };
     delete userToReturn.password_hash;
