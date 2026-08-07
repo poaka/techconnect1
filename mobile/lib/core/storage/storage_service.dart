@@ -4,6 +4,7 @@ class StorageService {
   static const String tokenKey = 'jwt_auth_token';
   static const String isLoggedInKey = 'is_logged_in';
   static const String languageKey = 'user_language';
+  static const String themeKey = 'is_dark_mode';
 
   final GetStorage _box;
 
@@ -41,5 +42,15 @@ class StorageService {
   /// Saves the user's preferred language code to GetStorage.
   Future<void> saveLanguage(String languageCode) async {
     await _box.write(languageKey, languageCode);
+  }
+
+  /// Retrieves the saved dark mode preference from GetStorage. Defaults to false (light mode).
+  bool isDarkMode() {
+    return _box.read<bool>(themeKey) ?? false;
+  }
+
+  /// Saves the dark mode preference to GetStorage.
+  Future<void> saveThemeMode(bool isDark) async {
+    await _box.write(themeKey, isDark);
   }
 }

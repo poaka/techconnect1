@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/widgets/language_selector.dart';
+import '../../../../shared/widgets/theme_toggle_button.dart';
 import '../../../auth/presentation/auth_provider.dart';
 import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../providers/technicians_providers.dart';
@@ -135,32 +137,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ],
                         ),
-                        Stack(
+                        Row(
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
-                              onPressed: () => context.push('/notifications'),
-                            ),
-                            if (unreadCount > 0)
-                              Positioned(
-                                right: 10,
-                                top: 10,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.error,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Text(
-                                    unreadCount > 9 ? '9+' : unreadCount.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
+                            const ThemeToggleButton(),
+                            const LanguageSelector(),
+                            Stack(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 28),
+                                  onPressed: () => context.push('/notifications'),
+                                ),
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    right: 10,
+                                    top: 10,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.error,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(
+                                        unreadCount > 9 ? '9+' : unreadCount.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
+                              ],
+                            ),
                           ],
                         ),
                       ],

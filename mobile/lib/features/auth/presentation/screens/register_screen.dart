@@ -10,6 +10,7 @@ import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/error_banner.dart';
 import '../../../../shared/widgets/language_selector.dart';
+import '../../../../shared/widgets/theme_toggle_button.dart';
 import '../../domain/user_role.dart';
 import '../auth_provider.dart';
 
@@ -74,6 +75,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       appBar: AppBar(
         title: Text(context.tr('register_title')),
         actions: const [
+          ThemeToggleButton(),
           Padding(
             padding: EdgeInsets.only(right: 12.0),
             child: LanguageSelector(),

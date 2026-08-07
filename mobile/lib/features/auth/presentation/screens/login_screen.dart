@@ -12,6 +12,8 @@ import '../../../../shared/widgets/error_banner.dart';
 import '../../../../shared/widgets/language_selector.dart';
 import '../auth_provider.dart';
 
+import '../../../../shared/widgets/theme_toggle_button.dart';
+
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -66,6 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         actions: const [
+          ThemeToggleButton(),
           Padding(
             padding: EdgeInsets.only(right: 12.0),
             child: LanguageSelector(),

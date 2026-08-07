@@ -12,13 +12,22 @@ abstract class AppColors {
   static const Color accentGold = Color(0xFFF59E0B);    // Amber Gold (Ratings & Badges)
   static const Color accent = Color(0xFFF59E0B);        // Alias for rating gold
 
-  // Neutral System
+  // Light Neutral System
   static const Color background = Color(0xFFF8FAFC);    // Slate 50 Background
   static const Color surface = Color(0xFFFFFFFF);       // Card Surface White
   static const Color textPrimary = Color(0xFF0F172A);   // Slate 900 High Contrast Text
   static const Color textSecondary = Color(0xFF64748B); // Slate 500 Subtitles & Meta
   static const Color border = Color(0xFFE2E8F0);        // Slate 200 Card Borders
   static const Color inputBg = Color(0xFFF1F5F9);       // Slate 100 Input Fields
+
+  // Dark Neutral System
+  static const Color darkBackground = Color(0xFF0F172A); // Slate 900 Dark Background
+  static const Color darkSurface = Color(0xFF1E293B);    // Slate 800 Dark Surface Card
+  static const Color darkTextPrimary = Color(0xFFF8FAFC); // Slate 50 Light Text
+  static const Color darkTextSecondary = Color(0xFF94A3B8); // Slate 400 Muted Text
+  static const Color darkBorder = Color(0xFF334155);     // Slate 700 Dark Border
+  static const Color darkInputBg = Color(0xFF1E293B);    // Slate 800 Input Field
+  static const Color darkPrimarySubtle = Color(0xFF1E3A8A); // Deep Navy Tint
 
   // Semantic Status Colors
   static const Color success = Color(0xFF10B981);       // Emerald Green (Completed, Verified)

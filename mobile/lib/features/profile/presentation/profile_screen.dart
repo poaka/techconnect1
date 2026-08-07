@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/widgets/language_selector.dart';
+import '../../../../shared/widgets/theme_toggle_button.dart';
 import '../../auth/presentation/auth_provider.dart';
 import '../../auth/presentation/auth_state.dart';
 import '../../technicians/presentation/providers/technician_documents_provider.dart';
@@ -90,6 +92,11 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Mon Profil'),
         actions: [
+          const ThemeToggleButton(),
+          const Padding(
+            padding: EdgeInsets.only(right: 4.0),
+            child: LanguageSelector(),
+          ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () {
