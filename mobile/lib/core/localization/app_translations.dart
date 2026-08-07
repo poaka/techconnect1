@@ -1,0 +1,131 @@
+/// Key-value dictionary structure for bilingual support (French and English)
+class AppTranslations {
+  static const Map<String, Map<String, String>> values = {
+    'fr': {
+      // General & App Name
+      'app_title': 'TechConnect Cameroun',
+      'language': 'Langue',
+      'french': 'Français',
+      'english': 'English',
+
+      // Navigation & Shell Tabs
+      'nav_home': 'Accueil',
+      'nav_requests': 'Demandes',
+      'nav_favorites': 'Favoris',
+      'nav_profile': 'Profil',
+
+      // Auth - Login Screen
+      'login_title': 'Connexion',
+      'login_welcome': 'Bienvenue sur TechConnect',
+      'login_subtitle': 'Connectez-vous pour accéder aux artisans qualifiés',
+      'email_label': 'Adresse Email',
+      'email_hint': 'ex: j.marc@techconnect.cm',
+      'password_label': 'Mot de passe',
+      'password_hint': 'Votre mot de passe',
+      'login_button': 'Se connecter',
+      'dont_have_account': 'Vous n\'avez pas de compte ? ',
+      'register_link': 'S\'inscrire',
+
+      // Auth - Register Screen
+      'register_title': 'Inscription',
+      'register_header': 'Rejoignez TechConnect',
+      'register_subtitle': 'Choisissez votre type de compte pour commencer',
+      'user_type_prompt': 'Vous êtes :',
+      'role_client': 'Client',
+      'role_client_desc': 'Chercher un artisan',
+      'role_technician': 'Technicien',
+      'role_technician_desc': 'Proposer mes services',
+      'full_name_label': 'Nom complet',
+      'full_name_hint': 'ex: Jean Marc',
+      'phone_label': 'Téléphone',
+      'phone_hint': 'ex: +237699999999',
+      'confirm_password_label': 'Confirmer le mot de passe',
+      'confirm_password_hint': 'Répétez votre mot de passe',
+      'create_account_button': 'Créer mon compte',
+      'already_have_account': 'Vous avez déjà un compte ? ',
+
+      // Home & Search
+      'search_placeholder': 'Rechercher un électricien, plombier...',
+      'categories_header': 'Catégories Populaires',
+      'top_technicians': 'Artisans les mieux notés',
+      'verified_badge': 'Vérifié',
+      'see_all': 'Voir tout',
+
+      // Profile Screen
+      'profile_title': 'Mon Profil',
+      'edit_profile': 'Modifier le profil',
+      'change_password': 'Changer le mot de passe',
+      'logout_button': 'Se déconnecter',
+      'select_language': 'Changer la langue',
+
+      // Common & Errors
+      'error_title': 'Erreur',
+      'success_title': 'Succès',
+      'cancel': 'Annuler',
+      'save': 'Enregistrer',
+    },
+    'en': {
+      // General & App Name
+      'app_title': 'TechConnect Cameroon',
+      'language': 'Language',
+      'french': 'Français',
+      'english': 'English',
+
+      // Navigation & Shell Tabs
+      'nav_home': 'Home',
+      'nav_requests': 'Requests',
+      'nav_favorites': 'Favorites',
+      'nav_profile': 'Profile',
+
+      // Auth - Login Screen
+      'login_title': 'Sign In',
+      'login_welcome': 'Welcome to TechConnect',
+      'login_subtitle': 'Sign in to access verified skilled technicians',
+      'email_label': 'Email Address',
+      'email_hint': 'e.g. j.marc@techconnect.cm',
+      'password_label': 'Password',
+      'password_hint': 'Your password',
+      'login_button': 'Sign In',
+      'dont_have_account': 'Don\'t have an account? ',
+      'register_link': 'Sign Up',
+
+      // Auth - Register Screen
+      'register_title': 'Sign Up',
+      'register_header': 'Join TechConnect',
+      'register_subtitle': 'Choose your account type to get started',
+      'user_type_prompt': 'You are a:',
+      'role_client': 'Client',
+      'role_client_desc': 'Find a technician',
+      'role_technician': 'Technician',
+      'role_technician_desc': 'Offer my services',
+      'full_name_label': 'Full Name',
+      'full_name_hint': 'e.g. Jean Marc',
+      'phone_label': 'Phone Number',
+      'phone_hint': 'e.g. +237699999999',
+      'confirm_password_label': 'Confirm Password',
+      'confirm_password_hint': 'Repeat your password',
+      'create_account_button': 'Create My Account',
+      'already_have_account': 'Already have an account? ',
+
+      // Home & Search
+      'search_placeholder': 'Search electrician, plumber...',
+      'categories_header': 'Popular Categories',
+      'top_technicians': 'Top Rated Technicians',
+      'verified_badge': 'Verified',
+      'see_all': 'See all',
+
+      // Profile Screen
+      'profile_title': 'My Profile',
+      'edit_profile': 'Edit Profile',
+      'change_password': 'Change Password',
+      'logout_button': 'Log Out',
+      'select_language': 'Change Language',
+
+      // Common & Errors
+      'error_title': 'Error',
+      'success_title': 'Success',
+      'cancel': 'Cancel',
+      'save': 'Save',
+    },
+  };
+}

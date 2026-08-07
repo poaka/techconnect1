@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/error_banner.dart';
+import '../../../../shared/widgets/language_selector.dart';
 import '../../domain/user_role.dart';
 import '../auth_provider.dart';
 
@@ -70,7 +72,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inscription'),
+        title: Text(context.tr('register_title')),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 12.0),
+            child: LanguageSelector(),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -89,13 +97,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Rejoignez TechConnect',
+                Text(
+                  context.tr('register_header'),
                   style: AppTypography.display,
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Choisissez votre type de compte pour commencer',
+                Text(
+                  context.tr('register_subtitle'),
                   style: AppTypography.bodyMedium,
                 ),
                 const SizedBox(height: 20),
@@ -106,17 +114,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ],
 
                 // Role Picker Segment
-                const Text(
-                  'Vous êtes :',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                Text(
+                  context.tr('user_type_prompt'),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
                       child: _RoleCard(
-                        title: 'Client',
-                        subtitle: 'Chercher un artisan',
+                        title: context.tr('role_client'),
+                        subtitle: context.tr('role_client_desc'),
                         icon: Icons.person_search_outlined,
                         isSelected: _selectedRole == UserRole.client,
                         onTap: () => setState(() => _selectedRole = UserRole.client),
@@ -125,8 +133,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _RoleCard(
-                        title: 'Technicien',
-                        subtitle: 'Proposer mes services',
+                        title: context.tr('role_technician'),
+                        subtitle: context.tr('role_technician_desc'),
                         icon: Icons.build_circle_outlined,
                         isSelected: _selectedRole == UserRole.technician,
                         onTap: () => setState(() => _selectedRole = UserRole.technician),

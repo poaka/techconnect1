@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/error_banner.dart';
+import '../../../../shared/widgets/language_selector.dart';
 import '../auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -56,10 +58,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final screenWidth = mediaQuery.size.width;
     final screenHeight = mediaQuery.size.height;
 
-    // Responsive horizontal padding based on screen width
     final horizontalPadding = screenWidth < 360 ? 16.0 : (screenWidth > 600 ? 40.0 : 24.0);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(context.tr('login_title')),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 12.0),
+            child: LanguageSelector(),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -67,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 32.0, // Account for vertical padding
+                  minHeight: constraints.maxHeight - 32.0,
                 ),
                 child: IntrinsicHeight(
                   child: Form(
@@ -75,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        SizedBox(height: screenHeight * 0.03),
+                        SizedBox(height: screenHeight * 0.01),
 
                         Center(
                           child: Image.asset(
@@ -87,19 +99,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Title & Subtitle
-                        const Text(
-                          'Connexion',
+                        // Title & Subtitle using AppLocalizations
+                        Text(
+                          context.tr('login_welcome'),
                           textAlign: TextAlign.center,
                           style: AppTypography.display,
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Accédez à votre espace TechConnect Cameroun',
+                        Text(
+                          context.tr('login_subtitle'),
                           textAlign: TextAlign.center,
                           style: AppTypography.bodyMedium,
                         ),
-                        SizedBox(height: screenHeight * 0.04),
+                        SizedBox(height: screenHeight * 0.03),
 
                         // Error Banner
                         if (authState.errorMessage != null) ...[
@@ -109,18 +121,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         // Input Fields
                         AppTextField(
-                          label: 'Adresse Email',
-                          hint: 'ex: client@domain.cm',
+                          label: context.tr('email_label'),
+                          hint: context.tr('email_hint'),
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           prefixIcon: Icons.email_outlined,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'L\'email est requis';
+                              return context.tr('email_label');
                             }
-                            final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                            final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
                             if (!emailRegex.hasMatch(value.trim())) {
-                              return 'Veuillez entrer une adresse email valide.';
+                              return context.tr('email_hint');
                             }
                             return null;
                           },
@@ -128,14 +140,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 16),
 
                         AppTextField(
-                          label: 'Mot de passe',
-                          hint: '••••••••',
+                          label: context.tr('password_label'),
+                          hint: context.tr('password_hint'),
                           controller: _passwordController,
                           isPassword: true,
                           prefixIcon: Icons.lock_outline,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Le mot de passe est requis';
+                              return context.tr('password_label');
                             }
                             return null;
                           },
@@ -144,7 +156,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         // Submit Button
                         AppButton(
-                          text: 'Se connecter',
+                          text: context.tr('login_button'),
                           isLoading: authState.isLoading,
                           onPressed: _submit,
                         ),
@@ -152,15 +164,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const Spacer(),
                         const SizedBox(height: 24),
 
-                        // Responsive Footer Link (RichText replaces rigid unconstrained Row)
+                        // Footer Link
                         Center(
                           child: Text.rich(
                             TextSpan(
-                              text: 'Vous n\'avez pas de compte ? ',
+                              text: context.tr('dont_have_account'),
                               style: AppTypography.bodyMedium,
                               children: [
                                 TextSpan(
-                                  text: 'S\'inscrire',
+                                  text: context.tr('register_link'),
                                   style: AppTypography.bodyMedium.copyWith(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.bold,

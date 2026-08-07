@@ -3,6 +3,7 @@ import 'package:get_storage/get_storage.dart';
 class StorageService {
   static const String tokenKey = 'jwt_auth_token';
   static const String isLoggedInKey = 'is_logged_in';
+  static const String languageKey = 'user_language';
 
   final GetStorage _box;
 
@@ -30,5 +31,15 @@ class StorageService {
   Future<void> clearAuthData() async {
     await _box.remove(tokenKey);
     await _box.remove(isLoggedInKey);
+  }
+
+  /// Retrieves the saved language code ('fr' or 'en') from GetStorage. Defaults to 'fr'.
+  String getSavedLanguage() {
+    return _box.read<String>(languageKey) ?? 'fr';
+  }
+
+  /// Saves the user's preferred language code to GetStorage.
+  Future<void> saveLanguage(String languageCode) async {
+    await _box.write(languageKey, languageCode);
   }
 }
