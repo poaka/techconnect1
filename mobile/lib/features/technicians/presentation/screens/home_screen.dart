@@ -287,6 +287,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    TextButton(
+                      onPressed: () => context.push('/directory'),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('Tout explorer',
+                          style: TextStyle(fontSize: 13)),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
