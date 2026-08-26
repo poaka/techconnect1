@@ -1,0 +1,605 @@
+
+
+REPUBLIC OF CAMEROONPeace – Work – FatherlandSOFTWARE REQUIREMENTS &amp; SPECIFICATION BOOKFIXERPRO237Smart Technician Dispatch and Service Platform for Cameroon
+
+Executive Summary
+FixerPro237 is a service platform designed for the Cameroonian market. Its purpose is to simplify technical-service requests while reducing the time clients spend searching for an available technician. The client posts a job instead of manually selecting a technician. FixerPro237 identifies suitable technicians in the same city, prioritizes those with the lowest active-job count, and dispatches the request. Once a technician accepts, the request is assigned to that technician and competing offers are invalidated.
+The first version keeps payment outside the platform: the client and technician handle payment directly. FixerPro237 therefore does not integrate MTN Mobile Money or Orange Money at this stage. Live GPS tracking is included for assigned interventions. The implementation uses the same stack selected for the previous project: React, Node.js/Express and Supabase/PostgreSQL.
+1. Project Overview
+1.1 Purpose
+This document defines the functional, technical, data, security, interface, testing and deployment requirements for FixerPro237. It is intended to guide implementation, UML modelling, testing and the final-year academic report.
+1.2 Problem Statement
+In Cameroon, clients frequently depend on recommendations, WhatsApp groups, social networks and informal contacts to find technicians. This makes availability, reliability and response time difficult to determine. FixerPro237 addresses this problem by centralizing service requests and automating technician dispatch.
+1.3 Objectives
+Allow authenticated clients to post technical-service requests.
+Automatically identify eligible technicians.
+Prioritize technicians with fewer active jobs.
+Prevent duplicate assignment when several technicians receive an offer.
+Allow technicians to manage availability and service status.
+Provide technician verification and administrator validation.
+Provide live GPS tracking during assigned interventions.
+Provide service history, completion and rating/review.
+Provide an administration interface.
+Remain lightweight enough for common Cameroonian connectivity constraints.
+2. Product Scope
+2.1 Version 1 – In Scope
+Client and technician registration/login.
+Role-based access control.
+Client and professional technician profiles.
+Technician category and city.
+Verification-document upload and administrator review.
+Client service-request creation.
+Automatic dispatch to eligible technicians.
+Same-city filtering.
+Workload-based prioritization.
+Accept/reject job offers.
+Atomic single-technician assignment.
+Request status tracking and history.
+Technician availability.
+Live GPS tracking for assigned jobs.
+Notifications.
+Completion and rating/review.
+Administrator management of users, categories, cities and verification documents.
+2.2 Out of Scope for Version 1
+MTN Mobile Money and Orange Money integration.
+In-platform payment or escrow.
+Mandatory real-time chat.
+AI-based recommendations.
+Complex microservice architecture.
+Native mobile applications if the academic release remains a responsive web application.
+Payment is explicitly external to FixerPro237 in V1. The platform manages the request and service workflow, not the financial transaction.
+3. Stakeholders and Actors
+Actor
+Description
+Main Responsibilities
+Client
+Authenticated service requester
+Create requests, follow status, track assigned technician, cancel eligible requests, review technician.
+Technician
+Authenticated service provider
+Maintain profile, submit documents, set availability, receive offers, accept/reject, update status, share GPS, complete jobs.
+Administrator
+Platform manager
+Validate technicians, manage users/categories/cities, review documents, monitor platform activity.
+Dispatch Engine
+Internal system component
+Filter eligible technicians, rank workload, create offers, enforce assignment.
+4. Functional Requirements
+ID
+Area
+Requirement
+FR-01
+Authentication
+Clients and technicians shall register and log in.
+FR-02
+Authorization
+Protected functions shall require the appropriate role.
+FR-03
+Client profile
+Clients shall manage their personal information.
+FR-04
+Technician profile
+Technicians shall manage professional information, category, city, experience, availability and contact data.
+FR-05
+Verification
+Technicians shall submit identity/professional documents for administrator review.
+FR-06
+Request creation
+Clients shall create requests with category, description, city and service location.
+FR-07
+Eligibility filtering
+FixerPro237 shall select verified, available technicians matching category and city.
+FR-08
+Priority
+Eligible technicians shall be ordered by active-job count ascending.
+FR-09
+Dispatch
+FixerPro237 shall offer the request according to the dispatch policy.
+FR-10
+Response
+Technicians shall accept or reject offers.
+FR-11
+Atomic assignment
+Only one technician shall be able to obtain the request.
+FR-12
+Status tracking
+Requests shall maintain defined lifecycle states.
+FR-13
+Availability
+Technicians shall control their availability.
+FR-14
+GPS
+Assigned technicians shall be able to share location updates; authorized clients shall view the latest location.
+FR-15
+Completion
+Technicians shall mark assigned work as completed.
+FR-16
+Review
+Clients shall rate/review completed services.
+FR-17
+Notifications
+Users shall receive important request-status notifications.
+FR-18
+History
+Users shall view relevant service history.
+FR-19
+Administration
+Administrators shall manage users, categories, cities and verification documents.
+FR-20
+Auditability
+Important dispatch and administrative actions should be traceable.
+5. Non-Functional Requirements
+ID
+Category
+Requirement
+NFR-01
+Performance
+Core screens/API calls should remain responsive under normal academic load.
+NFR-02
+Bandwidth
+Minimize payload size, images and unnecessary requests.
+NFR-03
+Security
+Use authentication, authorization, validation, secure file access and protected API routes.
+NFR-04
+Privacy
+Restrict identity and GPS data to authorized workflows.
+NFR-05
+Usability
+Core actions must be understandable on smartphones.
+NFR-06
+Maintainability
+Separate frontend, backend and data responsibilities.
+NFR-07
+Compatibility
+Support common desktop and mobile browsers.
+NFR-08
+Reliability
+Prevent two technicians from simultaneously being assigned the same request.
+6. Core Business Rules
+Only authenticated clients can create service requests.
+Only verified and available technicians participate in automatic dispatch.
+The technician must match the requested category.
+The initial dispatch scope requires the technician and request to be in the same city.
+Technicians are ranked by active-job count, lowest first.
+A deterministic tie-breaker should be used when active-job counts are equal.
+Acceptance must be atomic.
+After acceptance, competing offers become invalid.
+GPS sharing is available only for an assigned active service.
+GPS sharing ends when the service is completed or cancelled.
+Payment is not processed by FixerPro237 in V1.
+7. Dispatch Algorithm
+The defining feature of FixerPro237 is automatic technician dispatch.
+dispatch(request):    candidates = technicians where        verified = true        AND available = true        AND category = request.category        AND city = request.city    sort candidates by activeJobCount ASC    for technician in candidates:        create job offer        wait for response        if accepted:            atomically assign request            invalidate all other offers            return ASSIGNED    return UNASSIGNED
+For a Year 3 implementation, sequential dispatch is recommended because it is easy to explain and test. The backend must nevertheless perform the final assignment atomically so that simultaneous acceptance cannot produce duplicate ownership.
+8. Service Request Lifecycle
+State
+Meaning
+Possible Next States
+Pending
+Request created by client
+Dispatched, Cancelled
+Dispatched
+Offer sent to technician
+Accepted, Rejected/Expired, Cancelled
+Accepted
+Technician owns request
+In Progress, Cancelled
+In Progress
+Service underway; GPS may be active
+Completed, Cancelled
+Completed
+Service finished
+Rated
+Cancelled
+Request cancelled
+Terminal
+Unassigned
+No technician accepted
+Retry/new request
+9. Data Model
+Entity
+Core Attributes
+Purpose
+User
+id, name, email, phone, role, profilePicture, createdAt, updatedAt
+Base identity.
+Client
+userId, address, city
+Client profile.
+Technician
+userId, categoryId, city, experienceYears, description, priceRange, available, verified, activeJobCount
+Professional profile and dispatch attributes.
+Administrator
+userId
+Administrative role.
+Category
+id, name, description, active
+Service category.
+VerificationDocument
+id, technicianId, type, fileUrl, status, reviewedBy, reviewedAt
+Technician verification evidence.
+ServiceRequest
+id, clientId, categoryId, description, city, latitude, longitude, status, assignedTechnicianId, timestamps
+Core service request.
+JobOffer
+id, requestId, technicianId, status, offeredAt, respondedAt
+Dispatch proposal.
+LocationUpdate
+id, requestId, technicianId, latitude, longitude, recordedAt
+GPS update.
+Review
+id, requestId, clientId, technicianId, rating, comment, createdAt
+Post-service evaluation.
+Notification
+id, userId, type, title, message, readAt, createdAt
+Event notification.
+9.1 Cardinalities
+User 1 — 0..1 Client.
+User 1 — 0..1 Technician.
+User 1 — 0..1 Administrator.
+Category 1 — 0..* Technician; each technician belongs to exactly one category.
+Client 1 — 0..* ServiceRequest.
+ServiceRequest 1 — 0..* JobOffer.
+Technician 1 — 0..* JobOffer.
+ServiceRequest 0..1 — 1 Technician as assigned technician.
+Technician 1 — 0..* VerificationDocument.
+Administrator 1 — 0..* reviewed VerificationDocument; a document may be reviewed by 0..1 administrator.
+ServiceRequest 1 — 0..* LocationUpdate.
+ServiceRequest 1 — 0..1 Review.
+10. UML Analysis and Design Deliverables
+Diagram
+Purpose
+Use Case Diagram
+Client, Technician and Administrator interactions with FixerPro237.
+Class Diagram
+User inheritance and relationships among core domain classes.
+Sequence Diagram – Dispatch
+Client request → filtering → offer → accept/reject → assignment.
+Sequence Diagram – GPS
+Technician sends location → API stores → Client views latest position.
+Activity Diagram
+Dispatch decision flow and retry logic.
+State Diagram
+ServiceRequest lifecycle.
+Package/Architecture Diagram
+Presentation, application and data layers.
+Deployment Diagram
+Client browser, frontend, backend and Supabase.
+ER Diagram
+Database tables and cardinalities.
+11. System Architecture
+FixerPro237 uses a simple three-layer architecture that matches the existing technology stack.
+Layer
+Technology
+Responsibilities
+Presentation
+flutter
+Pages, forms, dashboards, authentication UI, request status, GPS map/tracking.
+Application/API
+Node.js + Express
+Authentication integration, authorization, business rules, dispatch service, request workflow, validation, REST endpoints.
+Data/Services
+Supabase + PostgreSQL
+Database, authentication services, storage for verification documents, policies and persistence.
+FixerPro237/├── client/│   └── src/│       ├── components/  pages/  layouts/│       ├── services/    hooks/  context/│       └── routes/      utils/├── server/│   └── src/│       ├── controllers/ routes/ services/│       ├── middleware/  validators/ utils/│       └── config/├── database/│   ├── migrations/ seed/ policies/├── docs/│   └── uml/ api/ requirements/└── README.md
+12. Key Sequence Specifications
+12.1 Request Dispatch
+Client logs in.
+Client submits service request.
+React sends the request to the Express API.
+API validates and stores the request.
+Dispatch service finds verified, available technicians in the same city and category.
+Candidates are ordered by active-job count.
+System creates an offer for the highest-priority candidate.
+Technician accepts or rejects.
+On rejection/expiry, the next candidate is considered.
+On acceptance, the backend atomically assigns the request.
+Other offers are invalidated.
+Technician begins service and GPS tracking becomes available.
+12.2 GPS Tracking
+Technician starts an assigned job.
+Location permission is granted.
+Technician device sends periodic coordinates.
+Backend verifies that the technician owns the request.
+Location update is stored.
+Authorized client views the latest position and timestamp.
+Tracking stops when the service ends.
+13. Live GPS Tracking
+Only assigned technicians can send GPS updates for a request.
+Only the related client and authorized administrators can view the tracking information.
+Coordinates include latitude, longitude and timestamp.
+Update frequency should balance usefulness, battery consumption and mobile data usage.
+When connectivity is interrupted, the client should see the last known position and its timestamp.
+Tracking should stop automatically after completion/cancellation.
+14. Security
+Protected routes require authentication.
+Use RBAC for Client, Technician and Administrator permissions.
+Validate all request inputs.
+Secure verification-document storage and access.
+Use HTTPS in deployment.
+Use Supabase/PostgreSQL Row Level Security where applicable.
+Use rate limiting for authentication and sensitive endpoints.
+Protect GPS data through authorization checks.
+Use an atomic/conditional database operation for final job assignment.
+15. REST API – Core Endpoints
+Method
+Endpoint
+Purpose
+Role
+POST
+/api/auth/register
+Register account
+Public
+POST
+/api/auth/login
+Login
+Public
+GET
+/api/categories
+List categories
+Authenticated
+POST
+/api/requests
+Create request
+Client
+GET
+/api/requests/:id
+View request
+Authorized
+POST
+/api/requests/:id/cancel
+Cancel request
+Client
+GET
+/api/technician/offers
+View offers
+Technician
+POST
+/api/offers/:id/accept
+Accept offer
+Technician
+POST
+/api/offers/:id/reject
+Reject offer
+Technician
+PATCH
+/api/technician/availability
+Set availability
+Technician
+POST
+/api/requests/:id/location
+Send GPS
+Assigned Technician
+GET
+/api/requests/:id/location
+Get latest GPS
+Client/Admin
+POST
+/api/requests/:id/complete
+Complete service
+Technician
+POST
+/api/requests/:id/review
+Submit review
+Client
+GET
+/api/admin/verification-documents
+Review queue
+Administrator
+PATCH
+/api/admin/verification-documents/:id
+Approve/reject
+Administrator
+16. User Interface Requirements
+16.1 Client
+Register/Login
+Client dashboard
+Post Service form
+Request status/history
+Assigned technician details
+Live tracking view
+Rating/review
+16.2 Technician
+Register/Login
+Professional profile
+Verification status
+Availability toggle
+Job offers
+Active job
+GPS sharing
+Job history
+16.3 Administrator
+Dashboard
+Verification queue
+User management
+Category management
+City management
+Request monitoring
+17. Cameroon-Specific Requirements
+Mobile-first responsive design.
+Low-bandwidth pages and optimized media.
+Cameroonian city and category data.
+Phone and WhatsApp contact fields can be supported for practical communication.
+External payment in V1 avoids unnecessary financial integration complexity.
+GPS must clearly indicate permission and last-update time.
+Failure states should be understandable under unstable connectivity.
+18. Testing Strategy
+ID
+Test
+Expected Result
+T01
+Client registration
+Account created with Client role.
+T02
+Technician registration
+Technician enters verification workflow.
+T03
+Invalid login
+Access denied.
+T04
+Create request
+Pending request stored correctly.
+T05
+Dispatch filtering
+Only eligible technicians selected.
+T06
+Priority
+Lowest active-job count ranked first.
+T07
+First acceptance
+Exactly one technician assigned.
+T08
+Simultaneous acceptance
+Only one succeeds; others fail safely.
+T09
+Rejection
+Next eligible technician considered.
+T10
+GPS update
+Latest valid location available to authorized client.
+T11
+Unauthorized GPS
+Access rejected.
+T12
+Completion/review
+Completed request can be reviewed.
+T13
+Admin verification
+Technician status changes according to decision.
+T14
+Low bandwidth
+Core workflow remains usable.
+19. Risk Analysis
+Risk
+Impact
+Mitigation
+No available technician
+High
+Clear unassigned state and retry workflow.
+Duplicate assignment
+High
+Atomic conditional update/transaction.
+GPS/network failure
+Medium
+Last-known location and connection status.
+Slow internet
+Medium
+Small payloads and optimized UI.
+Fake verification documents
+High
+Administrator validation.
+Location privacy
+High
+Strict authorization and limited exposure.
+Scope creep
+Medium
+Keep payments/chat/AI outside V1.
+20. Sequential Development Plan
+Phase
+Focus
+Deliverables
+1
+Foundation
+Repositories, React, Express, Supabase, environment.
+2
+Database/Auth
+Schema, RLS, registration, login, roles.
+3
+Profiles/Verification
+Client/technician profiles, categories, documents, admin validation.
+4
+Requests
+Request form, validation, statuses, history.
+5
+Dispatch
+Eligibility filter, workload ranking, offers, acceptance, atomic assignment.
+6
+Technician workflow
+Availability, offers, status updates, history.
+7
+GPS
+Location permission, updates, latest-position API, tracking UI.
+8
+Reviews/Notifications
+Completion, reviews, notifications.
+9
+Admin
+Users, categories, cities, verification, monitoring.
+10
+Testing
+Functional, integration, authorization, race-condition, responsive and bandwidth tests.
+11
+Deployment
+Hosting, documentation, UML, screenshots and defence preparation.
+21. MVP Acceptance Scenario
+Client registers/logs in.
+Client posts a service request.
+FixerPro237 finds verified available technicians in the same city/category.
+FixerPro237 ranks them by active-job count.
+The first-priority technician receives an offer.
+If rejected, the next technician is considered.
+If accepted, the request is atomically assigned and removed from other offers.
+Technician starts the service and shares GPS.
+Client sees the authorized latest position.
+Technician completes the job.
+Client rates/reviews the technician.
+Request is stored in history.
+22. Future Improvements
+MTN Mobile Money and Orange Money integration.
+In-app chat.
+Distance-based GPS ranking in addition to city filtering.
+Advanced dispatch using workload, distance, rating and response rate.
+Native Android/iOS applications.
+Push notifications.
+AI-assisted recommendations.
+Automatic price estimation.
+Business accounts and property-management workflows.
+23. Conclusion
+FixerPro237 is a focused evolution of the previous technician-finder concept. The most important change is the service-dispatch model: the client describes the job and FixerPro237 takes responsibility for finding and proposing the job to a suitable technician. This creates a clear technical contribution for the project through eligibility filtering, workload prioritization, offer management and atomic assignment. Live GPS tracking further connects the digital request with the real-world intervention. The project remains appropriate for a Bachelor's Software Engineering implementation because it uses a conventional React + Node.js/Express + Supabase architecture without introducing unnecessary enterprise complexity.
+Appendix A – Glossary
+Term
+Definition
+Dispatch
+Automatic process that proposes a service request to suitable technicians.
+Active-job count
+Number of currently active jobs assigned to a technician.
+Job Offer
+Temporary proposal sent to a technician.
+Atomic Assignment
+Server-side operation that prevents multiple technicians owning one request.
+Verification Document
+Identity/professional evidence submitted for administrator review.
+Live GPS Tracking
+Authorized display of a technician's recent position during an active job.
+RBAC
+Role-Based Access Control.
+RLS
+PostgreSQL/Supabase Row Level Security.
+MVP
+Minimum Viable Product.
+Appendix B – Abbreviations
+Abbreviation
+Meaning
+API
+Application Programming Interface
+CRUD
+Create, Read, Update, Delete
+GPS
+Global Positioning System
+JWT
+JSON Web Token
+MVP
+Minimum Viable Product
+RBAC
+Role-Based Access Control
+REST
+Representational State Transfer
+RLS
+Row Level Security
+SRS
+Software Requirements Specification
+UML
+Unified Modeling Language
+UAT
+User Acceptance Testing
