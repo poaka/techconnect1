@@ -3,7 +3,7 @@
 This document outlines the architecture, state management, and features of the FixerPro237 Flutter application.
 
 ## Overview
-The mobile app is built using **Flutter** and utilizes **Riverpod** for robust state management. It provides distinct interfaces based on user roles (Client, Technician, Admin) while sharing common components. Network requests are handled by **Dio** with automatic token injection.
+The mobile app is built using **Flutter** and utilizes **Riverpod** for robust state management. It provides distinct interfaces based on user roles (Client, Technician) while sharing common components. Network requests are handled by **Dio** with automatic token injection.
 
 ## Project Structure
 The app follows a feature-first folder architecture within `lib/features/`:
@@ -25,16 +25,16 @@ lib/
   - Integration with the Profile screen for "Change Password".
 
 ### 2. Technicians (`features/technicians`)
-- **Role**: Allows clients to browse, search, and filter available technicians.
+- **Role**: Technicians receive job offers intelligently dispatched by the system based on their category, city, and active workload.
 - **Components**:
-  - `HomeScreen`: Landing page displaying featured technicians and categories.
-  - `TechnicianListScreen`: Comprehensive list with search by name and category filtering.
-  - `TechnicianProfileScreen`: Displays detailed bios, total jobs, and reviews.
+  - `HomeScreen`: Landing page for technicians to view stats and active jobs.
+  - `JobOffersScreen`: Interface to accept or reject incoming dispatched requests.
+  - `TechnicianProfileScreen`: Displays detailed bios, verification status, and reviews.
 
 ### 3. Service Requests (`features/requests`)
-- **Role**: The core workflow of the app where clients request services and technicians manage them.
+- **Role**: The core workflow where clients describe a problem to be dispatched, and track the assigned technician via live GPS.
 - **Components**:
-  - Status management (Pending, Accepted, In Progress, Completed, Rejected).
+  - Status management (Unassigned, Dispatched, Assigned, In Progress, Completed, Cancelled).
   - List views tailored for the authenticated user (Incoming requests for Technicians, Outgoing for Clients).
   - Dynamic status badges with color-coded UI indicators.
 
@@ -60,9 +60,9 @@ lib/
 - **Client Dashboard**: Overview of active requests and quick actions.
 - **Technician Dashboard**: Specialized view showing incoming requests, average rating, and job completion statistics.
 
-### 8. Admin Panel (`features/admin`)
-- **Role**: Exclusive features for users with the `admin` role.
-- **Components**: System statistics dashboard, user moderation tools, and category management.
+### 8. GPS Tracking (`features/tracking`)
+- **Role**: Real-time location tracking for active interventions.
+- **Components**: Technician broadcasts location; Client views live map tracking.
 
 ### 9. Profile Settings (`features/profile`)
 - **Role**: Manages user details and app preferences.
