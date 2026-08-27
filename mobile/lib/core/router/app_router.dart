@@ -145,11 +145,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/technicians/:id/request',
-        builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return CreateRequestScreen(technicianId: id);
-        },
+        path: '/create-request',
+        builder: (context, state) => const CreateRequestScreen(),
       ),
 
       // ─── Client Shell — 4-tab bottom nav ──────────────────────────────────

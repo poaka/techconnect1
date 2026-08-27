@@ -24,27 +24,26 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
   Color _getStatusColor(RequestStatus status) {
     switch (status) {
-      case RequestStatus.pending:
+      case RequestStatus.unassigned:
         return Colors.orange;
-      case RequestStatus.accepted:
+      case RequestStatus.assigned:
       case RequestStatus.inProgress:
         return AppColors.primary;
       case RequestStatus.completed:
         return AppColors.success;
-      case RequestStatus.rejected:
       case RequestStatus.cancelled:
         return AppColors.error;
     }
   }
 
-  Future<void> _updateStatus(RequestStatus newStatus) async {
+  Future<void> _updateStatus(Future<ServiceRequest> Function() updateAction) async {
     setState(() => _isUpdating = true);
     try {
-      await ref.read(requestListProvider.notifier).updateStatus(widget.requestId, newStatus);
+      await updateAction();
       if (mounted) {
         ref.invalidate(requestDetailProvider(widget.requestId));
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Statut mis à jour avec succès'), backgroundColor: AppColors.success),
+          const SnackBar(content: Text('Action effectuée avec succès'), backgroundColor: AppColors.success),
         );
       }
     } catch (e) {
@@ -60,51 +59,27 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
   Widget _buildActionButtons(BuildContext context, ServiceRequest request, bool isTechnician) {
     if (isTechnician) {
-      if (request.status == RequestStatus.pending) {
-        return Row(
-          children: [
-            Expanded(
-              child: AppButton(
-                text: context.tr('reject'),
-                isOutlined: true,
-                onPressed: _isUpdating ? null : () => _updateStatus(RequestStatus.rejected),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppButton(
-                text: context.tr('accept'),
-                onPressed: _isUpdating ? null : () => _updateStatus(RequestStatus.accepted),
-              ),
-            ),
-          ],
-        );
-      } else if (request.status == RequestStatus.accepted) {
-        return SizedBox(
-          width: double.infinity,
-          child: AppButton(
-            text: context.tr('start_service'),
-            onPressed: _isUpdating ? null : () => _updateStatus(RequestStatus.inProgress),
-          ),
-        );
-      } else if (request.status == RequestStatus.inProgress) {
+      // In Phase 8+, technician no longer accepts/rejects directly in detail screen (they do it via offers API).
+      // They can only mark inProgress -> completed.
+      // Or assigned -> inProgress (if implemented). Currently backend just has completeRequest.
+      if (request.status == RequestStatus.inProgress || request.status == RequestStatus.assigned) {
         return SizedBox(
           width: double.infinity,
           child: AppButton(
             text: context.tr('mark_completed'),
-            onPressed: _isUpdating ? null : () => _updateStatus(RequestStatus.completed),
+            onPressed: _isUpdating ? null : () => _updateStatus(() => ref.read(requestListProvider.notifier).completeRequest(widget.requestId)),
           ),
         );
       }
     } else { // Client
-      if (request.status == RequestStatus.pending || request.status == RequestStatus.accepted) {
+      if (request.status == RequestStatus.unassigned || request.status == RequestStatus.assigned) {
         return SizedBox(
           width: double.infinity,
           child: AppButton(
             text: context.tr('cancel_request'),
             isOutlined: true,
             color: AppColors.error,
-            onPressed: _isUpdating ? null : () => _updateStatus(RequestStatus.cancelled),
+            onPressed: _isUpdating ? null : () => _updateStatus(() => ref.read(requestListProvider.notifier).cancelRequest(widget.requestId)),
           ),
         );
       }

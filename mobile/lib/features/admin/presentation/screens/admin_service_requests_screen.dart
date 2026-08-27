@@ -18,15 +18,13 @@ class _AdminServiceRequestsScreenState extends ConsumerState<AdminServiceRequest
 
   Color _getStatusColor(RequestStatus status) {
     switch (status) {
-      case RequestStatus.pending:
+      case RequestStatus.unassigned:
         return Colors.orange;
-      case RequestStatus.accepted:
-        return Colors.blue;
+      case RequestStatus.assigned:
       case RequestStatus.inProgress:
-        return Colors.purple;
+        return AppColors.primary;
       case RequestStatus.completed:
         return AppColors.success;
-      case RequestStatus.rejected:
       case RequestStatus.cancelled:
         return AppColors.error;
     }
