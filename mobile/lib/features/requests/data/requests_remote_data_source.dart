@@ -46,4 +46,22 @@ class RequestsRemoteDataSource {
     final response = await _client.post('/requests/$id/complete');
     return response.data['data'] as Map<String, dynamic>;
   }
+
+  Future<Map<String, dynamic>> updateLocation(String id, double latitude, double longitude) async {
+    final response = await _client.post(
+      '/requests/$id/location',
+      data: {'latitude': latitude, 'longitude': longitude},
+    );
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>?> getLocation(String id) async {
+    try {
+      final response = await _client.get('/requests/$id/location');
+      return response.data['data'] as Map<String, dynamic>?;
+    } catch (e) {
+      // Return null if not found (technician hasn't sent location yet)
+      return null;
+    }
+  }
 }
