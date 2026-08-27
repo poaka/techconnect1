@@ -10,16 +10,9 @@ String get defaultApiBaseUrl {
   if (envUrl.isNotEmpty) return envUrl;
 
   if (kDebugMode) {
-    if (kIsWeb) {
-      return 'http://localhost:5000/api';
-    }
-
-    if (Platform.isAndroid) {
-      // 10.0.2.2 is the official QEMU host loopback alias for Android Emulators.
-      return 'http://10.0.2.2:5000/api';
-    }
-
-    return 'http://localhost:5000/api';
+    // 192.168.1.33 is your computer's local Wi-Fi IP address.
+    // This allows both physical devices and emulators to connect to the backend over Wi-Fi.
+    return 'http://192.168.1.33:5000/api';
   }
 
   // Release mode / Production URL on Render
