@@ -37,4 +37,17 @@ router.get('/:id', RequestsController.getRequestById);
 router.post('/:id/cancel', requireRole('client'), RequestsController.cancelRequest);
 router.post('/:id/complete', requireRole('technician'), RequestsController.completeRequest);
 
+// GPS Endpoints (Phase 7)
+router.post(
+  '/:id/location',
+  requireRole('technician'),
+  [
+    body('latitude').isNumeric().withMessage('Latitude valide requise'),
+    body('longitude').isNumeric().withMessage('Longitude valide requise'),
+    validateRequest
+  ],
+  RequestsController.updateLocation
+);
+router.get('/:id/location', RequestsController.getLocation);
+
 module.exports = router;
