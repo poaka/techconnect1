@@ -1,4 +1,4 @@
-# TechConnect Cameroun — AI Agent / Developer Guide
+# FixerPro237 Cameroun — AI Agent / Developer Guide
 
 **Read this file first, before touching any code.** It's the entry point that ties the other docs together.
 
@@ -6,7 +6,7 @@
 
 ## 1. One-Paragraph Project Summary
 
-TechConnect Cameroun is a full-stack platform (React web + Flutter mobile) that digitalizes the search, verification, and hiring of technicians/artisans in Cameroon, starting with a Yaoundé pilot. Clients search a filterable directory, send tracked service requests to technicians, and rate them after completion; technicians manage a professional profile and respond to requests; admins verify technician identity documents and moderate the platform. The backend is a Node.js/Express REST API backed by a Supabase-managed PostgreSQL database.
+FixerPro237 Cameroun is a full-stack platform (React web + Flutter mobile) that digitalizes the search, verification, and hiring of technicians/artisans in Cameroon, starting with a Yaoundé pilot. Clients search a filterable directory, send tracked service requests to technicians, and rate them after completion; technicians manage a professional profile and respond to requests; admins verify technician identity documents and moderate the platform. The backend is a Node.js/Express REST API backed by a Supabase-managed PostgreSQL database.
 
 ## 2. Core Architectural Decisions That Must Not Be Violated
 
@@ -41,7 +41,7 @@ TechConnect Cameroun is a full-stack platform (React web + Flutter mobile) that 
 ## 5. Repo / Folder Structure
 
 ```
-techconnect-cameroun/
+fixerpro237-cameroun/
 ├── backend/                 Express REST API
 │   └── src/{config,controllers,middleware,routes,services,utils}
 ├── web/                     React + Tailwind (Vite)

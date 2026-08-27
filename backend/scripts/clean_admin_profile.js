@@ -5,7 +5,7 @@ async function clean() {
     const { data: adminUser } = await supabase
       .from('users')
       .select('id')
-      .eq('email', 'admin@techconnect.cm')
+      .eq('email', 'admin@fixerpro237.cm')
       .maybeSingle();
 
     if (adminUser) {

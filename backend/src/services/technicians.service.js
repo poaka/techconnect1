@@ -37,7 +37,7 @@ const mockTechnicians = [
     rating_avg: 4.85,
     rating_count: 12,
     created_at: new Date().toISOString(),
-    user: { id: '30000000-0000-0000-0000-000000000003', full_name: 'Samuel Électricien', email: 'samuel@techconnect.cm', phone: '+237692222222', avatar_url: null },
+    user: { id: '30000000-0000-0000-0000-000000000003', full_name: 'Samuel Électricien', email: 'samuel@fixerpro237.cm', phone: '+237692222222', avatar_url: null },
     city: { id: '10000000-0000-0000-0000-000000000001', name: 'Yaoundé', region: { id: '00000000-0000-0000-0000-000000000001', name: 'Centre' } },
     categories: [{ category: { id: '20000000-0000-0000-0000-000000000001', name: 'Électricien', icon: 'bolt' } }]
   }

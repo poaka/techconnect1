@@ -1,4 +1,4 @@
-# TechConnect Cameroun — Roadmap
+# FixerPro237 Cameroun — Roadmap
 
 **How to read this:** phases are ordered by technical dependency, not by feature category. Don't start a phase before its dependencies are done and acceptance criteria are met — that's how "build hard and easy things in parallel" mistakes happen. Riskiest/foundational work comes first; the most complex/optional layers (real-time chat, payments, GPS) are pushed to Post-V1 on purpose.
 

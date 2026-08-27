@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * TechConnect Cameroun — Admin Verification CLI Utility
+ * FixerPro237 Cameroun — Admin Verification CLI Utility
  * Stand-in script allowing platform administrator to review & approve technician identity documents
  */
 
@@ -17,7 +17,7 @@ const rl = readline.createInterface({
 const question = (query) => new Promise((resolve) => rl.question(query, resolve));
 
 async function main() {
-  console.log('\n=== TechConnect Cameroun — Outil de Vérification Admin ===\n');
+  console.log('\n=== FixerPro237 Cameroun — Outil de Vérification Admin ===\n');
 
   if (!supabase) {
     console.error('Erreur: Supabase non configuré. Veuillez vérifier le fichier .env');

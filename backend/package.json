@@ -1,7 +1,7 @@
 {
-  "name": "techconnect-backend",
+  "name": "fixerpro237-backend",
   "version": "1.0.0",
-  "description": "TechConnect Cameroun REST API Backend",
+  "description": "FixerPro237 Cameroun REST API Backend",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// TechConnect Cameroun — Design Token System: Color Palette
+/// FixerPro237 Cameroun — Design Token System: Color Palette
 abstract class AppColors {
   // Brand Primary System (Royal Blue)
   static const Color primary = Color(0xFF1D4ED8);       // Royal Deep Blue

@@ -34,7 +34,7 @@ export default function LoginPage() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          <img src="/logo.png" alt="TechConnect Logo" />
+          <img src="/logo.png" alt="FixerPro237 Logo" />
           <div className="login-brand-text">Tech<span>Connect</span></div>
         </div>
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
                 type="email"
                 className="form-input"
                 style={{ paddingLeft: 38 }}
-                placeholder="admin@techconnect.cm"
+                placeholder="admin@fixerpro237.cm"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -101,7 +101,7 @@ export default function LoginPage() {
         </form>
 
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 28 }}>
-          Tableau de bord réservé aux administrateurs TechConnect Cameroun
+          Tableau de bord réservé aux administrateurs FixerPro237 Cameroun
         </p>
       </div>
     </div>

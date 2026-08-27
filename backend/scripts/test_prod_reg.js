@@ -8,7 +8,7 @@ const data = JSON.stringify({
   role: "client"
 });
 
-const req = https.request('https://techconnect1-api.onrender.com/api/auth/register', {
+const req = https.request('https://fixerpro2371-api.onrender.com/api/auth/register', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',

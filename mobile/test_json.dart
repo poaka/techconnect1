@@ -26,7 +26,7 @@ void main() {
     ],
     "user": {
       "id": "30000000-0000-0000-0000-000000000003",
-      "email": "samuel@techconnect.cm",
+      "email": "samuel@fixerpro237.cm",
       "phone": "+237692222222",
       "full_name": "Samuel Électricien",
       "avatar_url": null

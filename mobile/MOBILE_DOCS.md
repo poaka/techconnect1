@@ -1,6 +1,6 @@
-# TechConnect - Mobile App Documentation
+# FixerPro237 - Mobile App Documentation
 
-This document outlines the architecture, state management, and features of the TechConnect Flutter application.
+This document outlines the architecture, state management, and features of the FixerPro237 Flutter application.
 
 ## Overview
 The mobile app is built using **Flutter** and utilizes **Riverpod** for robust state management. It provides distinct interfaces based on user roles (Client, Technician, Admin) while sharing common components. Network requests are handled by **Dio** with automatic token injection.

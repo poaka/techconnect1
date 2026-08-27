@@ -81,7 +81,7 @@ export default function RegionsPage() {
 
   return (
     <>
-      <Header title="Régions & Villes" subtitle="Gérer les zones géographiques couvertes par TechConnect" onRefresh={fetchRegions} />
+      <Header title="Régions & Villes" subtitle="Gérer les zones géographiques couvertes par FixerPro237" onRefresh={fetchRegions} />
       <div className="page-body">
         <div className="page-header">
           <div />

@@ -2,7 +2,7 @@
 
 **DÉCISIONS TRANCHÉES (Phase 0):**
 1. **Annuaire vs Dispatch** : Modèle de Dispatch (le client poste une demande, le système trouve et assigne le technicien).
-2. **Flutter vs React** : Mobile = Flutter, Web/Admin = React.
+2. **Flutter vs React** : L'architecture complète est préservée (Mobile en Flutter, Web en React, Backend en Express JS, Base de données sur Supabase).
 3. **1 vs N catégories** : 1 seule catégorie par technicien (relation 1-to-many).
 
 **Status:** Living document — reflects the current locked decisions as of July 2026 (Express-in-the-middle architecture, mobile scope = Client + Technician).
@@ -72,7 +72,7 @@ Login → Review pending verification documents → Approve/reject technician ac
 
 ## 7. Differentiation Strategy
 
-Per the competitive analysis (WhatsApp/Facebook, iCiyaTout, TAQ App, MboaTek, Senvato, IMHOTEP): none of the existing options combine **structured identity verification** + a **full trackable request lifecycle** + a **reputation system tied to confirmed completed jobs**. TechConnect's bet is "trust as the product" — not just another open directory, but a platform where a technician's rating actually means something because it's gated behind a real completed transaction, and where identity has been checked by a human admin before the profile goes live.
+Per the competitive analysis (WhatsApp/Facebook, iCiyaTout, TAQ App, MboaTek, Senvato, IMHOTEP): none of the existing options combine **structured identity verification** + a **full trackable request lifecycle** + a **reputation system tied to confirmed completed jobs**. FixerPro237's bet is "trust as the product" — not just another open directory, but a platform where a technician's rating actually means something because it's gated behind a real completed transaction, and where identity has been checked by a human admin before the profile goes live.
 
 ## 8. Non-Functional Requirements
 

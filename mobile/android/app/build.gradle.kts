@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.techconnect.mobile"
+    namespace = "com.fixerpro237.mobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.techconnect.mobile"
+        applicationId = "com.fixerpro237.mobile"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -34,9 +34,9 @@ android {
     signingConfigs {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String? ?: "key"
-            keyPassword = keystoreProperties["keyPassword"] as String? ?: "techconnect2026"
+            keyPassword = keystoreProperties["keyPassword"] as String? ?: "fixerpro2372026"
             storeFile = keystoreProperties["storeFile"]?.let { file(it) } ?: file("key.jks")
-            storePassword = keystoreProperties["storePassword"] as String? ?: "techconnect2026"
+            storePassword = keystoreProperties["storePassword"] as String? ?: "fixerpro2372026"
         }
     }
 

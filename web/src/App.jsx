@@ -33,9 +33,9 @@ export default function App() {
         <div className="container">
           <div className="nav-wrapper">
             <a href="#" className="logo-container">
-              <img src="/logo.png" alt="TechConnect Logo" style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'contain', background: 'white', padding: '2px', border: '1px solid var(--border)' }} />
+              <img src="/logo.png" alt="FixerPro237 Logo" style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'contain', background: 'white', padding: '2px', border: '1px solid var(--border)' }} />
               <div className="logo-text">
-                TechConnect <span>Cameroun</span>
+                FixerPro237 <span>Cameroun</span>
               </div>
             </a>
 
@@ -49,7 +49,7 @@ export default function App() {
             </nav>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <a href={apkUrl} download="TechConnect-Cameroun.apk" className="btn-primary">
+              <a href={apkUrl} download="FixerPro237-Cameroun.apk" className="btn-primary">
                 <Download size={18} />
                 <span>Télécharger l'APK</span>
               </a>
@@ -77,7 +77,7 @@ export default function App() {
               </p>
 
               <div className="hero-actions">
-                <a href={apkUrl} download="TechConnect-Cameroun.apk" className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.05rem' }}>
+                <a href={apkUrl} download="FixerPro237-Cameroun.apk" className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.05rem' }}>
                   <Download size={22} />
                   <span>Télécharger pour Android (51.4 MB)</span>
                 </a>
@@ -109,7 +109,7 @@ export default function App() {
                   {/* Top Bar */}
                   <div className="screen-header">
                     <div>
-                      <div className="screen-app-title">TechConnect</div>
+                      <div className="screen-app-title">FixerPro237</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Yaoundé, Cameroun</div>
                     </div>
                     <div className="badge-verified" style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
@@ -208,7 +208,7 @@ export default function App() {
         <div className="container">
           <div className="section-header">
             <div className="badge-tag">Parcours Client Simplifié</div>
-            <h2 className="section-title">Comment fonctionne TechConnect Cameroun</h2>
+            <h2 className="section-title">Comment fonctionne FixerPro237 Cameroun</h2>
             <p className="section-subtitle">
               Une démarche structurée en 4 étapes pour un service en toute sérénité.
             </p>
@@ -339,7 +339,7 @@ export default function App() {
               Installez directement l'application officielle sur votre smartphone Android et accédez à l'annuaire des artisans vérifiés de Yaoundé.
             </p>
 
-            <a href={apkUrl} download="TechConnect-Cameroun.apk" className="btn-primary" style={{ background: '#FFFFFF', color: 'var(--primary-dark)', fontSize: '1.1rem', padding: '1.1rem 2.5rem' }}>
+            <a href={apkUrl} download="FixerPro237-Cameroun.apk" className="btn-primary" style={{ background: '#FFFFFF', color: 'var(--primary-dark)', fontSize: '1.1rem', padding: '1.1rem 2.5rem' }}>
               <Download size={24} color="var(--primary)" />
               <span style={{ fontWeight: '800' }}>Télécharger l'APK (58.9 MB)</span>
             </a>
@@ -390,7 +390,7 @@ export default function App() {
                   <ShieldCheck size={20} />
                 </div>
                 <div className="logo-text" style={{ color: 'white', fontSize: '1.2rem' }}>
-                  TechConnect <span>Cameroun</span>
+                  FixerPro237 <span>Cameroun</span>
                 </div>
               </div>
               <p>
@@ -419,7 +419,7 @@ export default function App() {
           </div>
 
           <div className="footer-bottom">
-            <p>&copy; 2026 TechConnect Cameroun. Tous droits réservés.</p>
+            <p>&copy; 2026 FixerPro237 Cameroun. Tous droits réservés.</p>
           </div>
         </div>
       </footer>

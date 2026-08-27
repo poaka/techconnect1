@@ -1,6 +1,6 @@
-# TechConnect - Backend Documentation
+# FixerPro237 - Backend Documentation
 
-This document provides a deep analysis of the Node.js backend architecture, routing, and features for the TechConnect platform.
+This document provides a deep analysis of the Node.js backend architecture, routing, and features for the FixerPro237 platform.
 
 ## Overview
 The backend is built with **Node.js** and **Express.js**. It exposes a RESTful API prefixed with `/api`. Data persistence is handled by **Supabase (PostgreSQL)**, with a robust fallback mechanism using an in-memory map for local testing when Supabase credentials are not provided.

@@ -35,7 +35,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
       digits = '237$digits';
     }
 
-    final url = 'https://wa.me/$digits?text=Bonjour,%20je%20vous%20contacte%20depuis%20l\'application%20TechConnect%20Cameroun.';
+    final url = 'https://wa.me/$digits?text=Bonjour,%20je%20vous%20contacte%20depuis%20l\'application%20FixerPro237%20Cameroun.';
 
     try {
       final launched = await launchUrlString(url, mode: LaunchMode.externalApplication);

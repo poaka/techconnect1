@@ -80,7 +80,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'TechConnect',
+                  'FixerPro237',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,

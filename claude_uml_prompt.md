@@ -6,7 +6,7 @@
 
 **Act as an Expert Software Architect and UML Specialist.**
 
-I am building an application called **TechConnect Cameroun**, a platform that connects clients with local home service technicians (electricians, plumbers, mechanics, etc.) in Cameroon. The project consists of a PostgreSQL database (managed via Supabase), a Node.js/Express REST API backend, and a Flutter mobile application.
+I am building an application called **FixerPro237 Cameroun**, a platform that connects clients with local home service technicians (electricians, plumbers, mechanics, etc.) in Cameroon. The project consists of a PostgreSQL database (managed via Supabase), a Node.js/Express REST API backend, and a Flutter mobile application.
 
 Please analyze the architecture and database schema provided below and generate the following UML diagrams using **Mermaid.js** syntax (so they can be rendered directly in Markdown):
 

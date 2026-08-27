@@ -19,11 +19,11 @@
 - [[_COMMUNITY_Admin Presentation (Mobile)|Admin Presentation (Mobile)]]
 - [[_COMMUNITY_Backend Technicians Module|Backend Technicians Module]]
 - [[_COMMUNITY_Backend Auth Module|Backend Auth Module]]
-- [[_COMMUNITY_Fixora Requirements Spec|Fixora Requirements Spec]]
+- [[_COMMUNITY_FixerPro237 Requirements Spec|FixerPro237 Requirements Spec]]
 - [[_COMMUNITY_Technician Directory Screens|Technician Directory Screens]]
 - [[_COMMUNITY_Technicians Data Layer|Technicians Data Layer]]
 - [[_COMMUNITY_Auth Screens (LoginRegister)|Auth Screens (Login/Register)]]
-- [[_COMMUNITY_Fixora Use Case Diagram|Fixora Use Case Diagram]]
+- [[_COMMUNITY_FixerPro237 Use Case Diagram|FixerPro237 Use Case Diagram]]
 - [[_COMMUNITY_Notification Screens & Widgets|Notification Screens & Widgets]]
 - [[_COMMUNITY_Shared Form Widgets|Shared Form Widgets]]
 - [[_COMMUNITY_Admin Technician Screens|Admin Technician Screens]]
@@ -163,15 +163,15 @@
 
 ## Surprising Connections (you probably didn't know these)
 - `FixerPro237 Service Request Lifecycle` --semantically_similar_to--> `Service Request Workflow`  [INFERRED] [semantically similar]
-  graphify-out/Fixora_Requirements_Spec.txt → project-specification.md
+  graphify-out/FixerPro237_Requirements_Spec.txt → project-specification.md
 - `VerificationDocument Entity` --semantically_similar_to--> `Technician Verification Module`  [INFERRED] [semantically similar]
-  graphify-out/Fixora_Requirements_Spec.txt → project-specification.md
+  graphify-out/FixerPro237_Requirements_Spec.txt → project-specification.md
 - `Three-Layer Architecture (Flutter/Express/Supabase)` --semantically_similar_to--> `Express-in-the-Middle Architecture`  [INFERRED] [semantically similar]
-  graphify-out/Fixora_Requirements_Spec.txt → AI-agent-guide.md
+  graphify-out/FixerPro237_Requirements_Spec.txt → AI-agent-guide.md
 - `Atomic Assignment` --semantically_similar_to--> `One Review per Completed Request`  [INFERRED] [semantically similar]
-  graphify-out/Fixora_Requirements_Spec.txt → AI-agent-guide.md
+  graphify-out/FixerPro237_Requirements_Spec.txt → AI-agent-guide.md
 - `Client Posts Job Instead of Picking Technician` --semantically_similar_to--> `Technician Directory Module`  [INFERRED] [semantically similar]
-  graphify-out/Fixora_Requirements_Spec.txt → project-specification.md
+  graphify-out/FixerPro237_Requirements_Spec.txt → project-specification.md
 
 ## Import Cycles
 - None detected.
@@ -179,7 +179,7 @@
 ## Hyperedges (group relationships)
 - **Service Request Lifecycle Across Spec, Backend and Mobile** — project_specification_service_request_workflow, backend_backend_docs_requests_service, mobile_mobile_docs_requests_feature, flutter_mvp_blueprint_status_defense_in_depth, backend_backend_docs_notifications_service [INFERRED 0.85]
 - **JWT Authentication Flow (Backend Guard to Mobile Session)** — backend_backend_docs_auth_service, backend_backend_docs_auth_middleware, backend_backend_docs_role_guard, mobile_mobile_docs_jwt_interceptor, mobile_mobile_docs_auth_provider, flutter_mvp_blueprint_go_router_guards [INFERRED 0.85]
-- **FixerPro237 Automatic Dispatch Mechanism** — graphify_out_fixora_requirements_spec_dispatch_engine, graphify_out_fixora_requirements_spec_dispatch_algorithm, graphify_out_fixora_requirements_spec_same_city_filtering, graphify_out_fixora_requirements_spec_workload_priority, graphify_out_fixora_requirements_spec_job_offer, graphify_out_fixora_requirements_spec_atomic_assignment [EXTRACTED 1.00]
+- **FixerPro237 Automatic Dispatch Mechanism** — graphify_out_fixerpro237_requirements_spec_dispatch_engine, graphify_out_fixerpro237_requirements_spec_dispatch_algorithm, graphify_out_fixerpro237_requirements_spec_same_city_filtering, graphify_out_fixerpro237_requirements_spec_workload_priority, graphify_out_fixerpro237_requirements_spec_job_offer, graphify_out_fixerpro237_requirements_spec_atomic_assignment [EXTRACTED 1.00]
 - **Automated dispatch chain: request to job offer** — documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_submit_service_request, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_identify_eligible_technicians, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_rank_by_active_jobs, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_create_job_offer, documentation_whatsapp_image_2026_08_26_at_14_12_56_actor_dispatch_engine, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_accept_reject_job_offer [EXTRACTED 1.00]
 - **Technician onboarding and verification gate** — documentation_whatsapp_image_2026_08_26_at_14_12_56_actor_technician, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_upload_verification_documents, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_review_verification_documents, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_validate_technician, documentation_whatsapp_image_2026_08_26_at_14_12_56_actor_administrator [EXTRACTED 1.00]
 - **Client service lifecycle: submit, track, complete, review** — documentation_whatsapp_image_2026_08_26_at_14_12_56_actor_client, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_submit_service_request, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_track_assigned_technician, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_share_gps_location, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_complete_service, documentation_whatsapp_image_2026_08_26_at_14_12_56_uc_rate_review_service [INFERRED 0.85]
@@ -222,7 +222,7 @@ Nodes (12): ReviewsService, TechniciansController, TechniciansService, fs, path,
 Cohesion: 0.08
 Nodes (21): AuthController, AuthService, { ApiError }, AuthService, bcrypt, env, { isValidEmail, isValidPhoneNumber, sanitizeEmail, sanitizePhone }, jwt (+13 more)
 
-### Community 9 - "Fixora Requirements Spec"
+### Community 9 - "FixerPro237 Requirements Spec"
 Cohesion: 0.06
 Nodes (35): No WebSocket/Real-Time in V1, One Review per Completed Request, Technicians API Module, Service Request Sequence Diagram Request, Missing Technician Document Management, Reviews Embedded in Technician Profile Payload, Client-Side Image Compression Proposal, Atomic Assignment (+27 more)
 
@@ -238,9 +238,9 @@ Nodes (32): ../../data/technicians_remote_data_source.dart, ../../data/technicia
 Cohesion: 0.07
 Nodes (30): ../auth_provider.dart, package:flutter/gestures.dart, createState, dispose, _emailController, _formKey, LoginScreen, _LoginScreenState (+22 more)
 
-### Community 13 - "Fixora Use Case Diagram"
+### Community 13 - "FixerPro237 Use Case Diagram"
 Cohesion: 0.10
-Nodes (32): Administrator (Actor), Client (Actor), Dispatch Engine (System Actor), Technician (Actor), Automated Dispatch Pipeline, Fixora Use Case Diagram (UML), Fixora System Boundary, Accept / Reject Job Offer (+24 more)
+Nodes (32): Administrator (Actor), Client (Actor), Dispatch Engine (System Actor), Technician (Actor), Automated Dispatch Pipeline, FixerPro237 Use Case Diagram (UML), FixerPro237 System Boundary, Accept / Reject Job Offer (+24 more)
 
 ### Community 14 - "Notification Screens & Widgets"
 Cohesion: 0.09
@@ -359,7 +359,7 @@ Nodes (16): updateProfileProvider, _bioController, createState, dispose, _formKe
 
 ### Community 44 - "App Root & Router"
 Cohesion: 0.16
-Nodes (14): core/router/app_router.dart, core/theme/app_theme.dart, ../../core/theme/theme_provider.dart, build, init, main, TechConnectApp, package:flutter_localizations/flutter_localizations.dart (+6 more)
+Nodes (14): core/router/app_router.dart, core/theme/app_theme.dart, ../../core/theme/theme_provider.dart, build, init, main, FixerPro237App, package:flutter_localizations/flutter_localizations.dart (+6 more)
 
 ### Community 45 - "Notification Domain Model"
 Cohesion: 0.12
@@ -690,7 +690,7 @@ Nodes (3): Favorites API Module (Toggle Semantics), features/favorites, Favorite
 - `Single Source of Truth per Data Type` → `In-Memory Supabase Fallback Store`  [AMBIGUOUS]
   backend/BACKEND_DOCS.md · relation: conceptually_related_to
 - `V1 Exclusion List` → `Live GPS Tracking`  [AMBIGUOUS]
-  graphify-out/Fixora_Requirements_Spec.txt · relation: conceptually_related_to
+  graphify-out/FixerPro237_Requirements_Spec.txt · relation: conceptually_related_to
 - `freezed + json_serializable Models` → `get_storage Local Persistence Choice`  [AMBIGUOUS]
   mobile/pubspec.yaml · relation: conceptually_related_to
 - `Complete Service` → `Update Service Status`  [AMBIGUOUS]

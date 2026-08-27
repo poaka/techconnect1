@@ -3,7 +3,7 @@ class AppTranslations {
   static const Map<String, Map<String, String>> values = {
     'fr': {
       // General & App Name
-      'app_title': 'TechConnect Cameroun',
+      'app_title': 'FixerPro237 Cameroun',
       'language': 'Langue',
       'french': 'Français',
       'english': 'English',
@@ -18,10 +18,10 @@ class AppTranslations {
 
       // Auth - Login Screen
       'login_title': 'Connexion',
-      'login_welcome': 'Bienvenue sur TechConnect',
+      'login_welcome': 'Bienvenue sur FixerPro237',
       'login_subtitle': 'Connectez-vous pour accéder aux artisans qualifiés',
       'email_label': 'Adresse Email',
-      'email_hint': 'ex: j.marc@techconnect.cm',
+      'email_hint': 'ex: j.marc@fixerpro237.cm',
       'password_label': 'Mot de passe',
       'password_hint': 'Votre mot de passe',
       'login_button': 'Se connecter',
@@ -30,7 +30,7 @@ class AppTranslations {
 
       // Auth - Register Screen
       'register_title': 'Inscription',
-      'register_header': 'Rejoignez TechConnect',
+      'register_header': 'Rejoignez FixerPro237',
       'register_subtitle': 'Choisissez votre type de compte pour commencer',
       'user_type_prompt': 'Vous êtes :',
       'role_client': 'Client',
@@ -138,7 +138,7 @@ class AppTranslations {
     },
     'en': {
       // General & App Name
-      'app_title': 'TechConnect Cameroon',
+      'app_title': 'FixerPro237 Cameroon',
       'language': 'Language',
       'french': 'Français',
       'english': 'English',
@@ -153,10 +153,10 @@ class AppTranslations {
 
       // Auth - Login Screen
       'login_title': 'Sign In',
-      'login_welcome': 'Welcome to TechConnect',
+      'login_welcome': 'Welcome to FixerPro237',
       'login_subtitle': 'Sign in to access verified skilled technicians',
       'email_label': 'Email Address',
-      'email_hint': 'e.g. j.marc@techconnect.cm',
+      'email_hint': 'e.g. j.marc@fixerpro237.cm',
       'password_label': 'Password',
       'password_hint': 'Your password',
       'login_button': 'Sign In',
@@ -165,7 +165,7 @@ class AppTranslations {
 
       // Auth - Register Screen
       'register_title': 'Sign Up',
-      'register_header': 'Join TechConnect',
+      'register_header': 'Join FixerPro237',
       'register_subtitle': 'Choose your account type to get started',
       'user_type_prompt': 'You are a:',
       'role_client': 'Client',

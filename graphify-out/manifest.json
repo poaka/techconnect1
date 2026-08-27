@@ -374,7 +374,7 @@
     "ast_hash": "6ba40a7b4d6fc2c8ea261ddc54505238",
     "semantic_hash": "6ba40a7b4d6fc2c8ea261ddc54505238"
   },
-  "mobile/android/app/src/main/kotlin/com/techconnect/mobile/MainActivity.kt": {
+  "mobile/android/app/src/main/kotlin/com/fixerpro237/mobile/MainActivity.kt": {
     "mtime": 1787758083.6474872,
     "ast_hash": "89a85a83a21fd1cd22f3fc4c495f993a",
     "semantic_hash": "89a85a83a21fd1cd22f3fc4c495f993a"
@@ -1164,7 +1164,7 @@
     "ast_hash": "ba9179ea474d5628852cbddb21ba7d88",
     "semantic_hash": "ba9179ea474d5628852cbddb21ba7d88"
   },
-  "graphify-out/Fixora_Requirements_Spec.txt": {
+  "graphify-out/FixerPro237_Requirements_Spec.txt": {
     "mtime": 1787758557.772587,
     "ast_hash": "a50efdb50e7aae690ce5e1139464824a",
     "semantic_hash": "a50efdb50e7aae690ce5e1139464824a"

@@ -5,7 +5,7 @@ tools: Bash, Read, Grep, Glob
 model: sonnet
 ---
 
-Tu vérifies l'avancement du plan de migration FixerPro237 (spec `documentation/Fixora_Project_Requirements_and_Specification_Book.docx`, cycle actuel = modèle annuaire TechConnect).
+Tu vérifies l'avancement du plan de migration FixerPro237 (spec `documentation/FixerPro237_Project_Requirements_and_Specification_Book.docx`, cycle actuel = modèle annuaire FixerPro237).
 
 Lecture seule. Tu ne modifies aucun fichier, tu n'appliques aucun correctif, tu ne proposes pas de patch. Tu rapportes un état.
 
@@ -24,7 +24,7 @@ N'invente jamais un PASS. Si un grep ne trouve rien, c'est PENDING ou FAIL, jama
 Les 3 réponses (annuaire vs dispatch / Flutter vs React / 1 vs N catégories) sont écrites en tête de `project-specification.md`. Si absentes → PENDING, et signale que tout le reste est bloqué.
 
 ### 1 — Nom et dossier
-- Un seul nom produit dans le repo : compte les occurrences de `TechConnect`, `FixerPro237`, `Fixora` (`grep -ric`). Plus d'un nom vivant → FAIL.
+- Un seul nom produit dans le repo : compte les occurrences de `FixerPro237`, `FixerPro237`, `FixerPro237` (`grep -ric`). Plus d'un nom vivant → FAIL.
 - Le dossier `documentation` ne doit plus avoir d'espace final : `ls -b | grep -c 'documentation '`.
 
 ### 2 — project-specification.md v2

@@ -38,17 +38,17 @@
         "id": "fixerpro237_dispatch_mechanism",
         "label": "FixerPro237 Automatic Dispatch Mechanism",
         "nodes": [
-          "graphify_out_fixora_requirements_spec_dispatch_engine",
-          "graphify_out_fixora_requirements_spec_dispatch_algorithm",
-          "graphify_out_fixora_requirements_spec_same_city_filtering",
-          "graphify_out_fixora_requirements_spec_workload_priority",
-          "graphify_out_fixora_requirements_spec_job_offer",
-          "graphify_out_fixora_requirements_spec_atomic_assignment"
+          "graphify_out_fixerpro237_requirements_spec_dispatch_engine",
+          "graphify_out_fixerpro237_requirements_spec_dispatch_algorithm",
+          "graphify_out_fixerpro237_requirements_spec_same_city_filtering",
+          "graphify_out_fixerpro237_requirements_spec_workload_priority",
+          "graphify_out_fixerpro237_requirements_spec_job_offer",
+          "graphify_out_fixerpro237_requirements_spec_atomic_assignment"
         ],
         "relation": "form",
         "confidence": "EXTRACTED",
         "confidence_score": 1.0,
-        "source_file": "graphify-out/Fixora_Requirements_Spec.txt"
+        "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt"
       },
       {
         "label": "Automated dispatch chain: request to job offer",
@@ -4663,7 +4663,7 @@
     {
       "label": "MainActivity.kt",
       "file_type": "code",
-      "source_file": "mobile/android/app/src/main/kotlin/com/techconnect/mobile/MainActivity.kt",
+      "source_file": "mobile/android/app/src/main/kotlin/com/fixerpro237/mobile/MainActivity.kt",
       "source_location": "L1",
       "_origin": "ast",
       "id": "mobile_mainactivity",
@@ -4673,7 +4673,7 @@
     {
       "label": "MainActivity",
       "file_type": "code",
-      "source_file": "mobile/android/app/src/main/kotlin/com/techconnect/mobile/MainActivity.kt",
+      "source_file": "mobile/android/app/src/main/kotlin/com/fixerpro237/mobile/MainActivity.kt",
       "source_location": "L5",
       "_origin": "ast",
       "id": "mobile_mainactivity_mainactivity",
@@ -16414,14 +16414,14 @@
       "norm_label": "main.dart"
     },
     {
-      "label": "TechConnectApp",
+      "label": "FixerPro237App",
       "file_type": "code",
       "source_file": "mobile/lib/main.dart",
       "source_location": null,
       "_origin": "ast",
-      "id": "lib_main_techconnectapp",
+      "id": "lib_main_fixerpro237app",
       "community": 44,
-      "norm_label": "techconnectapp"
+      "norm_label": "fixerpro237app"
     },
     {
       "label": "main",
@@ -19151,7 +19151,7 @@
       "norm_label": "vite.config.js"
     },
     {
-      "label": "TechConnect Cameroun Platform",
+      "label": "FixerPro237 Cameroun Platform",
       "file_type": "concept",
       "source_file": "AI-agent-guide.md",
       "source_location": "\u00a71",
@@ -19159,9 +19159,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ai_agent_guide_techconnect_cameroun",
+      "id": "ai_agent_guide_fixerpro237_cameroun",
       "community": 1,
-      "norm_label": "techconnect cameroun platform"
+      "norm_label": "fixerpro237 cameroun platform"
     },
     {
       "label": "Express-in-the-Middle Architecture",
@@ -20180,221 +20180,221 @@
     {
       "label": "FixerPro237 Platform",
       "file_type": "paper",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "Executive Summary",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_fixerpro237",
+      "id": "graphify_out_fixerpro237_requirements_spec_fixerpro237",
       "community": 9,
       "norm_label": "fixerpro237 platform"
     },
     {
       "label": "Dispatch Engine Actor",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a73",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_dispatch_engine",
+      "id": "graphify_out_fixerpro237_requirements_spec_dispatch_engine",
       "community": 9,
       "norm_label": "dispatch engine actor"
     },
     {
       "label": "Sequential Dispatch Algorithm",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a77",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_dispatch_algorithm",
+      "id": "graphify_out_fixerpro237_requirements_spec_dispatch_algorithm",
       "community": 9,
       "norm_label": "sequential dispatch algorithm"
     },
     {
       "label": "Active-Job-Count Prioritization",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "FR-08",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_workload_priority",
+      "id": "graphify_out_fixerpro237_requirements_spec_workload_priority",
       "community": 9,
       "norm_label": "active-job-count prioritization"
     },
     {
       "label": "Same-City Eligibility Filtering",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "FR-07",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_same_city_filtering",
+      "id": "graphify_out_fixerpro237_requirements_spec_same_city_filtering",
       "community": 9,
       "norm_label": "same-city eligibility filtering"
     },
     {
       "label": "JobOffer Entity",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a79",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_job_offer",
+      "id": "graphify_out_fixerpro237_requirements_spec_job_offer",
       "community": 9,
       "norm_label": "joboffer entity"
     },
     {
       "label": "Atomic Assignment",
       "file_type": "rationale",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "FR-11 / NFR-08",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_atomic_assignment",
+      "id": "graphify_out_fixerpro237_requirements_spec_atomic_assignment",
       "community": 9,
       "norm_label": "atomic assignment"
     },
     {
       "label": "Live GPS Tracking",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a713",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_live_gps_tracking",
+      "id": "graphify_out_fixerpro237_requirements_spec_live_gps_tracking",
       "community": 9,
       "norm_label": "live gps tracking"
     },
     {
       "label": "LocationUpdate Entity",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a79",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_location_update",
+      "id": "graphify_out_fixerpro237_requirements_spec_location_update",
       "community": 9,
       "norm_label": "locationupdate entity"
     },
     {
       "label": "FixerPro237 Service Request Lifecycle",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a78",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_request_lifecycle",
+      "id": "graphify_out_fixerpro237_requirements_spec_request_lifecycle",
       "community": 9,
       "norm_label": "fixerpro237 service request lifecycle"
     },
     {
       "label": "VerificationDocument Entity",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a79",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_verification_document",
+      "id": "graphify_out_fixerpro237_requirements_spec_verification_document",
       "community": 9,
       "norm_label": "verificationdocument entity"
     },
     {
       "label": "Payment External to Platform in V1",
       "file_type": "rationale",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a72.2",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_external_payment",
+      "id": "graphify_out_fixerpro237_requirements_spec_external_payment",
       "community": 9,
       "norm_label": "payment external to platform in v1"
     },
     {
       "label": "Three-Layer Architecture (Flutter/Express/Supabase)",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a711",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_three_layer_architecture",
+      "id": "graphify_out_fixerpro237_requirements_spec_three_layer_architecture",
       "community": 1,
       "norm_label": "three-layer architecture (flutter/express/supabase)"
     },
     {
       "label": "RBAC + RLS Security Requirements",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a714",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_rbac_security",
+      "id": "graphify_out_fixerpro237_requirements_spec_rbac_security",
       "community": 9,
       "norm_label": "rbac + rls security requirements"
     },
     {
       "label": "Simultaneous-Acceptance Test Cases (T07/T08)",
       "file_type": "concept",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a718",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_race_condition_tests",
+      "id": "graphify_out_fixerpro237_requirements_spec_race_condition_tests",
       "community": 9,
       "norm_label": "simultaneous-acceptance test cases (t07/t08)"
     },
     {
       "label": "Client Posts Job Instead of Picking Technician",
       "file_type": "rationale",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a723",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_client_posts_job",
+      "id": "graphify_out_fixerpro237_requirements_spec_client_posts_job",
       "community": 9,
       "norm_label": "client posts job instead of picking technician"
     },
     {
       "label": "Reuse of Prior Project Stack",
       "file_type": "rationale",
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "Executive Summary",
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "graphify_out_fixora_requirements_spec_stack_reuse",
+      "id": "graphify_out_fixerpro237_requirements_spec_stack_reuse",
       "community": 1,
       "norm_label": "reuse of prior project stack"
     },
@@ -20477,7 +20477,7 @@
       "norm_label": "admin back-office spa entry"
     },
     {
-      "label": "TechConnect Public Landing Page",
+      "label": "FixerPro237 Public Landing Page",
       "file_type": "code",
       "source_file": "web/index.html",
       "source_location": null,
@@ -20487,7 +20487,7 @@
       "contributor": null,
       "id": "web_index_landing_page",
       "community": 1,
-      "norm_label": "techconnect public landing page"
+      "norm_label": "fixerpro237 public landing page"
     },
     {
       "label": "Flutter Web Bootstrap Host Page",
@@ -20529,7 +20529,7 @@
       "norm_label": "empty root readme"
     },
     {
-      "label": "Fixora Use Case Diagram (UML)",
+      "label": "FixerPro237 Use Case Diagram (UML)",
       "file_type": "image",
       "source_file": "documentation /WhatsApp Image 2026-08-26 at 14.12.56.jpeg",
       "source_location": null,
@@ -20539,10 +20539,10 @@
       "contributor": null,
       "id": "documentation_whatsapp_image_2026_08_26_at_14_12_56_diagram",
       "community": 13,
-      "norm_label": "fixora use case diagram (uml)"
+      "norm_label": "fixerpro237 use case diagram (uml)"
     },
     {
-      "label": "Fixora System Boundary",
+      "label": "FixerPro237 System Boundary",
       "file_type": "concept",
       "source_file": "documentation /WhatsApp Image 2026-08-26 at 14.12.56.jpeg",
       "source_location": null,
@@ -20550,9 +20550,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "documentation_whatsapp_image_2026_08_26_at_14_12_56_fixora_system",
+      "id": "documentation_whatsapp_image_2026_08_26_at_14_12_56_fixerpro237_system",
       "community": 13,
-      "norm_label": "fixora system boundary"
+      "norm_label": "fixerpro237 system boundary"
     },
     {
       "label": "Client (Actor)",
@@ -27306,7 +27306,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "mobile/android/app/src/main/kotlin/com/techconnect/mobile/MainActivity.kt",
+      "source_file": "mobile/android/app/src/main/kotlin/com/fixerpro237/mobile/MainActivity.kt",
       "source_location": "L5",
       "weight": 1.0,
       "source": "mobile_mainactivity",
@@ -27316,7 +27316,7 @@
     {
       "relation": "inherits",
       "confidence": "EXTRACTED",
-      "source_file": "mobile/android/app/src/main/kotlin/com/techconnect/mobile/MainActivity.kt",
+      "source_file": "mobile/android/app/src/main/kotlin/com/fixerpro237/mobile/MainActivity.kt",
       "source_location": "L5",
       "weight": 1.0,
       "source": "mobile_mainactivity_mainactivity",
@@ -28808,7 +28808,7 @@
       "source_location": null,
       "weight": 1.0,
       "context": "riverpod_reference",
-      "source": "lib_main_techconnectapp",
+      "source": "lib_main_fixerpro237app",
       "target": "localization_locale_provider_localeprovider"
     },
     {
@@ -30241,7 +30241,7 @@
       "source_location": null,
       "weight": 1.0,
       "context": "riverpod_reference",
-      "source": "lib_main_techconnectapp",
+      "source": "lib_main_fixerpro237app",
       "target": "router_app_router_routerprovider"
     },
     {
@@ -31241,7 +31241,7 @@
       "source_location": null,
       "weight": 1.0,
       "context": "riverpod_reference",
-      "source": "lib_main_techconnectapp",
+      "source": "lib_main_fixerpro237app",
       "target": "theme_theme_provider_themeprovider"
     },
     {
@@ -33606,7 +33606,7 @@
       "source_file": "mobile/lib/main.dart",
       "source_location": null,
       "weight": 1.0,
-      "source": "lib_main_techconnectapp",
+      "source": "lib_main_fixerpro237app",
       "target": "consumerwidget"
     },
     {
@@ -46135,7 +46135,7 @@
       "source_location": null,
       "weight": 1.0,
       "source": "lib_main",
-      "target": "lib_main_techconnectapp"
+      "target": "lib_main_fixerpro237app"
     },
     {
       "relation": "imports",
@@ -49259,7 +49259,7 @@
       "source_file": "AI-agent-guide.md",
       "source_location": "\u00a72.1",
       "weight": 1.0,
-      "source": "ai_agent_guide_techconnect_cameroun",
+      "source": "ai_agent_guide_fixerpro237_cameroun",
       "target": "ai_agent_guide_express_in_the_middle"
     },
     {
@@ -49269,7 +49269,7 @@
       "source_file": "AI-agent-guide.md",
       "source_location": "\u00a78",
       "weight": 1.0,
-      "source": "ai_agent_guide_techconnect_cameroun",
+      "source": "ai_agent_guide_fixerpro237_cameroun",
       "target": "project_specification_problem_statement"
     },
     {
@@ -49280,17 +49280,17 @@
       "source_location": null,
       "weight": 1.0,
       "source": "claude_uml_prompt_uml_generation_brief",
-      "target": "ai_agent_guide_techconnect_cameroun"
+      "target": "ai_agent_guide_fixerpro237_cameroun"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "Executive Summary",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_stack_reuse",
-      "target": "ai_agent_guide_techconnect_cameroun"
+      "source": "graphify_out_fixerpro237_requirements_spec_stack_reuse",
+      "target": "ai_agent_guide_fixerpro237_cameroun"
     },
     {
       "relation": "conceptually_related_to",
@@ -49306,10 +49306,10 @@
       "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.85,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a711",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_three_layer_architecture",
+      "source": "graphify_out_fixerpro237_requirements_spec_three_layer_architecture",
       "target": "ai_agent_guide_express_in_the_middle"
     },
     {
@@ -49406,10 +49406,10 @@
       "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.65,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a714",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_atomic_assignment",
+      "source": "graphify_out_fixerpro237_requirements_spec_atomic_assignment",
       "target": "ai_agent_guide_one_review_per_request"
     },
     {
@@ -49546,10 +49546,10 @@
       "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a723",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_client_posts_job",
+      "source": "graphify_out_fixerpro237_requirements_spec_client_posts_job",
       "target": "project_specification_technician_directory"
     },
     {
@@ -49576,10 +49576,10 @@
       "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.9,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a78",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_request_lifecycle",
+      "source": "graphify_out_fixerpro237_requirements_spec_request_lifecycle",
       "target": "project_specification_service_request_workflow"
     },
     {
@@ -49616,10 +49616,10 @@
       "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.9,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a79",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_verification_document",
+      "source": "graphify_out_fixerpro237_requirements_spec_verification_document",
       "target": "project_specification_verification_module"
     },
     {
@@ -49706,20 +49706,20 @@
       "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.85,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a72.2",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_external_payment",
+      "source": "graphify_out_fixerpro237_requirements_spec_external_payment",
       "target": "project_specification_v1_exclusions"
     },
     {
       "relation": "conceptually_related_to",
       "confidence": "AMBIGUOUS",
       "confidence_score": 0.3,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a713",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_live_gps_tracking",
+      "source": "graphify_out_fixerpro237_requirements_spec_live_gps_tracking",
       "target": "project_specification_v1_exclusions"
     },
     {
@@ -49906,11 +49906,11 @@
       "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.85,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a711",
       "weight": 1.0,
       "source": "backend_backend_docs_controller_service_route",
-      "target": "graphify_out_fixora_requirements_spec_three_layer_architecture"
+      "target": "graphify_out_fixerpro237_requirements_spec_three_layer_architecture"
     },
     {
       "relation": "shares_data_with",
@@ -50096,111 +50096,111 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a73",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_fixerpro237",
-      "target": "graphify_out_fixora_requirements_spec_dispatch_engine"
+      "source": "graphify_out_fixerpro237_requirements_spec_fixerpro237",
+      "target": "graphify_out_fixerpro237_requirements_spec_dispatch_engine"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a723",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_client_posts_job",
-      "target": "graphify_out_fixora_requirements_spec_dispatch_engine"
+      "source": "graphify_out_fixerpro237_requirements_spec_client_posts_job",
+      "target": "graphify_out_fixerpro237_requirements_spec_dispatch_engine"
     },
     {
       "relation": "implements",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a77",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_dispatch_engine",
-      "target": "graphify_out_fixora_requirements_spec_dispatch_algorithm"
+      "source": "graphify_out_fixerpro237_requirements_spec_dispatch_engine",
+      "target": "graphify_out_fixerpro237_requirements_spec_dispatch_algorithm"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a77",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_dispatch_algorithm",
-      "target": "graphify_out_fixora_requirements_spec_job_offer"
+      "source": "graphify_out_fixerpro237_requirements_spec_dispatch_algorithm",
+      "target": "graphify_out_fixerpro237_requirements_spec_job_offer"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a77",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_dispatch_algorithm",
-      "target": "graphify_out_fixora_requirements_spec_same_city_filtering"
+      "source": "graphify_out_fixerpro237_requirements_spec_dispatch_algorithm",
+      "target": "graphify_out_fixerpro237_requirements_spec_same_city_filtering"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a77",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_dispatch_algorithm",
-      "target": "graphify_out_fixora_requirements_spec_workload_priority"
+      "source": "graphify_out_fixerpro237_requirements_spec_dispatch_algorithm",
+      "target": "graphify_out_fixerpro237_requirements_spec_workload_priority"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a77",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_atomic_assignment",
-      "target": "graphify_out_fixora_requirements_spec_job_offer"
+      "source": "graphify_out_fixerpro237_requirements_spec_atomic_assignment",
+      "target": "graphify_out_fixerpro237_requirements_spec_job_offer"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a718",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_race_condition_tests",
-      "target": "graphify_out_fixora_requirements_spec_atomic_assignment"
+      "source": "graphify_out_fixerpro237_requirements_spec_race_condition_tests",
+      "target": "graphify_out_fixerpro237_requirements_spec_atomic_assignment"
     },
     {
       "relation": "shares_data_with",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a713",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_live_gps_tracking",
-      "target": "graphify_out_fixora_requirements_spec_location_update"
+      "source": "graphify_out_fixerpro237_requirements_spec_live_gps_tracking",
+      "target": "graphify_out_fixerpro237_requirements_spec_location_update"
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a713",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_live_gps_tracking",
-      "target": "graphify_out_fixora_requirements_spec_request_lifecycle"
+      "source": "graphify_out_fixerpro237_requirements_spec_live_gps_tracking",
+      "target": "graphify_out_fixerpro237_requirements_spec_request_lifecycle"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt",
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt",
       "source_location": "\u00a714",
       "weight": 1.0,
-      "source": "graphify_out_fixora_requirements_spec_rbac_security",
-      "target": "graphify_out_fixora_requirements_spec_live_gps_tracking"
+      "source": "graphify_out_fixerpro237_requirements_spec_rbac_security",
+      "target": "graphify_out_fixerpro237_requirements_spec_live_gps_tracking"
     },
     {
       "relation": "references",
@@ -50310,7 +50310,7 @@
       "source_location": null,
       "weight": 1.0,
       "source": "documentation_whatsapp_image_2026_08_26_at_14_12_56_diagram",
-      "target": "documentation_whatsapp_image_2026_08_26_at_14_12_56_fixora_system"
+      "target": "documentation_whatsapp_image_2026_08_26_at_14_12_56_fixerpro237_system"
     },
     {
       "relation": "calls",
@@ -50819,17 +50819,17 @@
       "id": "fixerpro237_dispatch_mechanism",
       "label": "FixerPro237 Automatic Dispatch Mechanism",
       "nodes": [
-        "graphify_out_fixora_requirements_spec_dispatch_engine",
-        "graphify_out_fixora_requirements_spec_dispatch_algorithm",
-        "graphify_out_fixora_requirements_spec_same_city_filtering",
-        "graphify_out_fixora_requirements_spec_workload_priority",
-        "graphify_out_fixora_requirements_spec_job_offer",
-        "graphify_out_fixora_requirements_spec_atomic_assignment"
+        "graphify_out_fixerpro237_requirements_spec_dispatch_engine",
+        "graphify_out_fixerpro237_requirements_spec_dispatch_algorithm",
+        "graphify_out_fixerpro237_requirements_spec_same_city_filtering",
+        "graphify_out_fixerpro237_requirements_spec_workload_priority",
+        "graphify_out_fixerpro237_requirements_spec_job_offer",
+        "graphify_out_fixerpro237_requirements_spec_atomic_assignment"
       ],
       "relation": "form",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "graphify-out/Fixora_Requirements_Spec.txt"
+      "source_file": "graphify-out/FixerPro237_Requirements_Spec.txt"
     },
     {
       "label": "Automated dispatch chain: request to job offer",

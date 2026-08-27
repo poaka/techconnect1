@@ -160,7 +160,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 AppTextField(
                   label: 'Adresse Email',
-                  hint: 'ex: j.marc@techconnect.cm',
+                  hint: 'ex: j.marc@fixerpro237.cm',
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: Icons.email_outlined,

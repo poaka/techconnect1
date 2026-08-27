@@ -47,7 +47,7 @@ class WelcomeScreen extends StatelessWidget {
               
               // Typography
               Text(
-                'Bienvenue sur TechConnect',
+                'Bienvenue sur FixerPro237',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,

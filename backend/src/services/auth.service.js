@@ -7,30 +7,30 @@ const { isValidEmail, isValidPhoneNumber, sanitizeEmail, sanitizePhone } = requi
 
 // In-memory fallback store for local development/testing without live Supabase
 const mockUsers = new Map([
-  ['admin@techconnect.cm', {
+  ['admin@fixerpro237.cm', {
     id: '30000000-0000-0000-0000-000000000001',
-    full_name: 'Admin TechConnect',
-    email: 'admin@techconnect.cm',
+    full_name: 'Admin FixerPro237',
+    email: 'admin@fixerpro237.cm',
     phone: '+237690000000',
     password_hash: bcrypt.hashSync('Password123!', 10),
     role: 'admin',
     avatar_url: null,
     created_at: new Date().toISOString()
   }],
-  ['client@techconnect.cm', {
+  ['client@fixerpro237.cm', {
     id: '30000000-0000-0000-0000-000000000002',
     full_name: 'Jean Client',
-    email: 'client@techconnect.cm',
+    email: 'client@fixerpro237.cm',
     phone: '+237691111111',
     password_hash: bcrypt.hashSync('Password123!', 10),
     role: 'client',
     avatar_url: null,
     created_at: new Date().toISOString()
   }],
-  ['samuel@techconnect.cm', {
+  ['samuel@fixerpro237.cm', {
     id: '30000000-0000-0000-0000-000000000003',
     full_name: 'Samuel Électricien',
-    email: 'samuel@techconnect.cm',
+    email: 'samuel@fixerpro237.cm',
     phone: '+237692222222',
     password_hash: bcrypt.hashSync('Password123!', 10),
     role: 'technician',
@@ -181,16 +181,16 @@ class AuthService {
         console.error('[AuthService.login] DB error:', error);
       }
 
-      // Auto-upsert admin@techconnect.cm in Supabase if missing
-      if (!user && emailLower === 'admin@techconnect.cm') {
+      // Auto-upsert admin@fixerpro237.cm in Supabase if missing
+      if (!user && emailLower === 'admin@fixerpro237.cm') {
         console.log('[AuthService.login] Admin missing in Supabase, auto-upserting...');
         const passwordHash = await bcrypt.hash(password, 10);
         const { data: createdAdmin, error: createAdminErr } = await supabase
           .from('users')
           .upsert([
             {
-              full_name: 'Admin TechConnect',
-              email: 'admin@techconnect.cm',
+              full_name: 'Admin FixerPro237',
+              email: 'admin@fixerpro237.cm',
               phone: '+237690000000',
               password_hash: passwordHash,
               role: 'admin'
