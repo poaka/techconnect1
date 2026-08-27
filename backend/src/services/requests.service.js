@@ -1,31 +1,27 @@
 const supabase = require('../config/supabase');
 const { ApiError } = require('../middleware/errorHandler');
+const DispatchService = require('./dispatch.service');
 
 class RequestsService {
-  static async createRequest(clientId, { technicianId, categoryId, description, address }) {
+  /**
+   * Phase 6: Create request using Dispatch Engine
+   */
+  static async createRequest(clientId, { categoryId, cityId, description, address, latitude, longitude }) {
     if (!supabase) throw ApiError.internal('Base de données indisponible');
 
-    // Verify technician exists
-    const { data: techProfile, error: techErr } = await supabase
-      .from('technician_profiles')
-      .select('id, user_id')
-      .eq('id', technicianId)
-      .single();
-
-    if (techErr || !techProfile) {
-      throw ApiError.notFound('Technicien non trouvé');
-    }
-
+    // 1. Insert unassigned request
     const { data: newRequest, error: createErr } = await supabase
       .from('service_requests')
       .insert([
         {
           client_id: clientId,
-          technician_id: technicianId,
-          category_id: categoryId || null,
+          category_id: categoryId,
+          city_id: cityId,
           description,
           address: address || null,
-          status: 'pending'
+          latitude: latitude || null,
+          longitude: longitude || null,
+          status: 'unassigned'
         }
       ])
       .select('*')
@@ -36,24 +32,35 @@ class RequestsService {
       throw ApiError.internal('Erreur lors de la création de la demande');
     }
 
-    // Fetch client name for notification safely
-    const { data: clientUser } = await supabase
-      .from('users')
-      .select('full_name')
-      .eq('id', clientId)
-      .maybeSingle();
+    // 2. Dispatch Engine: Find technicians
+    const technicians = await DispatchService.findAvailableTechnicians({ categoryId, cityId, limit: 5 });
 
-    // Send notification to technician safely
+    if (technicians.length === 0) {
+      return newRequest; // Request created, but unassigned. Client waits.
+    }
+
+    // 3. Create Job Offers
+    const offers = technicians.map(tech => ({
+      request_id: newRequest.id,
+      technician_id: tech.id,
+      status: 'pending'
+    }));
+
+    const { error: offersErr } = await supabase.from('job_offers').insert(offers);
+    if (offersErr) {
+      console.error('[RequestsService job offers insert error]', offersErr);
+    }
+
+    // 4. Notify technicians
     try {
-      await supabase.from('notifications').insert([
-        {
-          user_id: techProfile.user_id,
-          type: 'request_created',
-          title: 'Nouvelle demande de service',
-          message: `Vous avez reçu une nouvelle demande de service de ${clientUser?.full_name || 'un client'}.`,
-          metadata: { requestId: newRequest.id }
-        }
-      ]);
+      const notifs = technicians.map(tech => ({
+        user_id: tech.user_id,
+        type: 'request_created',
+        title: 'Nouvelle offre de mission !',
+        message: 'Une mission correspond à vos critères. Soyez le premier à l\'accepter.',
+        metadata: { requestId: newRequest.id }
+      }));
+      await supabase.from('notifications').insert(notifs);
     } catch (notifErr) {
       console.error('[RequestsService notification insert error]', notifErr);
     }
@@ -67,12 +74,12 @@ class RequestsService {
     let query = supabase
       .from('service_requests')
       .select(`
-        id, status, description, address, created_at, updated_at, completed_at,
+        id, status, description, address, latitude, longitude, created_at, updated_at, completed_at,
         category:categories(id, name, icon),
+        city:cities(id, name),
         client:users!client_id(id, full_name, email, phone, avatar_url),
-        technician:technician_profiles!technician_id(
-          id, user:users!user_id(id, full_name, email, phone, avatar_url),
-          city:cities(id, name)
+        assigned_technician:technician_profiles!assigned_technician_id(
+          id, user:users!user_id(id, full_name, email, phone, avatar_url)
         ),
         review:reviews(id, rating, comment)
       `)
@@ -88,7 +95,7 @@ class RequestsService {
         .single();
 
       if (!profile) return [];
-      query = query.eq('technician_id', profile.id);
+      query = query.eq('assigned_technician_id', profile.id);
     }
 
     if (statusFilter) {
@@ -111,13 +118,13 @@ class RequestsService {
     const { data: request, error } = await supabase
       .from('service_requests')
       .select(`
-        id, status, description, address, created_at, updated_at, completed_at,
-        client_id, technician_id,
+        id, status, description, address, latitude, longitude, created_at, updated_at, completed_at,
+        client_id, assigned_technician_id,
         category:categories(id, name, icon),
+        city:cities(id, name),
         client:users!client_id(id, full_name, email, phone, avatar_url),
-        technician:technician_profiles!technician_id(
-          id, user_id, user:users!user_id(id, full_name, email, phone, avatar_url),
-          city:cities(id, name)
+        assigned_technician:technician_profiles!assigned_technician_id(
+          id, user_id, user:users!user_id(id, full_name, email, phone, avatar_url)
         ),
         review:reviews(id, rating, comment)
       `)
@@ -132,82 +139,89 @@ class RequestsService {
     if (role === 'client' && request.client_id !== userId) {
       throw ApiError.forbidden('Vous n\'avez pas l\'autorisation d\'accéder à cette demande');
     }
-    if (role === 'technician' && request.technician.user_id !== userId) {
-      throw ApiError.forbidden('Vous n\'avez pas l\'autorisation d\'accéder à cette demande');
+    if (role === 'technician') {
+      // Tech can view if they are assigned, OR if they have a pending offer for it
+      if (request.assigned_technician?.user_id !== userId) {
+        // Check if they have an offer
+        const { data: offer } = await supabase
+          .from('job_offers')
+          .select('id')
+          .eq('request_id', requestId)
+          .eq('technician_id', (await this.getTechId(userId)))
+          .single();
+        if (!offer) {
+           throw ApiError.forbidden('Vous n\'avez pas l\'autorisation d\'accéder à cette demande');
+        }
+      }
     }
 
     return request;
   }
 
-  static async updateRequestStatus(requestId, userId, role, newStatus) {
-    const validStatuses = ['pending', 'accepted', 'rejected', 'in_progress', 'completed', 'cancelled'];
-    if (!validStatuses.includes(newStatus)) {
-      throw ApiError.badRequest('Statut de demande invalide');
+  static async cancelRequest(requestId, clientId) {
+    const request = await this.getRequestById(requestId, clientId, 'client');
+    
+    if (request.status === 'completed' || request.status === 'cancelled') {
+      throw ApiError.badRequest('Cette demande ne peut plus être annulée');
     }
 
-    const request = await this.getRequestById(requestId, userId, role);
-    const currentStatus = request.status;
-
-    // Allowed transition state machine matrix
-    const allowedTransitions = {
-      pending: ['accepted', 'rejected', 'cancelled'],
-      accepted: ['in_progress', 'cancelled'],
-      in_progress: ['completed', 'cancelled'],
-      completed: [],
-      rejected: [],
-      cancelled: []
-    };
-
-    if (!allowedTransitions[currentStatus].includes(newStatus)) {
-      throw ApiError.badRequest(`Transition de statut invalide de '${currentStatus}' vers '${newStatus}'`);
-    }
-
-    // Role specific transition rules
-    if (newStatus === 'cancelled' && role !== 'client') {
-      throw ApiError.forbidden('Seul le client peut annuler la demande');
-    }
-    if (['accepted', 'rejected', 'in_progress', 'completed'].includes(newStatus) && role !== 'technician') {
-      throw ApiError.forbidden('Seul le technicien peut effectuer cette action');
-    }
-
-    const updateFields = { status: newStatus };
-    if (newStatus === 'completed') {
-      updateFields.completed_at = new Date().toISOString();
-    }
-
-    const { data: updated, error } = await supabase
+    const { data, error } = await supabase
       .from('service_requests')
-      .update(updateFields)
+      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
       .eq('id', requestId)
       .select()
       .single();
 
-    if (error) {
-      console.error('[RequestsService.updateRequestStatus error]', error);
-      throw ApiError.internal('Erreur lors de la mise à jour de la demande');
+    if (error) throw ApiError.internal('Erreur lors de l\'annulation');
+
+    // Invalidate any pending offers
+    await supabase.from('job_offers').update({ status: 'expired' }).eq('request_id', requestId).eq('status', 'pending');
+
+    // Notify assigned tech if any
+    if (request.assigned_technician_id) {
+       await supabase.from('notifications').insert([{
+         user_id: request.assigned_technician.user_id,
+         type: 'request_status_change',
+         title: 'Demande annulée',
+         message: 'Le client a annulé la demande de service.',
+         metadata: { requestId }
+       }]);
     }
 
-    // Notify recipient
-    const recipientUserId = role === 'client' ? request.technician.user_id : request.client_id;
-    const statusLabels = {
-      accepted: 'acceptée',
-      rejected: 'refusée',
-      in_progress: 'en cours',
-      completed: 'terminée',
-      cancelled: 'annulée'
-    };
+    return data;
+  }
 
-    await supabase.from('notifications').insert([
-      {
-        user_id: recipientUserId,
-        type: 'request_status_change',
-        title: `Mise à jour de votre demande`,
-        message: `La demande de service est désormais ${statusLabels[newStatus] || newStatus}.`,
-        metadata: { requestId: request.id, status: newStatus }
-      }
-    ]);
+  static async completeRequest(requestId, technicianUserId) {
+    const request = await this.getRequestById(requestId, technicianUserId, 'technician');
+    
+    if (request.status !== 'in_progress' && request.status !== 'assigned') {
+      throw ApiError.badRequest('La demande doit être en cours pour être terminée');
+    }
 
-    return updated;
+    const { data, error } = await supabase
+      .from('service_requests')
+      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .eq('id', requestId)
+      .select()
+      .single();
+
+    if (error) throw ApiError.internal('Erreur lors de la complétion');
+
+    // Notify client
+    await supabase.from('notifications').insert([{
+      user_id: request.client_id,
+      type: 'request_status_change',
+      title: 'Mission terminée',
+      message: 'Le technicien a marqué la mission comme terminée. Vous pouvez maintenant laisser un avis.',
+      metadata: { requestId }
+    }]);
+
+    return data;
+  }
+
+  static async getTechId(userId) {
+    const { data } = await supabase.from('technician_profiles').select('id').eq('user_id', userId).single();
+    return data ? data.id : null;
   }
 }
 

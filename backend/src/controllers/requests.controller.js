@@ -28,10 +28,18 @@ class RequestsController {
     }
   }
 
-  static async updateRequestStatus(req, res, next) {
+  static async cancelRequest(req, res, next) {
     try {
-      const { status } = req.body;
-      const updated = await RequestsService.updateRequestStatus(req.params.id, req.user.id, req.user.role, status);
+      const updated = await RequestsService.cancelRequest(req.params.id, req.user.id);
+      res.status(200).json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async completeRequest(req, res, next) {
+    try {
+      const updated = await RequestsService.completeRequest(req.params.id, req.user.id);
       res.status(200).json({ data: updated });
     } catch (error) {
       next(error);
