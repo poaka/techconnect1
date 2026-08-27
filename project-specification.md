@@ -1,4 +1,9 @@
-# TechConnect Cameroun — Project Specification
+# FixerPro237 — Project Specification
+
+**DÉCISIONS TRANCHÉES (Phase 0):**
+1. **Annuaire vs Dispatch** : Modèle de Dispatch (le client poste une demande, le système trouve et assigne le technicien).
+2. **Flutter vs React** : Mobile = Flutter, Web/Admin = React.
+3. **1 vs N catégories** : 1 seule catégorie par technicien (relation 1-to-many).
 
 **Status:** Living document — reflects the current locked decisions as of July 2026 (Express-in-the-middle architecture, mobile scope = Client + Technician).
 **Source of truth chain:** Cahier de Charges v1.0 → Full Specification Book v2.0 → this document (consolidates and supersedes wording conflicts between the two, e.g. the "Visitor" role, which is folded into Client everywhere in this doc).
