@@ -20,8 +20,11 @@ router.post(
   '/',
   requireRole('client'),
   [
-    body('technicianId').notEmpty().withMessage('L\'identifiant du technicien est requis'),
+    body('categoryId').notEmpty().withMessage('La catégorie est requise'),
+    body('cityId').notEmpty().withMessage('La ville est requise'),
     body('description').trim().notEmpty().withMessage('La description de la demande est requise'),
+    body('latitude').optional().isNumeric(),
+    body('longitude').optional().isNumeric(),
     validateRequest
   ],
   RequestsController.createRequest
@@ -30,13 +33,8 @@ router.post(
 router.get('/', RequestsController.getRequests);
 router.get('/:id', RequestsController.getRequestById);
 
-router.patch(
-  '/:id/status',
-  [
-    body('status').isIn(['pending', 'accepted', 'rejected', 'in_progress', 'completed', 'cancelled']).withMessage('Statut invalide'),
-    validateRequest
-  ],
-  RequestsController.updateRequestStatus
-);
+// Lifecycle Endpoints
+router.post('/:id/cancel', requireRole('client'), RequestsController.cancelRequest);
+router.post('/:id/complete', requireRole('technician'), RequestsController.completeRequest);
 
 module.exports = router;
