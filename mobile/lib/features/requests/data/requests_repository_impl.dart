@@ -71,4 +71,22 @@ class RequestsRepositoryImpl implements RequestsRepository {
       throw ErrorMapper.mapExceptionToFailure(e);
     }
   }
+
+  @override
+  Future<void> updateLocation(String id, double latitude, double longitude) async {
+    try {
+      await _remoteDataSource.updateLocation(id, latitude, longitude);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getLocation(String id) async {
+    try {
+      return await _remoteDataSource.getLocation(id);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
 }

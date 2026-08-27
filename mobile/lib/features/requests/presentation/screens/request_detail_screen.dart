@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/services/location_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/service_request.dart';
 import '../../../../shared/widgets/app_button.dart';
@@ -44,6 +47,31 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         ref.invalidate(requestDetailProvider(widget.requestId));
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Action effectuée avec succès'), backgroundColor: AppColors.success),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
+  Future<void> _shareLocation() async {
+    setState(() => _isUpdating = true);
+    try {
+      final locationService = ref.read(locationServiceProvider);
+      final position = await locationService.getCurrentPosition();
+      
+      final repository = ref.read(requestsRepositoryProvider);
+      await repository.updateLocation(widget.requestId, position.latitude, position.longitude);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Position partagée avec succès !'), backgroundColor: AppColors.success),
         );
       }
     } catch (e) {
@@ -206,6 +234,22 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     ),
                   ],
 
+                  if (request.status == RequestStatus.inProgress || request.status == RequestStatus.assigned) ...[
+                    const SizedBox(height: 20),
+                    _buildSectionHeader('Suivi GPS', secondaryTextColor),
+                    if (isTechnician)
+                      SizedBox(
+                        width: double.infinity,
+                        child: AppButton(
+                          text: 'Partager ma position',
+                          icon: Icons.my_location,
+                          onPressed: _isUpdating ? null : _shareLocation,
+                        ),
+                      )
+                    else
+                      _buildClientLocationTracker(cardBg, cardBorder, request.id),
+                  ],
+
                   const SizedBox(height: 32),
                   
                   if (_isUpdating)
@@ -265,6 +309,93 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildClientLocationTracker(Color cardBg, Color cardBorder, String requestId) {
+    final locationAsync = ref.watch(requestLocationProvider(requestId));
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cardBorder),
+      ),
+      child: locationAsync.when(
+        data: (location) {
+          if (location == null) {
+            return Column(
+              children: [
+                const Icon(Icons.location_off_outlined, color: Colors.grey, size: 32),
+                const SizedBox(height: 8),
+                const Text(
+                  'Le technicien n\'a pas encore partagé sa position.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  onPressed: () => ref.refresh(requestLocationProvider(requestId)),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Actualiser'),
+                )
+              ],
+            );
+          }
+
+          final lat = location['latitude'];
+          final lng = location['longitude'];
+          final updatedAt = DateTime.parse(location['updated_at']).toLocal();
+          final formattedTime = DateFormat('HH:mm').format(updatedAt);
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.my_location, color: AppColors.success),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Position mise à jour à $formattedTime',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: AppColors.primary),
+                    onPressed: () => ref.refresh(requestLocationProvider(requestId)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: AppButton(
+                  text: 'Ouvrir dans Maps',
+                  icon: Icons.map_outlined,
+                  isOutlined: true,
+                  onPressed: () async {
+                    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url);
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Impossible d\'ouvrir la carte.')),
+                        );
+                      }
+                    }
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text('Erreur: $err')),
       ),
     );
   }
