@@ -1,4 +1,4 @@
--- TechConnect Cameroun — Database Schema
+-- FixerPro237 Cameroun — Database Schema
 -- Supabase-managed PostgreSQL Database Script
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -316,9 +316,9 @@ ON CONFLICT (name) DO NOTHING;
 -- Seed Default Test Accounts (Passwords hashed with bcrypt 10 rounds)
 -- Hash for "admin" is "$2a$10$TtTqE0qamOh3UC4OgIUPK.fJVaCPSFxqUMaPmAMbtS1sSXEohvhqm"
 INSERT INTO users (id, full_name, email, phone, password_hash, role) VALUES
-    ('30000000-0000-0000-0000-000000000001', 'Admin TechConnect', 'admin@gmail.com', '+237690000000', '$2a$10$TtTqE0qamOh3UC4OgIUPK.fJVaCPSFxqUMaPmAMbtS1sSXEohvhqm', 'admin'),
-    ('30000000-0000-0000-0000-000000000002', 'Jean Client', 'client@techconnect.cm', '+237691111111', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'client'),
-    ('30000000-0000-0000-0000-000000000003', 'Samuel Électricien', 'samuel@techconnect.cm', '+237692222222', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'technician')
+    ('30000000-0000-0000-0000-000000000001', 'Admin FixerPro237', 'admin@gmail.com', '+237690000000', '$2a$10$TtTqE0qamOh3UC4OgIUPK.fJVaCPSFxqUMaPmAMbtS1sSXEohvhqm', 'admin'),
+    ('30000000-0000-0000-0000-000000000002', 'Jean Client', 'client@fixerpro237.cm', '+237691111111', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'client'),
+    ('30000000-0000-0000-0000-000000000003', 'Samuel Électricien', 'samuel@fixerpro237.cm', '+237692222222', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'technician')
 ON CONFLICT (email) DO NOTHING;
 
 -- Seed Technician Profile for Samuel
