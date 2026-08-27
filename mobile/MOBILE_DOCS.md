@@ -1,76 +1,34 @@
-# FixerPro237 - Mobile App Documentation
+# Documentation Mobile - FixerPro237
 
-This document outlines the architecture, state management, and features of the FixerPro237 Flutter application.
+L'application Mobile (Flutter) est l'interface principale pour les Clients et les Techniciens.
 
-## Overview
-The mobile app is built using **Flutter** and utilizes **Riverpod** for robust state management. It provides distinct interfaces based on user roles (Client, Technician) while sharing common components. Network requests are handled by **Dio** with automatic token injection.
+## Architecture & Librairies
+- **State Management** : `flutter_riverpod` (v2).
+- **Routage** : `go_router` (navigation par onglets avec `StatefulShellRoute`).
+- **Réseau** : `dio` avec intercepteurs pour l'injection du JWT.
+- **Stockage local** : `flutter_secure_storage` (token) et `get_storage` (thème).
+- **GPS** : `geolocator` pour la lecture des coordonnées.
 
-## Project Structure
-The app follows a feature-first folder architecture within `lib/features/`:
+## Structure Clean Architecture
+Dans `lib/features/`, chaque fonctionnalité possède :
+- `data/` : Sources de données (Remote, Local) et Implémentations de Repositories.
+- `domain/` : Modèles métier (Entités) et Interfaces de Repositories.
+- `presentation/` : Screens (UI), Widgets, et Providers (State).
 
-```text
-lib/
-├── core/            # Core utilities (network, storage, themes, utils)
-├── shared/          # Shared widgets (MainShell, AppButton, AppTextField)
-└── features/        # Feature modules
-```
+## Fonctionnalités Principales
 
-## Features
+### 1. Cycle de Demande (Client)
+Le client utilise le `FloatingActionButton` pour créer une demande globale (`CreateRequestScreen`). L'application utilise `RequestsRemoteDataSource` pour envoyer uniquement la catégorie et la ville. La requête passe en statut `unassigned`.
 
-### 1. Authentication (`features/auth`)
-- **State Management**: `auth_provider.dart` manages the current user session and authentication status.
-- **Network (`DioClient`)**: Uses a `JwtInterceptor` to attach the Bearer token stored securely via `flutter_secure_storage`.
-- **UI Screens**: 
-  - Login & Registration screens with inline validation.
-  - Integration with the Profile screen for "Change Password".
+### 2. Offres de Mission (Technicien)
+L'écran `OffersScreen` poll le provider `offersListProvider` pour récupérer les offres de missions générées par le backend. 
+- Les boutons Accepter/Refuser envoient l'action au serveur. 
+- En cas de succès (le technicien a gagné la course CAS), il est redirigé vers `requests`.
 
-### 2. Technicians (`features/technicians`)
-- **Role**: Technicians receive job offers intelligently dispatched by the system based on their category, city, and active workload.
-- **Components**:
-  - `HomeScreen`: Landing page for technicians to view stats and active jobs.
-  - `JobOffersScreen`: Interface to accept or reject incoming dispatched requests.
-  - `TechnicianProfileScreen`: Displays detailed bios, verification status, and reviews.
+### 3. Suivi GPS
+- **`LocationService`** : Abstraction de `geolocator` qui gère les demandes de permission natives.
+- **Partage (Technicien)** : Un bouton sur le détail de la mission envoie la position via `POST /location`.
+- **Suivi (Client)** : Un `FutureProvider` récupère la position (`GET /location`) et un bouton `url_launcher` permet de l'ouvrir dans Google Maps.
 
-### 3. Service Requests (`features/requests`)
-- **Role**: The core workflow where clients describe a problem to be dispatched, and track the assigned technician via live GPS.
-- **Components**:
-  - Status management (Unassigned, Dispatched, Assigned, In Progress, Completed, Cancelled).
-  - List views tailored for the authenticated user (Incoming requests for Technicians, Outgoing for Clients).
-  - Dynamic status badges with color-coded UI indicators.
-
-### 4. Reviews (`features/reviews`)
-- **Role**: Enables clients to rate technicians after a job is completed.
-- **Components**:
-  - Modal sheets for submitting a 1-5 star rating and text feedback.
-  - Read-only list views on technician profiles displaying aggregate ratings.
-
-### 5. Favorites (`features/favorites`)
-- **Role**: Allows clients to bookmark technicians for future reference.
-- **Components**:
-  - Toggleable heart icons on technician profiles.
-  - A dedicated "Favorites" tab within the `MainShell` bottom navigation.
-
-### 6. Notifications (`features/notifications`)
-- **Role**: Alerts users to status changes (e.g., when a request is accepted).
-- **Components**:
-  - App bar bell icon displaying an unread counter.
-  - Notification list screen distinguishing between read and unread items.
-
-### 7. Dashboards (`features/client_dashboard` & `features/technician_dashboard`)
-- **Client Dashboard**: Overview of active requests and quick actions.
-- **Technician Dashboard**: Specialized view showing incoming requests, average rating, and job completion statistics.
-
-### 8. GPS Tracking (`features/tracking`)
-- **Role**: Real-time location tracking for active interventions.
-- **Components**: Technician broadcasts location; Client views live map tracking.
-
-### 9. Profile Settings (`features/profile`)
-- **Role**: Manages user details and app preferences.
-- **Components**:
-  - Avatar and personal info display.
-  - Settings options: Edit Profile, Notification Preferences, Change Password (via Bottom Sheet), and Logout.
-
-## Networking Details
-- **Dio Client**: Configured in `lib/core/network/dio_client.dart`.
-- **Local Dev Support**: Automatically maps `10.0.2.2` to `localhost` depending on whether it's running on an Android Emulator or Web/Desktop to easily connect to the local Node.js backend.
-- **Logging**: Detailed network request/response logging using `dart:developer`.
+## Tableaux de Bord
+Les écrans d'accueil (`ClientDashboardScreen`, `TechnicianDashboardScreen`) consolident les statistiques des providers métier. La mise à jour est assurée par l'invalidation optimiste des `FutureProvider` ou par le `RefreshIndicator` manuel.

@@ -1,94 +1,65 @@
-# FixerPro237 Cameroun — Roadmap
+# FixerPro237 Cameroun — Roadmap & Status
 
-**How to read this:** phases are ordered by technical dependency, not by feature category. Don't start a phase before its dependencies are done and acceptance criteria are met — that's how "build hard and easy things in parallel" mistakes happen. Riskiest/foundational work comes first; the most complex/optional layers (real-time chat, payments, GPS) are pushed to Post-V1 on purpose.
+L'application FixerPro237 a pivoté de son modèle initial "Annuaire Ouvert" vers un modèle "Dispatch Intelligent" (assignation automatique, 1 seule catégorie par technicien).
+Ce document reflète l'implémentation finale de la V1.
 
----
+## Phase 0 — Décisions Tranchées
+**Status: ✅ TERMINÉ**
+- Modèle de Dispatch retenu : Le client demande, le système choisit, le technicien accepte/refuse.
+- 1 seule catégorie par technicien pour simplifier la facturation.
+- Focus sur Flutter (Mobile) et suppression du React Web (Admin gardé basique via requêtes API ou interface minimale).
 
-## Phase 0 — Foundations (Backend + Database)
-**Status: mostly done.**
-- Supabase project + `database/schema.sql` (tables, enums, triggers, RLS, seed data) ✅
-- Express skeleton: config, middleware (`auth.js`, `errorHandler.js`, `upload.js`), route structure for all 7 modules ✅
-- Auth module fully implemented (`register`, `login`, `me`, bcrypt + JWT + rate limiting) ✅
-- **Remaining:** everything else in `backend/src/routes/*.routes.js` is stubbed `501 NOT_IMPLEMENTED` — this is the actual riskiest/most load-bearing work, since web and mobile both block on it.
-- **Acceptance to close this phase:** `technicians`, `requests`, `reviews`, `favorites`, `notifications`, `admin` services implemented and manually tested against the Sample Test Cases (TC-01–TC-10) in the Cahier de Charges.
+## Phase 1 — Refonte du Schéma DB
+**Status: ✅ TERMINÉ**
+- Retrait de `technician_categories` au profit de `technician_profiles.category_id`.
+- Création de la table `job_offers` (id, request_id, technician_id, status, expires_at).
+- Création de la table `location_updates`.
+- `service_requests` utilise `assigned_technician_id` (nullable) et `city_id`.
 
-## Phase 1 — Web MVP: Auth + Directory (React)
-- Depends on: Phase 0 auth + technicians endpoints.
-- Build: Login/Register (done), Directory search/filter page, Technician Profile page.
-- Acceptance: a client can browse and search technicians end-to-end on web without a mobile app existing yet — validates the backend contract before mobile consumes it too.
+## Phase 2 — Moteur de Dispatch (Backend)
+**Status: ✅ TERMINÉ**
+- `DispatchService` trouve les techniciens pertinents (même ville, même catégorie, vérifiés, disponibles, avec le moins de requêtes actives).
+- Algorithme déterministe pour éviter les blocages.
 
-## Phase 2 — Mobile Setup + Core (Flutter)
-- Depends on: Phase 0.
-- Build: project init, clean-architecture folder structure, `DioClient` + JWT interceptor + error mapper, `go_router` skeleton, theme.
-- Acceptance: app runs, hits `/health`, themed shell in place. (Full detail in `FLUTTER_MVP_BLUEPRINT.md` §Phase 0.)
+## Phase 3 — Assignation Atomique (Backend)
+**Status: ✅ TERMINÉ**
+- Service d'offres (`OffersService`) avec Compare-And-Swap (CAS) pour s'assurer que si plusieurs techniciens tentent d'accepter une offre simultanément, un seul gagne.
+- Invalidation des autres offres une fois qu'une est acceptée.
 
-## Phase 3 — Mobile Auth
-- Depends on: Phase 2, Phase 0 auth.
-- Build: Register/Login, `authProvider`, route guards, auto-login on restart.
-- Acceptance: all 4 auth error cases (401 invalid, 409 duplicate, 400 validation, expired token) correctly surfaced in UI.
+## Phase 4 — API Offres et Lifecycle (Backend)
+**Status: ✅ TERMINÉ**
+- Endpoints `GET /technician/offers`, `POST /offers/:id/accept`, `POST /offers/:id/reject`.
+- `POST /requests/:id/cancel` (Client).
+- `POST /requests/:id/complete` (Technicien).
 
-## Phase 4 — Directory (Web polish + Mobile)
-- Depends on: Phase 0 technicians endpoint (search/filter/sort/paginate), Phase 1 (web reference implementation), Phase 3 (mobile auth for the nav shell, though directory itself is public).
-- Build: Mobile Home + Directory + Technician Profile screens; web directory filter UX polish.
-- Acceptance: filters combine correctly on both platforms (city + category + rating simultaneously = FR-11), pagination is consistent, empty/error states handled.
+## Phase 5 — API GPS (Backend)
+**Status: ✅ TERMINÉ**
+- `POST /requests/:id/location` : Le technicien assigné envoie sa position.
+- `GET /requests/:id/location` : Le client et l'admin peuvent voir la position.
+- RLS / Guards de sécurité vérifiés.
 
-## Phase 5 — Service Requests (Web + Mobile, parallel)
-- Depends on: Phase 0 requests endpoint + state-machine validation, Phase 4 (need a technician to request).
-- Build: Create request, status tracking, Accept/Reject/In Progress/Completed actions on both client types.
-- Acceptance: the full `pending → accepted → in_progress → completed/cancelled/rejected` lifecycle is reachable and enforced identically on web and mobile — illegal transitions rejected by backend regardless of which client attempts them.
+## Phase 6 — Client : Création de demande (Mobile)
+**Status: ✅ TERMINÉ**
+- Remplacement du vieux formulaire.
+- Saisie globale avec liste déroulante (Catégorie, Ville).
+- État de la requête : `unassigned` (affiché comme "Recherche en cours...").
 
-## Phase 6 — Reviews
-- Depends on: Phase 5 (needs a Completed request).
-- Build: Rate & Review flow (web + mobile), review list on Technician Profile, backend trigger already recomputes `rating_avg`/`rating_count` (done in `schema.sql`).
-- Acceptance: one review per completed request enforced (DB unique constraint + API check), non-Completed requests can't be reviewed.
+## Phase 7 — Technicien : Offres de Mission (Mobile)
+**Status: ✅ TERMINÉ**
+- Nouvel écran `OffersScreen` affichant les demandes entrantes.
+- Compte à rebours avant expiration.
+- Boutons "Accepter" (vert) et "Refuser" (rouge).
 
-## Phase 7 — Favorites (Web + Mobile, parallel with Phase 6)
-- Depends on: Phase 4.
-- Build: add/remove/list favorites.
-- Acceptance: favorite state is consistent across Directory, Profile, and Favorites list on both platforms.
+## Phase 8 — GPS & Tracking (Mobile)
+**Status: ✅ TERMINÉ**
+- Intégration de `geolocator`.
+- Côté Technicien : Bouton pour partager la position GPS lors d'une mission en cours.
+- Côté Client : Vue de suivi avec horodatage et bouton "Ouvrir dans Maps".
 
-## Phase 8 — Technician Onboarding & Verification (Web + Mobile)
-- Depends on: Phase 3 (technician auth), Phase 4 (category/city reference data).
-- Build: professional profile completion form, document upload (Supabase Storage wiring — currently the one piece of `upload.js` middleware that's stubbed on the backend), availability toggle, admin approval flow on the web back-office.
-- Acceptance: a technician can go from bare registration to "Pending Verification" to "Verified" (via admin action on web) end-to-end.
-
-## Phase 9 — Dashboards & Notifications (Web + Mobile)
-- Depends on: Phases 1–8 (dashboards aggregate data from all of them).
-- **Status: ✅ IMPLEMENTED (July 2026)**
-- Build: Client dashboard (active requests count, favorites count, quick actions), Technician dashboard (real stats from `GET /api/technicians/me/stats` — pending, completed, rating avg, availability), in-app Notifications list + unread badge (polling every 30s), bottom navigation shell (`StatefulShellRoute`) with 4 tabs per role.
-- Acceptance: dashboard numbers match what's independently visible in detail screens (no drift). ✅
-
-## Phase 10 — Hardening & Testing
-- Depends on: everything above.
-- **Status: ✅ IMPLEMENTED (Mobile Only)**
-- Build: consistent loading/empty/error UI across both clients, security pass (rate limiting, input sanitization, CORS, RLS review), performance pass (Lighthouse for web, cold-start profiling for mobile), full manual QA against TC-01–TC-10, unit/integration tests (Jest+Supertest backend, RTL/Cypress web, widget tests mobile).
-- Acceptance: every sample test case passes on both platforms; no unhandled error states (white screens, stuck spinners).
-
-## Phase 11 — Deployment
-- Depends on: Phase 10.
-- Build: web → Vercel/Netlify + CDN; backend → Render/Railway (Dockerized); Supabase Cloud already live; GitHub Actions CI/CD (lint/test/build/deploy on push to main); mobile → signed builds for Play Store / TestFlight internal testing.
-- Acceptance: production URLs live, environment variables managed via host secrets (never committed), monitoring via host logs + Supabase dashboard.
+## Phase 9 — Documentation Finale
+**Status: ✅ TERMINÉ**
+- Tous les documents (`roadmap.md`, `FEATURE_GAP_ANALYSIS.md`, `BACKEND_DOCS.md`, `MOBILE_DOCS.md`) sont alignés avec le code.
 
 ---
 
-## Post-V1 (deliberately deferred — do not start early)
-
-Real-time chat · Mobile Money (MTN MoMo, Orange Money) · GPS/proximity search · AI-driven recommendations · Voice search · Push notifications (FCM/SMS/WhatsApp) · PWA/offline-first · National expansion beyond Yaoundé · Admin on mobile.
-
-These are deferred **on purpose** — building them before the V1 loop (search → verify → request → rate) is proven working would be building complex/expensive layers before the simple foundation is validated, which is the exact mistake this roadmap structure is designed to avoid.
-
----
-
-## Dependency Graph (condensed)
-
-```
-Phase 0 (backend+DB)
- ├─▶ Phase 1 (web directory)
- └─▶ Phase 2 (mobile setup) ─▶ Phase 3 (mobile auth)
-        └─▶ Phase 4 (directory, both platforms)
-               ├─▶ Phase 5 (requests) ─▶ Phase 6 (reviews)
-               ├─▶ Phase 7 (favorites)
-               └─▶ Phase 8 (technician verification)
-                      └─▶ Phase 9 (dashboards + notifications)
-                             └─▶ Phase 10 (hardening) ─▶ Phase 11 (deploy)
-```
+**Toutes les étapes du plan de vérification (`plan-verifier.md`) sont validées. Le MVP V1 est prêt pour déploiement.**
