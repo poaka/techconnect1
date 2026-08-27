@@ -16,28 +16,34 @@ class RequestsRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> createRequest({
-    required String technicianId,
-    String? categoryId,
+    required String categoryId,
+    required String cityId,
     required String description,
     String? address,
+    double? latitude,
+    double? longitude,
   }) async {
     final response = await _client.post(
       '/requests',
       data: {
-        'technicianId': technicianId,
         'categoryId': categoryId,
+        'cityId': cityId,
         'description': description,
-        'address': address,
+        if (address != null) 'address': address,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
       },
     );
     return response.data['data'] as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> updateRequestStatus(String id, String status) async {
-    final response = await _client.patch(
-      '/requests/$id/status',
-      data: {'status': status},
-    );
+  Future<Map<String, dynamic>> cancelRequest(String id) async {
+    final response = await _client.post('/requests/$id/cancel');
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> completeRequest(String id) async {
+    final response = await _client.post('/requests/$id/complete');
     return response.data['data'] as Map<String, dynamic>;
   }
 }
