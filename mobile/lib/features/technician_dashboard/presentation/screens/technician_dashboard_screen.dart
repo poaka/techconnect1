@@ -183,8 +183,17 @@ class _TechnicianDashboardScreenState
 
                 _buildActionCard(
                   context: context,
-                  title: 'Demandes entrantes',
-                  subtitle: 'Gérer vos demandes de service',
+                  title: 'Nouvelles missions',
+                  subtitle: 'Voir les offres disponibles',
+                  icon: Icons.new_releases_outlined,
+                  color: Colors.orange,
+                  onTap: () => context.push('/technician/offers'),
+                ),
+                const SizedBox(height: 12),
+                _buildActionCard(
+                  context: context,
+                  title: 'Demandes en cours',
+                  subtitle: 'Gérer vos chantiers acceptés',
                   icon: Icons.assignment_outlined,
                   color: AppColors.primary,
                   onTap: () => context.push('/technician/requests'),

@@ -19,6 +19,7 @@ import '../../features/requests/presentation/screens/request_list_screen.dart';
 import '../../features/requests/presentation/screens/request_detail_screen.dart';
 import '../../features/requests/presentation/screens/create_request_screen.dart';
 import '../../features/technician_dashboard/presentation/screens/technician_dashboard_screen.dart';
+import '../../features/offers/presentation/screens/offers_screen.dart';
 import '../../features/client_dashboard/presentation/screens/client_dashboard_screen.dart';
 import '../../features/technicians/presentation/screens/technician_onboarding_screen.dart';
 import '../../features/reviews/presentation/screens/create_review_screen.dart';
@@ -212,6 +213,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: '/technician/dashboard',
               builder: (context, state) => const TechnicianDashboardScreen(),
+            ),
+            GoRoute(
+              path: '/technician/offers',
+              builder: (context, state) => const OffersScreen(),
             ),
           ]),
           // Tab 1: Incoming Requests (reuses RequestListScreen)
