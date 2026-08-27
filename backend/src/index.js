@@ -9,6 +9,7 @@ const { errorHandler, ApiError } = require('./middleware/errorHandler');
 const authRoutes = require('./routes/auth.routes');
 const techniciansRoutes = require('./routes/technicians.routes');
 const requestsRoutes = require('./routes/requests.routes');
+const offersRoutes = require('./routes/offers.routes');
 const reviewsRoutes = require('./routes/reviews.routes');
 const favoritesRoutes = require('./routes/favorites.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
@@ -88,6 +89,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/technicians', techniciansRoutes);
 app.use('/api/requests', requestsRoutes);
+app.use('/api/offers', offersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/favorites', favoritesRoutes);
 app.use('/api/notifications', notificationsRoutes);
