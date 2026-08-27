@@ -45,6 +45,24 @@ class RequestsController {
       next(error);
     }
   }
+  static async updateLocation(req, res, next) {
+    try {
+      const { latitude, longitude } = req.body;
+      const updated = await RequestsService.updateLocation(req.params.id, req.user.id, latitude, longitude);
+      res.status(200).json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getLocation(req, res, next) {
+    try {
+      const location = await RequestsService.getLocation(req.params.id, req.user.id, req.user.role);
+      res.status(200).json({ data: location });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = RequestsController;

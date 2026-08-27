@@ -219,6 +219,55 @@ class RequestsService {
     return data;
   }
 
+  static async updateLocation(requestId, technicianUserId, latitude, longitude) {
+    const request = await this.getRequestById(requestId, technicianUserId, 'technician');
+    
+    if (request.status !== 'in_progress' && request.status !== 'assigned') {
+      throw ApiError.badRequest('La géolocalisation n\'est active que pendant la mission');
+    }
+
+    if (request.assigned_technician?.user_id !== technicianUserId) {
+      throw ApiError.forbidden('Vous n\'êtes pas le technicien assigné à cette mission');
+    }
+
+    const { data, error } = await supabase
+      .from('location_updates')
+      .upsert({
+        request_id: requestId,
+        technician_id: request.assigned_technician_id,
+        latitude,
+        longitude,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'request_id' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[RequestsService updateLocation error]', error);
+      throw ApiError.internal('Erreur lors de la mise à jour de la position');
+    }
+
+    return data;
+  }
+
+  static async getLocation(requestId, userId, role) {
+    // getRequestById already verifies access control (Client must be owner, Tech must be assigned/have offer)
+    await this.getRequestById(requestId, userId, role);
+
+    const { data, error } = await supabase
+      .from('location_updates')
+      .select('latitude, longitude, updated_at')
+      .eq('request_id', requestId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null; // Not found, which is fine if tech hasn't started sending location
+      throw ApiError.internal('Erreur lors de la récupération de la position');
+    }
+
+    return data;
+  }
+
   static async getTechId(userId) {
     const { data } = await supabase.from('technician_profiles').select('id').eq('user_id', userId).single();
     return data ? data.id : null;
