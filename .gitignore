@@ -36,3 +36,13 @@ mobile/.pub-cache/
 *.sw?
 .DS_Store
 Thumbs.db
+
+# Global Node Modules
+**/node_modules/
+
+# Build folders
+**/build/
+**/dist/
+
+# Mac OS
+**/.DS_Store
