@@ -73,7 +73,7 @@ export default function App() {
               </h1>
               
               <p className="hero-description">
-                Trouvez, vérifiez et engagez des électriciens, plombiers, mécaniciens et techniciens qualifiés en toute sécurité. Terminé les recherches informelles sans garantie.
+                Décrivez votre problème et notre système intelligent vous assigne instantanément un artisan qualifié et vérifié. Suivez son arrivée en direct sur la carte !
               </p>
 
               <div className="hero-actions">
@@ -207,35 +207,35 @@ export default function App() {
       <section id="how-it-works" className="steps-section">
         <div className="container">
           <div className="section-header">
-            <div className="badge-tag">Parcours Client Simplifié</div>
+            <div className="badge-tag">Dispatch Intelligent & Suivi GPS</div>
             <h2 className="section-title">Comment fonctionne FixerPro237 Cameroun</h2>
             <p className="section-subtitle">
-              Une démarche structurée en 4 étapes pour un service en toute sérénité.
+              Une démarche structurée en 4 étapes pour une intervention rapide et sécurisée.
             </p>
           </div>
 
           <div className="steps-grid">
             <div className="step-card">
               <div className="step-number">1</div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.5rem' }}>Rechercher & Filtrer</h3>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.5rem' }}>Décrire le Problème</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Parcourez l'annuaire par métier, région, ville et note minimale.
+                Sélectionnez le métier, votre ville, et décrivez rapidement votre besoin.
               </p>
             </div>
 
             <div className="step-card">
               <div className="step-number">2</div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.5rem' }}>Vérifier le Profil</h3>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.5rem' }}>Assignation Automatique</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Consultez le badge de vérification admin, les avis vérifiés et les tarifs.
+                Le système trouve et notifie immédiatement les artisans disponibles et vérifiés de votre zone.
               </p>
             </div>
 
             <div className="step-card">
               <div className="step-number">3</div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.5rem' }}>Envoyer la Demande</h3>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.5rem' }}>Suivi GPS en Direct</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Décrivez votre besoin et suivez l'avancement en temps réel (Accepté / En cours).
+                Dès qu'un artisan accepte, suivez son arrivée en temps réel sur la carte.
               </p>
             </div>
 
@@ -336,7 +336,7 @@ export default function App() {
 
             <h2>Téléchargez l'application maintenant</h2>
             <p>
-              Installez directement l'application officielle sur votre smartphone Android et accédez à l'annuaire des artisans vérifiés de Yaoundé.
+              Installez directement l'application officielle sur votre smartphone Android et accédez au réseau d'artisans vérifiés de Yaoundé avec notre système de dispatch intelligent.
             </p>
 
             <a href={apkUrl} download="FixerPro237-Cameroun.apk" className="btn-primary" style={{ background: '#FFFFFF', color: 'var(--primary-dark)', fontSize: '1.1rem', padding: '1.1rem 2.5rem' }}>
@@ -394,7 +394,7 @@ export default function App() {
                 </div>
               </div>
               <p>
-                Plateforme de découverte et de vérification d'artisans qualifiés au Cameroun. Projet Pilote — Yaoundé 2026.
+                Plateforme de dispatch intelligent et de vérification d'artisans au Cameroun. Projet Pilote — Yaoundé 2026.
               </p>
             </div>
 
