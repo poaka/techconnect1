@@ -8,9 +8,7 @@ import '../../../technicians/presentation/providers/technicians_providers.dart';
 import '../providers/requests_providers.dart';
 
 class CreateRequestScreen extends ConsumerStatefulWidget {
-  final String technicianId;
-
-  const CreateRequestScreen({super.key, required this.technicianId});
+  const CreateRequestScreen({super.key});
 
   @override
   ConsumerState<CreateRequestScreen> createState() => _CreateRequestScreenState();
@@ -22,6 +20,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
   final _addressController = TextEditingController();
   
   String? _selectedCategoryId;
+  String? _selectedCityId;
   bool _isLoading = false;
 
   @override
@@ -33,20 +32,34 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
 
   Future<void> _submitRequest() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez sélectionner une catégorie'), backgroundColor: AppColors.error),
+      );
+      return;
+    }
+    
+    if (_selectedCityId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez sélectionner une ville'), backgroundColor: AppColors.error),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
       await ref.read(requestListProvider.notifier).createRequest(
-            technicianId: widget.technicianId,
-            categoryId: _selectedCategoryId,
+            categoryId: _selectedCategoryId!,
+            cityId: _selectedCityId!,
             description: _descriptionController.text.trim(),
             address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
           );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Demande envoyée avec succès !'), backgroundColor: AppColors.success),
+          const SnackBar(content: Text('Demande envoyée ! Recherche de techniciens en cours...'), backgroundColor: AppColors.success),
         );
         context.go('/requests');
       }
@@ -63,100 +76,126 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profileAsync = ref.watch(technicianDetailProvider(widget.technicianId));
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final citiesAsync = ref.watch(citiesProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Demander un service'),
+        title: const Text('Créer une demande'),
       ),
-      body: profileAsync.when(
-        data: (profile) {
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Demande pour ${profile.fullName}',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Category Dropdown (if technician has categories)
-                    if (profile.categories.isNotEmpty) ...[
-                      const Text('Type de service', style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                        hint: const Text('Sélectionnez une catégorie'),
-                        value: _selectedCategoryId,
-                        items: profile.categories.map((cat) {
-                          return DropdownMenuItem(
-                            value: cat.id,
-                            child: Text(cat.name),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() => _selectedCategoryId = val);
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-
-                    // Description Field
-                    const Text('Description de votre besoin', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 5,
-                      decoration: InputDecoration(
-                        hintText: 'Décrivez le problème ou le service souhaité en détail...',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      validator: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return 'Veuillez décrire votre besoin';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Address Field
-                    const Text('Adresse d\'intervention (optionnel)', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        hintText: 'Quartier, repère...',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Submit Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: AppButton(
-                        text: 'Envoyer la demande',
-                        isLoading: _isLoading,
-                        onPressed: _submitRequest,
-                      ),
-                    ),
-                  ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'De quoi avez-vous besoin ?',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-              ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Décrivez votre problème et nous trouverons le meilleur technicien disponible pour vous.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+
+                // Category Dropdown
+                const Text('Catégorie de service', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                categoriesAsync.when(
+                  data: (categories) => DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    hint: const Text('Ex: Plomberie, Électricité...'),
+                    value: _selectedCategoryId,
+                    items: categories.map((cat) {
+                      return DropdownMenuItem(
+                        value: cat.id,
+                        child: Text(cat.name),
+                      );
+                    }).toList(),
+                    onChanged: (val) => setState(() => _selectedCategoryId = val),
+                    validator: (val) => val == null ? 'Requis' : null,
+                  ),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (_, __) => const Text('Erreur de chargement des catégories', style: TextStyle(color: Colors.red)),
+                ),
+                const SizedBox(height: 20),
+
+                // City Dropdown
+                const Text('Votre ville', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                citiesAsync.when(
+                  data: (cities) => DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    hint: const Text('Sélectionnez votre ville'),
+                    value: _selectedCityId,
+                    items: cities.map((city) {
+                      return DropdownMenuItem(
+                        value: city.id,
+                        child: Text(city.name),
+                      );
+                    }).toList(),
+                    onChanged: (val) => setState(() => _selectedCityId = val),
+                    validator: (val) => val == null ? 'Requis' : null,
+                  ),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (_, __) => const Text('Erreur de chargement des villes', style: TextStyle(color: Colors.red)),
+                ),
+                const SizedBox(height: 20),
+
+                // Description Field
+                const Text('Description du problème', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _descriptionController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: 'Soyez le plus précis possible pour aider le technicien à comprendre votre besoin...',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Veuillez décrire votre besoin';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                // Address Field
+                const Text('Adresse exacte (optionnel)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _addressController,
+                  decoration: InputDecoration(
+                    hintText: 'Quartier, repère, numéro de porte...',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Submit Button
+                SizedBox(
+                  width: double.infinity,
+                  child: AppButton(
+                    text: 'Trouver un technicien',
+                    isLoading: _isLoading,
+                    onPressed: _submitRequest,
+                  ),
+                ),
+              ],
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Erreur: $err')),
+          ),
+        ),
       ),
     );
   }

@@ -5,21 +5,18 @@ import '../../features/auth/domain/app_user.dart';
 import '../../features/technicians/domain/technician_profile.dart';
 
 enum RequestStatus {
-  pending,
-  accepted,
-  rejected,
+  unassigned,
+  assigned,
   inProgress,
   completed,
   cancelled;
 
   String get label {
     switch (this) {
-      case RequestStatus.pending:
-        return 'En attente';
-      case RequestStatus.accepted:
-        return 'Acceptée';
-      case RequestStatus.rejected:
-        return 'Refusée';
+      case RequestStatus.unassigned:
+        return 'Recherche en cours...';
+      case RequestStatus.assigned:
+        return 'Assignée';
       case RequestStatus.inProgress:
         return 'En cours';
       case RequestStatus.completed:
@@ -31,12 +28,10 @@ enum RequestStatus {
 
   String getLocalizedLabel(BuildContext context) {
     switch (this) {
-      case RequestStatus.pending:
-        return context.tr('status_pending');
-      case RequestStatus.accepted:
-        return context.tr('status_accepted');
-      case RequestStatus.rejected:
-        return context.tr('status_rejected');
+      case RequestStatus.unassigned:
+        return 'Recherche en cours...';
+      case RequestStatus.assigned:
+        return 'Assignée';
       case RequestStatus.inProgress:
         return context.tr('status_in_progress');
       case RequestStatus.completed:
@@ -48,30 +43,27 @@ enum RequestStatus {
 
   static RequestStatus fromString(String value) {
     switch (value.toLowerCase()) {
-      case 'accepted':
-        return RequestStatus.accepted;
-      case 'rejected':
-        return RequestStatus.rejected;
+      case 'unassigned':
+        return RequestStatus.unassigned;
+      case 'assigned':
+        return RequestStatus.assigned;
       case 'in_progress':
         return RequestStatus.inProgress;
       case 'completed':
         return RequestStatus.completed;
       case 'cancelled':
         return RequestStatus.cancelled;
-      case 'pending':
       default:
-        return RequestStatus.pending;
+        return RequestStatus.unassigned;
     }
   }
 
   String toSnakeCase() {
     switch (this) {
-      case RequestStatus.pending:
-        return 'pending';
-      case RequestStatus.accepted:
-        return 'accepted';
-      case RequestStatus.rejected:
-        return 'rejected';
+      case RequestStatus.unassigned:
+        return 'unassigned';
+      case RequestStatus.assigned:
+        return 'assigned';
       case RequestStatus.inProgress:
         return 'in_progress';
       case RequestStatus.completed:

@@ -4,10 +4,13 @@ abstract class RequestsRepository {
   Future<List<ServiceRequest>> getRequests();
   Future<ServiceRequest> getRequestById(String id);
   Future<ServiceRequest> createRequest({
-    required String technicianId,
-    String? categoryId,
+    required String categoryId,
+    required String cityId,
     required String description,
     String? address,
+    double? latitude,
+    double? longitude,
   });
-  Future<ServiceRequest> updateRequestStatus(String id, RequestStatus status);
+  Future<ServiceRequest> cancelRequest(String id);
+  Future<ServiceRequest> completeRequest(String id);
 }

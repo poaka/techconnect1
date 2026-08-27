@@ -38,16 +38,20 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
   }
 
   Future<ServiceRequest> createRequest({
-    required String technicianId,
-    String? categoryId,
+    required String categoryId,
+    required String cityId,
     required String description,
     String? address,
+    double? latitude,
+    double? longitude,
   }) async {
     final newRequest = await _repository.createRequest(
-      technicianId: technicianId,
       categoryId: categoryId,
+      cityId: cityId,
       description: description,
       address: address,
+      latitude: latitude,
+      longitude: longitude,
     );
     
     // Add to current list
@@ -57,10 +61,19 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
     return newRequest;
   }
 
-  Future<ServiceRequest> updateStatus(String id, RequestStatus newStatus) async {
-    final updatedRequest = await _repository.updateRequestStatus(id, newStatus);
-    
-    // Update in current list
+  Future<ServiceRequest> cancelRequest(String id) async {
+    final updatedRequest = await _repository.cancelRequest(id);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  Future<ServiceRequest> completeRequest(String id) async {
+    final updatedRequest = await _repository.completeRequest(id);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  void _updateRequestInState(String id, ServiceRequest updatedRequest) {
     if (state.hasValue) {
       final updatedList = state.value!.map<ServiceRequest>((req) {
         if (req.id == id) {
@@ -70,7 +83,6 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
       }).toList();
       state = AsyncValue.data(updatedList);
     }
-    return updatedRequest;
   }
 }
 

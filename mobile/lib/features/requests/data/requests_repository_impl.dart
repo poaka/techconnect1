@@ -30,17 +30,21 @@ class RequestsRepositoryImpl implements RequestsRepository {
 
   @override
   Future<ServiceRequest> createRequest({
-    required String technicianId,
-    String? categoryId,
+    required String categoryId,
+    required String cityId,
     required String description,
     String? address,
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       final res = await _remoteDataSource.createRequest(
-        technicianId: technicianId,
         categoryId: categoryId,
+        cityId: cityId,
         description: description,
         address: address,
+        latitude: latitude,
+        longitude: longitude,
       );
       return ServiceRequest.fromJson(res);
     } catch (e) {
@@ -49,9 +53,19 @@ class RequestsRepositoryImpl implements RequestsRepository {
   }
 
   @override
-  Future<ServiceRequest> updateRequestStatus(String id, RequestStatus status) async {
+  Future<ServiceRequest> cancelRequest(String id) async {
     try {
-      final res = await _remoteDataSource.updateRequestStatus(id, status.toSnakeCase());
+      final res = await _remoteDataSource.cancelRequest(id);
+      return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<ServiceRequest> completeRequest(String id) async {
+    try {
+      final res = await _remoteDataSource.completeRequest(id);
       return ServiceRequest.fromJson(res);
     } catch (e) {
       throw ErrorMapper.mapExceptionToFailure(e);

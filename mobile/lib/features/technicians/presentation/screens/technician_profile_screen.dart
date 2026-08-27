@@ -427,7 +427,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
           child: AppButton(
             text: 'Demander un service',
             onPressed: () {
-              context.push('/technicians/$technicianId/request');
+              context.push('/create-request');
             },
           ),
         ),

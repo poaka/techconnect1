@@ -15,14 +15,13 @@ class RequestListScreen extends ConsumerWidget {
 
   Color _getStatusColor(RequestStatus status) {
     switch (status) {
-      case RequestStatus.pending:
+      case RequestStatus.unassigned:
         return Colors.orange;
-      case RequestStatus.accepted:
+      case RequestStatus.assigned:
       case RequestStatus.inProgress:
         return AppColors.primary;
       case RequestStatus.completed:
         return AppColors.success;
-      case RequestStatus.rejected:
       case RequestStatus.cancelled:
         return AppColors.error;
     }

@@ -22,10 +22,10 @@ class ClientDashboardScreen extends ConsumerWidget {
     final unreadCount = ref.watch(unreadCountProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Compute active request count (pending + accepted + in_progress)
+    // Compute active request count (unassigned + assigned + in_progress)
     final activeRequests = requestsAsync.valueOrNull?.where((r) {
-          return r.status == RequestStatus.pending ||
-              r.status == RequestStatus.accepted ||
+          return r.status == RequestStatus.unassigned ||
+              r.status == RequestStatus.assigned ||
               r.status == RequestStatus.inProgress;
         }).length ??
         0;
@@ -113,7 +113,7 @@ class ClientDashboardScreen extends ConsumerWidget {
                       child: _buildStatCard(
                         context: context,
                         icon: Icons.assignment_outlined,
-                        label: context.tr('status_pending'),
+                        label: context.tr('status_unassigned'),
                         value: '$activeRequests',
                         color: AppColors.primary,
                       ),

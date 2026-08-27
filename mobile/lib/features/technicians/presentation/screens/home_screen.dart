@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/language_selector.dart';
 import '../../../../shared/widgets/theme_toggle_button.dart';
 import '../../../auth/presentation/auth_provider.dart';
+import '../../../auth/domain/user_role.dart';
 import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../providers/technicians_providers.dart';
 import '../widgets/category_item.dart';
@@ -349,10 +350,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
           ),
-        ],
       ),
-    ),
-  ),
-);
+      floatingActionButton: user?.role == UserRole.client
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push('/create-request'),
+              icon: const Icon(Icons.add_circle_outline),
+              label: const Text('Nouvelle demande'),
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            )
+          : null,
+    );
   }
 }
