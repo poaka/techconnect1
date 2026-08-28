@@ -350,8 +350,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
           ),
+        ],
       ),
-      floatingActionButton: user?.role == UserRole.client
+    ),
+  ),
+  floatingActionButton: user?.role == UserRole.client
           ? FloatingActionButton.extended(
               onPressed: () => context.push('/create-request'),
               icon: const Icon(Icons.add_circle_outline),

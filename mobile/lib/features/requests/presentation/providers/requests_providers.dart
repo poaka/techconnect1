@@ -91,3 +91,8 @@ final requestDetailProvider = FutureProvider.family<ServiceRequest, String>((ref
   final repository = ref.watch(requestsRepositoryProvider);
   return repository.getRequestById(id);
 });
+
+final requestLocationProvider = FutureProvider.family<Map<String, dynamic>?, String>((ref, requestId) async {
+  final repository = ref.watch(requestsRepositoryProvider);
+  return repository.getLocation(requestId);
+});
