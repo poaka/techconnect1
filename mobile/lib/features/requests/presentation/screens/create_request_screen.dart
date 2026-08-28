@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_button.dart';
@@ -22,6 +24,25 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
   String? _selectedCategoryId;
   String? _selectedCityId;
   bool _isLoading = false;
+  File? _imageFile;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedFile = await _picker.pickImage(source: source, imageQuality: 70);
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la sélection de l\'image: $e')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -55,6 +76,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
             cityId: _selectedCityId!,
             description: _descriptionController.text.trim(),
             address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+            imagePath: _imageFile?.path,
           );
 
       if (mounted) {
