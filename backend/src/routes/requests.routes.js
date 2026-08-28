@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const RequestsController = require('../controllers/requests.controller');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { ApiError } = require('../middleware/errorHandler');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.use(requireAuth);
 router.post(
   '/',
   requireRole('client'),
+  upload.single('image'),
   [
     body('categoryId').notEmpty().withMessage('La catégorie est requise'),
     body('cityId').notEmpty().withMessage('La ville est requise'),
