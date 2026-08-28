@@ -68,7 +68,7 @@ class RequestsService {
 
     // 3. Create Job Offers
     const offers = technicians.map(tech => ({
-      request_id: newRequest.id,
+      service_request_id: newRequest.id,
       technician_id: tech.id,
       status: 'pending'
     }));
@@ -173,7 +173,7 @@ class RequestsService {
         const { data: offer } = await supabase
           .from('job_offers')
           .select('id')
-          .eq('request_id', requestId)
+          .eq('service_request_id', requestId)
           .eq('technician_id', (await this.getTechId(userId)))
           .single();
         if (!offer) {
@@ -202,7 +202,7 @@ class RequestsService {
     if (error) throw ApiError.internal('Erreur lors de l\'annulation');
 
     // Invalidate any pending offers
-    await supabase.from('job_offers').update({ status: 'expired' }).eq('request_id', requestId).eq('status', 'pending');
+    await supabase.from('job_offers').update({ status: 'expired' }).eq('service_request_id', requestId).eq('status', 'pending');
 
     // Notify assigned tech if any
     if (request.assigned_technician_id) {
@@ -256,7 +256,7 @@ class RequestsService {
     }
 
     // Delete associated offers first
-    await supabase.from('job_offers').delete().eq('request_id', requestId);
+    await supabase.from('job_offers').delete().eq('service_request_id', requestId);
 
     // Delete the service request
     const { error } = await supabase
@@ -267,6 +267,42 @@ class RequestsService {
 
     if (error) throw ApiError.internal('Erreur lors de la suppression de la demande');
     return { success: true, message: 'Demande supprimée avec succès' };
+  }
+
+  static async startRequest(requestId, technicianUserId) {
+    const request = await this.getRequestById(requestId, technicianUserId, 'technician');
+
+    if (request.status !== 'assigned') {
+      throw ApiError.badRequest('La demande doit être assignée avant de pouvoir être démarrée');
+    }
+
+    if (request.assigned_technician?.user_id !== technicianUserId) {
+      throw ApiError.forbidden('Vous n\'êtes pas le technicien assigné à cette mission');
+    }
+
+    const { data, error } = await supabase
+      .from('service_requests')
+      .update({ status: 'in_progress', updated_at: new Date().toISOString() })
+      .eq('id', requestId)
+      .select()
+      .single();
+
+    if (error) throw ApiError.internal('Erreur lors du démarrage de la mission');
+
+    // Notify client
+    try {
+      await supabase.from('notifications').insert([{
+        user_id: request.client_id,
+        type: 'request_status_change',
+        title: 'Mission en cours',
+        message: 'Le technicien a démarré l\'intervention. Vous pouvez suivre sa position.',
+        metadata: { requestId }
+      }]);
+    } catch (notifErr) {
+      console.error('[RequestsService.startRequest] Notification error:', notifErr);
+    }
+
+    return data;
   }
 
   static async completeRequest(requestId, technicianUserId) {

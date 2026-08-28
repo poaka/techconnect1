@@ -44,7 +44,7 @@ void main() {
   try {
     final map = jsonDecode(jsonStr);
     final profile = TechnicianProfile.fromJson(map);
-    print('SUCCESS: \${profile.fullName}, \${profile.categories.length} categories');
+    print('SUCCESS: ${profile.fullName}, ${profile.categories.length} categories');
   } catch (e, st) {
     print('ERROR: \$e');
     print(st);

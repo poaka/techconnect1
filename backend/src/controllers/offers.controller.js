@@ -19,7 +19,7 @@ class OffersController {
         .from('job_offers')
         .select(`
           id, status,
-          request:service_requests(
+          request:service_requests!service_request_id(
             id, description, address, latitude, longitude,
             city:cities(name),
             category:categories(name, icon),
