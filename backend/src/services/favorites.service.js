@@ -65,7 +65,7 @@ class FavoritesService {
           id, bio, years_experience, price_min, price_max, whatsapp, verified, availability, rating_avg, rating_count,
           user:users!user_id(id, full_name, email, phone, avatar_url),
           city:cities!city_id(id, name, region:regions(id, name)),
-          categories:technician_categories(category:categories(id, name, icon))
+          category:categories(id, name, icon)
         )
       `)
       .eq('client_id', clientId)

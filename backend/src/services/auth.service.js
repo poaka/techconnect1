@@ -225,7 +225,7 @@ class AuthService {
           .select(`
             id, bio, years_experience, price_min, price_max, whatsapp, verified, availability, rating_avg, rating_count,
             city:cities(id, name, region:regions(id, name)),
-            categories:technician_categories(category:categories(id, name, icon))
+            category:categories(id, name, icon)
           `)
           .eq('user_id', user.id)
           .single();
@@ -278,7 +278,7 @@ class AuthService {
           .select(`
             id, bio, years_experience, price_min, price_max, whatsapp, verified, availability, rating_avg, rating_count,
             city:cities(id, name, region:regions(id, name)),
-            categories:technician_categories(category:categories(id, name, icon))
+            category:categories(id, name, icon)
           `)
           .eq('user_id', userId)
           .single();
