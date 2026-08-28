@@ -30,8 +30,8 @@ class DioClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl ?? defaultApiBaseUrl,
-        connectTimeout: const Duration(seconds: 2), // Optimized timeout
-        receiveTimeout: const Duration(seconds: 6),
+        connectTimeout: const Duration(seconds: 15), // Increased timeout for slow networks
+        receiveTimeout: const Duration(seconds: 45), // Increased to allow image uploads to complete
         headers: {
           'Content-Type': 'application/json',
         },

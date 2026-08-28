@@ -20,7 +20,6 @@ class ClientDashboardScreen extends ConsumerWidget {
     final requestsAsync = ref.watch(requestListProvider);
     final favoritesAsync = ref.watch(favoriteTechniciansProvider);
     final unreadCount = ref.watch(unreadCountProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Compute active request count (unassigned + assigned + in_progress)
     final activeRequests = requestsAsync.valueOrNull?.where((r) {

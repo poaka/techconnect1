@@ -595,8 +595,8 @@ class _AvailabilitySheetState extends ConsumerState<_AvailabilitySheet> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erreur lors de la mise à jour de la disponibilité.'),
+          SnackBar(
+            content: Text(context.tr('error_update_availability')),
             backgroundColor: AppColors.error,
           ),
         );

@@ -191,12 +191,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Demander un Technicien',
+                                      context.tr('request_technician'),
                                       style: AppTypography.heading3.copyWith(color: AppColors.textPrimary, fontSize: 18),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Trouvez le meilleur pro instantanément',
+                                      context.tr('find_pro_instantly'),
                                       style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
                                     ),
                                   ],
@@ -268,7 +268,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (_, __) =>
-                        const Text('Error loading categories'),
+                        Text(context.tr('error_loading_categories')),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -279,7 +279,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Mes Demandes en Cours',
+                          context.tr('ongoing_requests_title'),
                           style: AppTypography.heading3
                               .copyWith(fontSize: screenWidth < 360 ? 15 : 16),
                           maxLines: 1,
@@ -313,13 +313,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Icon(Icons.assignment_outlined, size: 48, color: AppColors.textSecondary.withValues(alpha: 0.5)),
                         const SizedBox(height: 12),
                         Text(
-                          'Aucune demande en cours',
+                          context.tr('no_ongoing_requests'),
                           style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 12),
                         TextButton(
                           onPressed: () => context.push('/client/dashboard'),
-                          child: const Text('Voir l\'historique'),
+                          child: Text(context.tr('view_history')),
                         ),
                       ],
                     ),
@@ -336,7 +336,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ? FloatingActionButton.extended(
               onPressed: () => context.push('/create-request'),
               icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Demander un technicien'),
+              label: Text(context.tr('request_technician')),
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             )

@@ -20,7 +20,7 @@ class OffersController {
         .select(`
           id, status,
           request:service_requests(
-            id, description, address, latitude, longitude, created_at,
+            id, description, address, latitude, longitude,
             city:cities(name),
             category:categories(name, icon),
             client:users!client_id(full_name, avatar_url)

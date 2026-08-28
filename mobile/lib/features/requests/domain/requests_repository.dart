@@ -16,4 +16,6 @@ abstract class RequestsRepository {
   Future<ServiceRequest> completeRequest(String id);
   Future<void> updateLocation(String id, double latitude, double longitude);
   Future<Map<String, dynamic>?> getLocation(String id);
+  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data);
+  Future<void> deleteRequest(String id);
 }

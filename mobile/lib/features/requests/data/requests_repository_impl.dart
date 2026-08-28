@@ -91,4 +91,23 @@ class RequestsRepositoryImpl implements RequestsRepository {
       throw ErrorMapper.mapExceptionToFailure(e);
     }
   }
+
+  @override
+  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data) async {
+    try {
+      final res = await _remoteDataSource.updateRequest(id, data);
+      return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<void> deleteRequest(String id) async {
+    try {
+      await _remoteDataSource.deleteRequest(id);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
 }

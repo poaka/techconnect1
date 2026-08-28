@@ -75,6 +75,20 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
     return updatedRequest;
   }
 
+  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data) async {
+    final updatedRequest = await _repository.updateRequest(id, data);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  Future<void> deleteRequest(String id) async {
+    await _repository.deleteRequest(id);
+    if (state.hasValue) {
+      final updatedList = state.value!.where((req) => req.id != id).toList();
+      state = AsyncValue.data(updatedList);
+    }
+  }
+
   void _updateRequestInState(String id, ServiceRequest updatedRequest) {
     if (state.hasValue) {
       final updatedList = state.value!.map<ServiceRequest>((req) {

@@ -79,9 +79,9 @@ class RequestListScreen extends ConsumerWidget {
                   final request = requests[index];
                   final statusColor = _getStatusColor(request.status);
                   
-                  final otherPartyName = isTechnician
-                      ? (request.client?.fullName ?? context.tr('unknown_client'))
-                      : (request.technician?.fullName ?? context.tr('unknown_tech'));
+                  final clientName = request.client?.fullName ?? user?.fullName ?? context.tr('unknown_client');
+                  final clientPhone = request.client?.phone ?? user?.phone;
+                  final displayTitle = request.category != null ? request.category!.name : clientName;
 
                   final formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(request.createdAt);
 
@@ -103,7 +103,7 @@ class RequestListScreen extends ConsumerWidget {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    otherPartyName,
+                                    displayTitle,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -127,17 +127,28 @@ class RequestListScreen extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                            if (request.category != null) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                request.category!.name,
-                                style: TextStyle(
-                                  color: isDark ? AppColors.primaryLight : AppColors.primary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.person_outline, size: 14, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  clientName,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? AppColors.primaryLight : AppColors.primary,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                if (clientPhone != null && clientPhone.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '• $clientPhone',
+                                    style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                                  ),
+                                ],
+                              ],
+                            ),
                             const SizedBox(height: 8),
                             Text(
                               request.description ?? context.tr('no_description'),
