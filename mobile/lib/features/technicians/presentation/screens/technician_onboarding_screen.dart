@@ -254,8 +254,9 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                           ],
                         )
                       : DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: _selectedCategoryId,
-                          hint: const Text('Sélectionnez votre métier'),
+                          hint: const Text('Sélectionnez votre métier', overflow: TextOverflow.ellipsis),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -263,7 +264,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                           items: categoriesState.value?.map((c) {
                             return DropdownMenuItem(
                               value: c.id,
-                              child: Text(c.name),
+                              child: Text(c.name, overflow: TextOverflow.ellipsis),
                             );
                           }).toList() ?? [],
                           onChanged: (val) => setState(() => _selectedCategoryId = val),
@@ -288,8 +289,9 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                           ],
                         )
                       : DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: _selectedCityId,
-                          hint: const Text('Sélectionnez votre ville'),
+                          hint: const Text('Sélectionnez votre ville', overflow: TextOverflow.ellipsis),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -297,7 +299,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                           items: citiesState.value?.map((c) {
                             return DropdownMenuItem(
                               value: c.id,
-                              child: Text(c.name),
+                              child: Text(c.name, overflow: TextOverflow.ellipsis),
                             );
                           }).toList() ?? [],
                           onChanged: (val) => setState(() => _selectedCityId = val),
