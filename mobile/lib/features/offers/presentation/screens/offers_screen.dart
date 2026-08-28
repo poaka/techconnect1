@@ -77,7 +77,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
   Future<void> _acceptOffer() async {
     setState(() => _isLoading = true);
     try {
-      await ref.read(offersListProvider.notifier).acceptOffer(widget.offer.id);
+      await ref.read(offersListProvider.notifier).acceptOffer(widget.offer['id']);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.tr('offer_accepted')), backgroundColor: AppColors.success),
@@ -98,7 +98,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
   Future<void> _rejectOffer() async {
     setState(() => _isLoading = true);
     try {
-      await ref.read(offersListProvider.notifier).rejectOffer(widget.offer.id);
+      await ref.read(offersListProvider.notifier).rejectOffer(widget.offer['id']);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.tr('offer_rejected'))),
@@ -117,13 +117,16 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
 
   @override
   Widget build(BuildContext context) {
-    final offer = widget.offer;
-    final request = offer.request;
+    final offer = widget.offer as Map<String, dynamic>;
+    final request = offer['request'] as Map<String, dynamic>?;
     if (request == null) return const SizedBox.shrink();
 
-    final timeRemaining = offer.expiresAt.difference(DateTime.now());
+    final expiresAtStr = offer['created_at'] as String?; // Assuming created_at + some time = expires_at if there is no expires_at
+    final createdAt = expiresAtStr != null ? DateTime.parse(expiresAtStr) : DateTime.now();
+    final expiresAt = createdAt.add(const Duration(hours: 24)); // Example logic for expiration
+    final timeRemaining = expiresAt.difference(DateTime.now());
     final minutesLeft = timeRemaining.inMinutes;
-    final isUrgent = minutesLeft <= 1;
+    final isUrgent = minutesLeft <= 60;
 
     return Card(
       elevation: 2,
@@ -138,7 +141,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
               children: [
                 Expanded(
                   child: Text(
-                    request.category?.name ?? context.tr('service'),
+                    request['category']?['name'] ?? context.tr('service'),
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -170,21 +173,21 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
               children: [
                 const Icon(Icons.person_outline, size: 16, color: Colors.grey),
                 const SizedBox(width: 8),
-                Text(request.client?.fullName ?? context.tr('client'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                Text(request['client']?['full_name'] ?? context.tr('client'), style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),
-            if (request.address != null && request.address!.isNotEmpty) ...[
+            if (request['address'] != null && request['address'].toString().isNotEmpty) ...[
               const SizedBox(height: 4),
               Row(
                 children: [
                   const Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(request.address!, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  Expanded(child: Text(request['address'], maxLines: 1, overflow: TextOverflow.ellipsis)),
                 ],
               ),
             ],
             const SizedBox(height: 12),
-            if (request.description != null && request.description!.isNotEmpty)
+            if (request['description'] != null && request['description'].toString().isNotEmpty)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -193,7 +196,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  request.description!,
+                  request['description'],
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
