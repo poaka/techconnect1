@@ -220,8 +220,8 @@ class _TechnicianDashboardScreenState
                 const SizedBox(height: 12),
                 _buildActionCard(
                   context: context,
-                  title: 'Changer ma disponibilité',
-                  subtitle: 'Indiquer si vous êtes disponible',
+                  title: context.tr('availability_status'),
+                  subtitle: context.tr('availability_desc'),
                   icon: Icons.toggle_on_outlined,
                   color: AppColors.success,
                   onTap: () => _showAvailabilityDialog(context, ref),
@@ -236,15 +236,15 @@ class _TechnicianDashboardScreenState
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
-  String _availabilityLabel(String availability) {
+  String _availabilityLabel(BuildContext context, String availability) {
     switch (availability) {
       case 'available':
-        return 'Disponible';
+        return context.tr('availability_available');
       case 'busy':
-        return 'Occupé';
+        return context.tr('availability_busy');
       case 'offline':
       default:
-        return 'Hors ligne';
+        return context.tr('availability_offline');
     }
   }
 
