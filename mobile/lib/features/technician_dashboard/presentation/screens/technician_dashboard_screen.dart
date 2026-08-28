@@ -163,7 +163,9 @@ class _TechnicianDashboardScreenState extends ConsumerState<TechnicianDashboardS
                 data: (stats) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
                       children: [
                         _buildPremiumBadge(
                           icon: stats.verified ? Icons.verified_rounded : Icons.pending_outlined,
@@ -171,7 +173,6 @@ class _TechnicianDashboardScreenState extends ConsumerState<TechnicianDashboardS
                           color: stats.verified ? AppColors.success : AppColors.warning,
                           bgColor: stats.verified ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
                         ),
-                        const SizedBox(width: 12),
                         GestureDetector(
                           onTap: () => _showAvailabilityDialog(context, ref),
                           child: _buildPremiumBadge(
@@ -195,13 +196,15 @@ class _TechnicianDashboardScreenState extends ConsumerState<TechnicianDashboardS
                       ],
                     ),
                     const SizedBox(height: 16),
-                    GridView.count(
-                      crossAxisCount: 2,
+                    GridView(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisExtent: 155, // Fixed height prevents bottom overflow
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 1.25,
                       children: [
                         _buildPremiumStatCard(
                           icon: Icons.schedule_rounded,
