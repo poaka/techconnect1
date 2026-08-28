@@ -96,23 +96,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user != null
-                                      ? '${context.tr('hello_user')}${user.fullName} 👋'
-                                      : context.tr('hello_default'),
-                                  style: AppTypography.heading2.copyWith(
-                                      color: Colors.white,
-                                      fontSize: screenWidth < 360 ? 18 : 20),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  context.tr('app_title'),
-                                  style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
-                                ),
-                              ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user != null
+                                        ? '${context.tr('hello_user')}${user.fullName} 👋'
+                                        : context.tr('hello_default'),
+                                    style: AppTypography.heading2.copyWith(
+                                        color: Colors.white,
+                                        fontSize: screenWidth < 360 ? 18 : 20),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    context.tr('app_title'),
+                                    style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
