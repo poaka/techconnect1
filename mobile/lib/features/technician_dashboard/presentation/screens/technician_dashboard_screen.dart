@@ -30,320 +30,238 @@ class _TechnicianDashboardScreenState extends ConsumerState<TechnicianDashboardS
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE), // Soft premium background
+      appBar: AppBar(
+        title: const Text('Tableau de Bord'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        actions: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () => context.push('/technician/notifications'),
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.error,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary, width: 1.5),
+                    ),
+                    child: Text(
+                      unreadCount > 9 ? '9+' : '$unreadCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_outline_rounded),
+            onPressed: () => context.push('/technician/profile'),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: RefreshIndicator(
         color: AppColors.primary,
         onRefresh: () async {
           ref.invalidate(technicianStatsProvider);
           await ref.read(technicianStatsProvider.future);
         },
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-          slivers: [
-            // ─── PREMIUM HEADER ────────────────────────────────────────────────
-            SliverAppBar(
-              expandedHeight: 220,
-              pinned: true,
-              stretch: true,
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              flexibleSpace: FlexibleSpaceBar(
-                stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
-                background: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.accent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Subtle decorative circles
-                      Positioned(
-                        top: -50,
-                        right: -30,
-                        child: Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
-                        ),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Avatar & Greeting row
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Hero(
+                    tag: 'profile-avatar',
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.primary, width: 2),
                       ),
-                      Positioned(
-                        bottom: -20,
-                        left: -40,
-                        child: Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
-                        ),
-                      ),
-                      // Content
-                      SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Spacer(),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  // Avatar
-                                  Hero(
-                                    tag: 'profile-avatar',
-                                    child: Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white, width: 3),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.2),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 4),
-                                          )
-                                        ],
-                                      ),
-                                      child: ClipOval(
-                                        child: user?.avatarUrl != null
-                                            ? CachedNetworkImage(
-                                                imageUrl: user!.avatarUrl!,
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Container(
-                                                color: Colors.white,
-                                                child: Center(
-                                                  child: Text(
-                                                    user?.fullName[0].toUpperCase() ?? 'T',
-                                                    style: const TextStyle(
-                                                      fontSize: 24,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: AppColors.primary,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                      ),
+                      child: ClipOval(
+                        child: user?.avatarUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: user!.avatarUrl!,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                child: Center(
+                                  child: Text(
+                                    user?.fullName[0].toUpperCase() ?? 'T',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
-                                  // Greeting
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Bonjour 👋',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.white.withValues(alpha: 0.9),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        Text(
-                                          user?.fullName ?? 'Artisan',
-                                          style: const TextStyle(
-                                            fontSize: 22,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ],
-                          ),
-                        ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                      onPressed: () => context.push('/technician/notifications'),
-                    ),
-                    if (unreadCount > 0)
-                      Positioned(
-                        top: 10,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: AppColors.error,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.primary, width: 1.5),
-                          ),
-                          child: Text(
-                            unreadCount > 9 ? '9+' : '$unreadCount',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.person_outline_rounded, color: Colors.white),
-                  onPressed: () => context.push('/technician/profile'),
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
-
-            // ─── BODY CONTENT ──────────────────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Transform.translate(
-                offset: const Offset(0, -20),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8F9FE),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
+                  const SizedBox(width: 16),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (isProfileIncomplete) ...[
-                          _buildPremiumIncompleteProfile(context),
-                          const SizedBox(height: 24),
-                        ],
-
-                        // ─── Verification & Availability ───────────────────
-                        statsAsync.when(
-                          loading: () => _buildStatsLoading(),
-                          error: (_, __) => _buildStatsError(() => ref.invalidate(technicianStatsProvider)),
-                          data: (stats) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  _buildPremiumBadge(
-                                    icon: stats.verified ? Icons.verified_rounded : Icons.pending_outlined,
-                                    label: stats.verified ? 'Profil Vérifié' : 'En attente',
-                                    color: stats.verified ? AppColors.success : AppColors.warning,
-                                    bgColor: stats.verified ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  GestureDetector(
-                                    onTap: () => _showAvailabilityDialog(context, ref),
-                                    child: _buildPremiumBadge(
-                                      icon: Icons.circle,
-                                      label: _availabilityLabel(stats.availability),
-                                      color: _availabilityColor(stats.availability),
-                                      bgColor: Colors.white,
-                                      hasShadow: true,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 28),
-
-                              // ─── Stats Grid ───────────────────────────────
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('Aperçu', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                                  Icon(Icons.insights_rounded, color: AppColors.primary.withValues(alpha: 0.5)),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              GridView.count(
-                                crossAxisCount: 2,
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: 1.25,
-                                children: [
-                                  _buildPremiumStatCard(
-                                    icon: Icons.schedule_rounded,
-                                    label: 'En attente',
-                                    value: '${stats.pendingRequestsCount}',
-                                    color: const Color(0xFFF59E0B),
-                                  ),
-                                  _buildPremiumStatCard(
-                                    icon: Icons.check_circle_rounded,
-                                    label: 'Terminées',
-                                    value: '${stats.completedJobsCount}',
-                                    color: const Color(0xFF10B981),
-                                  ),
-                                  _buildPremiumStatCard(
-                                    icon: Icons.star_rounded,
-                                    label: 'Note moyenne',
-                                    value: stats.ratingCount > 0 ? stats.ratingAvg.toStringAsFixed(1) : '—',
-                                    color: const Color(0xFFFBBF24),
-                                  ),
-                                  _buildPremiumStatCard(
-                                    icon: Icons.cases_rounded,
-                                    label: 'Total Demandes',
-                                    value: '${stats.totalRequestsCount}',
-                                    color: const Color(0xFF3B82F6),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        const Text(
+                          'Bonjour 👋',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-
-                        const SizedBox(height: 32),
-
-                        // ─── Quick Actions ──────────────────────────────────
-                        const Text('Actions rapides', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                        const SizedBox(height: 16),
-
-                        _buildPremiumActionCard(
-                          title: 'Nouvelles offres',
-                          subtitle: 'Trouvez de nouvelles opportunités',
-                          icon: Icons.new_releases_rounded,
-                          color: const Color(0xFFF59E0B),
-                          onTap: () => context.push('/technician/offers'),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildPremiumActionCard(
-                          title: 'Mes chantiers',
-                          subtitle: 'Gérer vos demandes en cours',
-                          icon: Icons.assignment_rounded,
-                          color: AppColors.primary,
-                          onTap: () => context.push('/technician/requests'),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildPremiumActionCard(
-                          title: 'Paramètres Profil',
-                          subtitle: 'Mettez à jour vos infos et tarifs',
-                          icon: Icons.person_search_rounded,
-                          color: const Color(0xFF8B5CF6),
-                          onTap: () => context.push('/technician/onboarding'),
+                        Text(
+                          user?.fullName ?? 'Artisan',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              if (isProfileIncomplete) ...[
+                _buildPremiumIncompleteProfile(context),
+                const SizedBox(height: 24),
+              ],
+
+              // ─── Verification & Availability ───────────────────
+              statsAsync.when(
+                loading: () => _buildStatsLoading(),
+                error: (_, __) => _buildStatsError(() => ref.invalidate(technicianStatsProvider)),
+                data: (stats) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        _buildPremiumBadge(
+                          icon: stats.verified ? Icons.verified_rounded : Icons.pending_outlined,
+                          label: stats.verified ? 'Profil Vérifié' : 'En attente',
+                          color: stats.verified ? AppColors.success : AppColors.warning,
+                          bgColor: stats.verified ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: () => _showAvailabilityDialog(context, ref),
+                          child: _buildPremiumBadge(
+                            icon: Icons.circle,
+                            label: _availabilityLabel(stats.availability),
+                            color: _availabilityColor(stats.availability),
+                            bgColor: Colors.white,
+                            hasShadow: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+
+                    // ─── Stats Grid ───────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Aperçu', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                        Icon(Icons.insights_rounded, color: AppColors.primary.withValues(alpha: 0.5)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.25,
+                      children: [
+                        _buildPremiumStatCard(
+                          icon: Icons.schedule_rounded,
+                          label: 'En attente',
+                          value: '${stats.pendingRequestsCount}',
+                          color: const Color(0xFFF59E0B),
+                        ),
+                        _buildPremiumStatCard(
+                          icon: Icons.check_circle_rounded,
+                          label: 'Terminées',
+                          value: '${stats.completedJobsCount}',
+                          color: const Color(0xFF10B981),
+                        ),
+                        _buildPremiumStatCard(
+                          icon: Icons.star_rounded,
+                          label: 'Note moyenne',
+                          value: stats.ratingCount > 0 ? stats.ratingAvg.toStringAsFixed(1) : '—',
+                          color: const Color(0xFFFBBF24),
+                        ),
+                        _buildPremiumStatCard(
+                          icon: Icons.cases_rounded,
+                          label: 'Total Demandes',
+                          value: '${stats.totalRequestsCount}',
+                          color: const Color(0xFF3B82F6),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 32),
+
+              // ─── Quick Actions ──────────────────────────────────
+              const Text('Actions rapides', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+              const SizedBox(height: 16),
+
+              _buildPremiumActionCard(
+                title: 'Nouvelles offres',
+                subtitle: 'Trouvez de nouvelles opportunités',
+                icon: Icons.new_releases_rounded,
+                color: const Color(0xFFF59E0B),
+                onTap: () => context.push('/technician/offers'),
+              ),
+              const SizedBox(height: 12),
+              _buildPremiumActionCard(
+                title: 'Mes chantiers',
+                subtitle: 'Gérer vos demandes en cours',
+                icon: Icons.assignment_rounded,
+                color: AppColors.primary,
+                onTap: () => context.push('/technician/requests'),
+              ),
+              const SizedBox(height: 12),
+              _buildPremiumActionCard(
+                title: 'Paramètres Profil',
+                subtitle: 'Mettez à jour vos infos et tarifs',
+                icon: Icons.person_search_rounded,
+                color: const Color(0xFF8B5CF6),
+                onTap: () => context.push('/technician/onboarding'),
+              ),
+            ],
+          ),
         ),
       ),
     );
