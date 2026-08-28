@@ -29,9 +29,9 @@ enum RequestStatus {
   String getLocalizedLabel(BuildContext context) {
     switch (this) {
       case RequestStatus.unassigned:
-        return 'Recherche en cours...';
+        return context.tr('status_unassigned');
       case RequestStatus.assigned:
-        return 'Assignée';
+        return context.tr('status_assigned');
       case RequestStatus.inProgress:
         return context.tr('status_in_progress');
       case RequestStatus.completed:

@@ -104,7 +104,7 @@ class ClientDashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // ─── Stats row ────────────────────────────────────────────
-                Text(context.tr('dashboard_title'), style: AppTypography.heading3),
+                Text(context.tr('overview'), style: AppTypography.heading3),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -112,7 +112,7 @@ class ClientDashboardScreen extends ConsumerWidget {
                       child: _buildStatCard(
                         context: context,
                         icon: Icons.assignment_outlined,
-                        label: context.tr('status_unassigned'),
+                        label: context.tr('pending_requests'),
                         value: '$activeRequests',
                         color: AppColors.primary,
                       ),
@@ -142,7 +142,7 @@ class ClientDashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // ─── Quick actions ────────────────────────────────────────
-                Text(context.tr('app_title'), style: AppTypography.heading3),
+                Text(context.tr('quick_actions'), style: AppTypography.heading3),
                 const SizedBox(height: 12),
 
                 _buildActionCard(
@@ -157,7 +157,7 @@ class ClientDashboardScreen extends ConsumerWidget {
                 _buildActionCard(
                   context: context,
                   title: context.tr('my_requests'),
-                  subtitle: context.tr('incoming_requests'),
+                  subtitle: context.tr('ongoing_requests_title'),
                   icon: Icons.assignment_outlined,
                   color: AppColors.accent,
                   badge: activeRequests > 0 ? '$activeRequests ${context.tr('status_in_progress')}' : null,
@@ -177,7 +177,7 @@ class ClientDashboardScreen extends ConsumerWidget {
                 _buildActionCard(
                   context: context,
                   title: context.tr('notifications_title'),
-                  subtitle: context.tr('no_notifications_desc'),
+                  subtitle: context.tr('notification_prefs'),
                   icon: Icons.notifications_outlined,
                   color: unreadCount > 0 ? AppColors.warning : AppColors.textSecondary,
                   badge: unreadCount > 0 ? '$unreadCount' : null,

@@ -61,6 +61,16 @@ class RequestsController {
       res.status(200).json({ data: location });
     } catch (error) {
       next(error);
+    }
+  }
+
+  static async startRequest(req, res, next) {
+    try {
+      const updated = await RequestsService.startRequest(req.params.id, req.user.id);
+      res.status(200).json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
   }
 
   static async updateRequest(req, res, next) {

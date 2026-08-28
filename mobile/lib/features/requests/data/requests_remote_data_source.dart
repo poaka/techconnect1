@@ -56,6 +56,11 @@ class RequestsRemoteDataSource {
     return response.data['data'] as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> startRequest(String id) async {
+    final response = await _client.post('/requests/$id/start');
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> completeRequest(String id) async {
     final response = await _client.post('/requests/$id/complete');
     return response.data['data'] as Map<String, dynamic>;

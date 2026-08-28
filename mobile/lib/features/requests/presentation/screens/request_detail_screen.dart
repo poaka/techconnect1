@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/localization/app_localizations.dart';
@@ -37,27 +38,6 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
-  Future<void> _updateStatus(Future<ServiceRequest> Function() updateAction) async {
-    setState(() => _isUpdating = true);
-    try {
-      await updateAction();
-      if (mounted) {
-        ref.invalidate(requestDetailProvider(widget.requestId));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('action_success')), backgroundColor: AppColors.success),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isUpdating = false);
-    }
-  }
-
   Future<void> _shareLocation() async {
     setState(() => _isUpdating = true);
     try {
@@ -69,7 +49,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('status_updated')), backgroundColor: AppColors.success),
+          SnackBar(content: Text(context.tr('position_shared')), backgroundColor: AppColors.success),
         );
       }
     } catch (e) {
@@ -83,31 +63,183 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
-  Future<void> _confirmDelete(BuildContext context, ServiceRequest request) async {
+  Future<void> _confirmStartJob() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final startedText = context.tr('job_started');
+    final errPrefix = context.tr('error_prefix');
+    final startJobText = context.tr('start_job');
+    final confirmStartJobText = context.tr('confirm_start_job');
+    final cancelText = context.tr('cancel');
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(context.tr('delete_request_title')),
-        content: Text(context.tr('confirm_delete_request')),
+        title: Text(startJobText),
+        content: Text(confirmStartJobText),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(context.tr('reset')),
+            child: Text(cancelText),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(context.tr('delete_request'), style: const TextStyle(color: Colors.white)),
+            child: Text(startJobText, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
 
     if (confirm == true && mounted) {
-      final messenger = ScaffoldMessenger.of(context);
-      final deletedText = context.tr('request_deleted');
-      final errPrefix = context.tr('error_prefix');
+      setState(() => _isUpdating = true);
+      try {
+        await ref.read(requestListProvider.notifier).startRequest(widget.requestId);
+        ref.invalidate(requestDetailProvider(widget.requestId));
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text(startedText), backgroundColor: AppColors.success),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text('$errPrefix$e'), backgroundColor: AppColors.error),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUpdating = false);
+      }
+    }
+  }
 
+  Future<void> _confirmCompleteJob() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final completedText = context.tr('action_success');
+    final errPrefix = context.tr('error_prefix');
+    final markCompletedText = context.tr('mark_completed');
+    final confirmCompleteText = context.tr('confirm_complete_job');
+    final cancelText = context.tr('cancel');
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(markCompletedText),
+        content: Text(confirmCompleteText),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(cancelText),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(markCompletedText, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      setState(() => _isUpdating = true);
+      try {
+        await ref.read(requestListProvider.notifier).completeRequest(widget.requestId);
+        ref.invalidate(requestDetailProvider(widget.requestId));
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text(completedText), backgroundColor: AppColors.success),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text('$errPrefix$e'), backgroundColor: AppColors.error),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUpdating = false);
+      }
+    }
+  }
+
+  Future<void> _confirmCancelRequest() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final cancelledText = context.tr('action_success');
+    final errPrefix = context.tr('error_prefix');
+    final cancelReqText = context.tr('cancel_request');
+    final confirmCancelText = context.tr('confirm_cancel_request');
+    final cancelText = context.tr('cancel');
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(cancelReqText),
+        content: Text(confirmCancelText),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(cancelText),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(cancelReqText, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      setState(() => _isUpdating = true);
+      try {
+        await ref.read(requestListProvider.notifier).cancelRequest(widget.requestId);
+        ref.invalidate(requestDetailProvider(widget.requestId));
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text(cancelledText), backgroundColor: AppColors.success),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text('$errPrefix$e'), backgroundColor: AppColors.error),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUpdating = false);
+      }
+    }
+  }
+
+  Future<void> _confirmDelete(ServiceRequest request) async {
+    // Extract text before async gap to fix use_build_context_synchronously
+    final deleteTitle = context.tr('delete_request_title');
+    final deleteConfirm = context.tr('confirm_delete_request');
+    final cancelText = context.tr('cancel');
+    final deleteText = context.tr('delete_request');
+    final deletedText = context.tr('request_deleted');
+    final errPrefix = context.tr('error_prefix');
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(deleteTitle),
+        content: Text(deleteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(cancelText),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(deleteText, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
       setState(() => _isUpdating = true);
       try {
         await ref.read(requestListProvider.notifier).deleteRequest(request.id);
@@ -115,7 +247,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           messenger.showSnackBar(
             SnackBar(content: Text(deletedText), backgroundColor: AppColors.success),
           );
-          if (Navigator.canPop(context)) {
+          if (mounted && Navigator.canPop(context)) {
             Navigator.pop(context);
           }
         }
@@ -131,19 +263,19 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
-  void _showEditBottomSheet(BuildContext context, ServiceRequest request) {
+  void _showEditBottomSheet(BuildContext ctx, ServiceRequest request) {
     final descController = TextEditingController(text: request.description);
     final addressController = TextEditingController(text: request.address);
 
     showModalBottomSheet(
-      context: context,
+      context: ctx,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
+      builder: (bottomSheetCtx) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          bottom: MediaQuery.of(bottomSheetCtx).viewInsets.bottom + 20,
           left: 20,
           right: 20,
           top: 20,
@@ -153,7 +285,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              context.tr('edit_request_title'),
+              ctx.tr('edit_request_title'),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -162,7 +294,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               controller: descController,
               maxLines: 3,
               decoration: InputDecoration(
-                labelText: context.tr('description'),
+                labelText: ctx.tr('description'),
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -170,13 +302,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
             TextField(
               controller: addressController,
               decoration: InputDecoration(
-                labelText: context.tr('address'),
+                labelText: ctx.tr('address'),
                 border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
             AppButton(
-              text: context.tr('update_request'),
+              text: ctx.tr('update_request'),
               onPressed: () async {
                 final newDesc = descController.text.trim();
                 final newAddr = addressController.text.trim();
@@ -184,7 +316,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 final updatedText = context.tr('request_updated');
                 final errPrefix = context.tr('error_prefix');
 
-                Navigator.of(ctx).pop();
+                Navigator.of(bottomSheetCtx).pop();
                 
                 setState(() => _isUpdating = true);
                 try {
@@ -216,17 +348,40 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   }
 
   Widget _buildActionButtons(BuildContext context, ServiceRequest request, bool isTechnician) {
+    final techId = ref.read(authNotifierProvider).user?.technicianProfile?.id;
+    final isAssignedTech = isTechnician &&
+        request.technician != null &&
+        techId != null &&
+        request.technician!.id == techId;
+
     if (isTechnician) {
-      if (request.status == RequestStatus.inProgress || request.status == RequestStatus.assigned) {
+      // Technician sees Start Job when assigned
+      if (request.status == RequestStatus.assigned && isAssignedTech) {
+        return Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: AppButton(
+                text: context.tr('start_job'),
+                icon: Icons.play_arrow_rounded,
+                onPressed: _isUpdating ? null : _confirmStartJob,
+              ),
+            ),
+          ],
+        );
+      }
+      // Technician sees Complete Job when in_progress
+      if (request.status == RequestStatus.inProgress && isAssignedTech) {
         return SizedBox(
           width: double.infinity,
           child: AppButton(
             text: context.tr('mark_completed'),
-            onPressed: _isUpdating ? null : () => _updateStatus(() => ref.read(requestListProvider.notifier).completeRequest(widget.requestId)),
+            onPressed: _isUpdating ? null : _confirmCompleteJob,
           ),
         );
       }
-    } else { // Client
+    } else {
+      // Client: edit/cancel/delete for unassigned
       if (request.status == RequestStatus.unassigned) {
         return Column(
           children: [
@@ -245,7 +400,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     text: context.tr('cancel_request'),
                     isOutlined: true,
                     color: Colors.orange,
-                    onPressed: _isUpdating ? null : () => _updateStatus(() => ref.read(requestListProvider.notifier).cancelRequest(widget.requestId)),
+                    onPressed: _isUpdating ? null : _confirmCancelRequest,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -254,21 +409,36 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     text: context.tr('delete_request'),
                     isOutlined: true,
                     color: AppColors.error,
-                    onPressed: _isUpdating ? null : () => _confirmDelete(context, request),
+                    onPressed: _isUpdating ? null : () => _confirmDelete(request),
                   ),
                 ),
               ],
             ),
           ],
         );
-      } else if (request.status == RequestStatus.assigned) {
+      }
+      // Client can cancel when assigned (job not started yet)
+      if (request.status == RequestStatus.assigned) {
         return SizedBox(
           width: double.infinity,
           child: AppButton(
             text: context.tr('cancel_request'),
             isOutlined: true,
-            color: AppColors.error,
-            onPressed: _isUpdating ? null : () => _updateStatus(() => ref.read(requestListProvider.notifier).cancelRequest(widget.requestId)),
+            color: Colors.orange,
+            onPressed: _isUpdating ? null : _confirmCancelRequest,
+          ),
+        );
+      }
+      // Client can leave review after completion (if no review yet)
+      if (request.status == RequestStatus.completed && !request.hasReview) {
+        return SizedBox(
+          width: double.infinity,
+          child: AppButton(
+            text: context.tr('leave_review'),
+            icon: Icons.star_rounded,
+            onPressed: () {
+              context.push('/requests/${request.id}/review');
+            },
           ),
         );
       }

@@ -12,10 +12,10 @@ class OffersService {
   static async acceptOffer(offerId, technicianId) {
     if (!supabase) throw ApiError.internal('Base de données indisponible');
 
-    // 1. Fetch the offer to get the request_id and verify ownership
+    // 1. Fetch the offer to get the service_request_id and verify ownership
     const { data: offer, error: offerErr } = await supabase
       .from('job_offers')
-      .select('id, request_id, technician_id, status')
+      .select('id, service_request_id, technician_id, status')
       .eq('id', offerId)
       .single();
 
@@ -41,7 +41,7 @@ class OffersService {
         status: 'assigned',
         updated_at: new Date().toISOString()
       })
-      .eq('id', offer.request_id)
+      .eq('id', offer.service_request_id)
       .is('assigned_technician_id', null) // <-- The Atomic CAS constraint
       .select()
       .single();
@@ -69,9 +69,24 @@ class OffersService {
     await supabase
       .from('job_offers')
       .update({ status: 'expired' }) // We use 'expired' for those who didn't respond in time
-      .eq('request_id', offer.request_id)
+      .eq('service_request_id', offer.service_request_id)
       .neq('id', offerId)
       .eq('status', 'pending');
+
+    // 4. Notify client that a technician accepted
+    try {
+      if (assignedRequest && assignedRequest.client_id) {
+        await supabase.from('notifications').insert([{
+          user_id: assignedRequest.client_id,
+          type: 'request_status_change',
+          title: 'Artisan assigné !',
+          message: 'Un artisan qualifié a accepté votre demande et prend en charge votre intervention.',
+          metadata: { requestId: offer.service_request_id }
+        }]);
+      }
+    } catch (notifErr) {
+      console.error('[OffersService.acceptOffer] Notification error:', notifErr);
+    }
 
     return {
       message: 'Mission acceptée avec succès',

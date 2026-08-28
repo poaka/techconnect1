@@ -27,6 +27,7 @@ class _TechnicianDashboardScreenState
     final unreadCount = ref.watch(unreadCountProvider);
     final profile = user?.technicianProfile;
     final isProfileIncomplete = profile == null ||
+        (profile.bio == null || profile.bio!.isEmpty) ||
         profile.cityId == null ||
         profile.categories.isEmpty;
 

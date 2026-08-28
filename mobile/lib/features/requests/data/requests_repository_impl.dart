@@ -65,6 +65,16 @@ class RequestsRepositoryImpl implements RequestsRepository {
   }
 
   @override
+  Future<ServiceRequest> startRequest(String id) async {
+    try {
+      final res = await _remoteDataSource.startRequest(id);
+      return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
   Future<ServiceRequest> completeRequest(String id) async {
     try {
       final res = await _remoteDataSource.completeRequest(id);
