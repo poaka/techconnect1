@@ -101,24 +101,32 @@ class TechnicianCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: Text(
-                            profile.fullName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        Expanded(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  profile.fullName,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (profile.isVerified) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.verified_rounded, color: AppColors.primary, size: 18),
+                              ],
+                            ],
                           ),
                         ),
-                        if (profile.isVerified) ...[
-                          const SizedBox(width: 4),
-                          const Icon(Icons.verified_rounded, color: AppColors.primary, size: 18),
-                        ],
-                        const Spacer(),
+                        const SizedBox(width: 8),
                         InkWell(
                           onTap: () {
                             ref.read(favoriteTechniciansProvider.notifier).toggleFavorite(profile);
@@ -160,8 +168,11 @@ class TechnicianCard extends ConsumerWidget {
                     const SizedBox(height: 8),
 
                     // Rating & Price row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
                       children: [
                         StarRatingWidget(
                           rating: profile.ratingAvg,
