@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/auth_provider.dart';
@@ -31,7 +32,7 @@ class _TechnicianDashboardScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tableau de Bord'),
+        title: Text(context.tr('dashboard_title')),
         actions: [
           Stack(
             alignment: Alignment.center,
@@ -86,13 +87,13 @@ class _TechnicianDashboardScreenState
                 // ─── Greeting ──────────────────────────────────────────────
                 Text(
                   user != null
-                      ? 'Bonjour, ${user.fullName.split(' ').first} 👋'
-                      : 'Bonjour ! 👋',
+                      ? '${context.tr('hello_user')}${user.fullName.split(' ').first} 👋'
+                      : context.tr('dashboard_greeting'),
                   style: AppTypography.heading2,
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Voici un résumé de votre activité.',
+                Text(
+                  context.tr('overview'),
                   style: AppTypography.bodyMedium,
                 ),
                 const SizedBox(height: 20),
@@ -119,13 +120,13 @@ class _TechnicianDashboardScreenState
                             icon: stats.verified
                                 ? Icons.verified_rounded
                                 : Icons.pending_outlined,
-                            label: stats.verified ? 'Vérifié' : 'En attente de vérification',
+                            label: stats.verified ? context.tr('verified_profile') : context.tr('pending_requests'),
                             color: stats.verified ? AppColors.success : AppColors.warning,
                           ),
                           const SizedBox(width: 8),
                           _buildBadge(
                             icon: Icons.circle,
-                            label: _availabilityLabel(stats.availability),
+                            label: _availabilityLabel(context, stats.availability),
                             color: _availabilityColor(stats.availability),
                           ),
                         ],
@@ -133,7 +134,7 @@ class _TechnicianDashboardScreenState
                       const SizedBox(height: 20),
 
                       // ─── Stats grid ───────────────────────────────────────
-                      Text('Statistiques', style: AppTypography.heading3),
+                      Text(context.tr('dashboard_title'), style: AppTypography.heading3),
                       const SizedBox(height: 12),
                       GridView.count(
                         crossAxisCount: 2,
@@ -145,19 +146,19 @@ class _TechnicianDashboardScreenState
                         children: [
                           _buildStatCard(
                             icon: Icons.schedule_rounded,
-                            label: 'En attente',
+                            label: context.tr('pending_requests'),
                             value: '${stats.pendingRequestsCount}',
                             color: Colors.orange,
                           ),
                           _buildStatCard(
                             icon: Icons.check_circle_outline_rounded,
-                            label: 'Terminées',
+                            label: context.tr('completed_requests'),
                             value: '${stats.completedJobsCount}',
                             color: AppColors.success,
                           ),
                           _buildStatCard(
                             icon: Icons.star_rounded,
-                            label: 'Note moyenne',
+                            label: context.tr('average_rating'),
                             value: stats.ratingCount > 0
                                 ? stats.ratingAvg.toStringAsFixed(1)
                                 : '—',
@@ -165,7 +166,7 @@ class _TechnicianDashboardScreenState
                           ),
                           _buildStatCard(
                             icon: Icons.assignment_outlined,
-                            label: 'Total demandes',
+                            label: context.tr('total_requests'),
                             value: '${stats.totalRequestsCount}',
                             color: AppColors.primary,
                           ),
@@ -178,13 +179,13 @@ class _TechnicianDashboardScreenState
                 const SizedBox(height: 24),
 
                 // ─── Quick actions ─────────────────────────────────────────
-                Text('Actions rapides', style: AppTypography.heading3),
+                Text(context.tr('quick_actions'), style: AppTypography.heading3),
                 const SizedBox(height: 12),
 
                 _buildActionCard(
                   context: context,
-                  title: 'Nouvelles missions',
-                  subtitle: 'Voir les offres disponibles',
+                  title: context.tr('new_offers'),
+                  subtitle: context.tr('new_offers_desc'),
                   icon: Icons.new_releases_outlined,
                   color: Colors.orange,
                   onTap: () => context.push('/technician/offers'),
@@ -192,8 +193,8 @@ class _TechnicianDashboardScreenState
                 const SizedBox(height: 12),
                 _buildActionCard(
                   context: context,
-                  title: 'Demandes en cours',
-                  subtitle: 'Gérer vos chantiers acceptés',
+                  title: context.tr('my_jobs'),
+                  subtitle: context.tr('my_jobs_desc'),
                   icon: Icons.assignment_outlined,
                   color: AppColors.primary,
                   onTap: () => context.push('/technician/requests'),
@@ -201,8 +202,17 @@ class _TechnicianDashboardScreenState
                 const SizedBox(height: 12),
                 _buildActionCard(
                   context: context,
-                  title: 'Mon Profil Artisan',
-                  subtitle: 'Mettre à jour vos informations',
+                  title: context.tr('profile_settings'),
+                  subtitle: context.tr('profile_settings_desc'),
+                  icon: Icons.settings_outlined,
+                  color: Colors.grey.shade600,
+                  onTap: () => context.push('/technician/profile'),
+                ),
+                const SizedBox(height: 12),
+                _buildActionCard(
+                  context: context,
+                  title: context.tr('technician_profile'),
+                  subtitle: context.tr('update_info'),
                   icon: Icons.person_search_outlined,
                   color: AppColors.accent,
                   onTap: () => context.push('/technician/onboarding'),
@@ -370,15 +380,15 @@ class _TechnicianDashboardScreenState
         children: [
           const Icon(Icons.error_outline_rounded, color: AppColors.error),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Impossible de charger les statistiques.',
-              style: TextStyle(color: AppColors.error, fontSize: 13),
+              context.tr('loading_error'),
+              style: const TextStyle(color: AppColors.error, fontSize: 13),
             ),
           ),
           TextButton(
             onPressed: onRetry,
-            child: const Text('Réessayer'),
+            child: Text(context.tr('retry')),
           ),
         ],
       ),
@@ -396,13 +406,13 @@ class _TechnicianDashboardScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 20),
-              SizedBox(width: 8),
+              const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 20),
+              const SizedBox(width: 8),
               Text(
-                'Action requise',
-                style: TextStyle(
+                context.tr('incomplete_profile_title'),
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppColors.error,
                   fontSize: 15,
@@ -411,9 +421,9 @@ class _TechnicianDashboardScreenState
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Votre profil est incomplet. Renseignez votre métier et votre ville pour apparaître dans l\'annuaire.',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
+          Text(
+            context.tr('incomplete_profile_desc'),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -427,7 +437,7 @@ class _TechnicianDashboardScreenState
                 ),
               ),
               onPressed: () => context.push('/technician/onboarding'),
-              child: const Text('Compléter mon profil'),
+              child: Text(context.tr('complete_now')),
             ),
           ),
         ],
@@ -552,22 +562,22 @@ class _AvailabilitySheetState extends ConsumerState<_AvailabilitySheet> {
     final options = [
       (
         value: 'available',
-        label: 'Disponible',
-        subtitle: 'Je peux recevoir de nouvelles demandes',
+        label: context.tr('availability_available'),
+        subtitle: context.tr('avail_sub_available'),
         color: AppColors.success,
         icon: Icons.check_circle_rounded,
       ),
       (
         value: 'busy',
-        label: 'Occupé',
-        subtitle: 'Je suis en mission actuellement',
+        label: context.tr('availability_busy'),
+        subtitle: context.tr('avail_sub_busy'),
         color: AppColors.warning,
         icon: Icons.pending_rounded,
       ),
       (
         value: 'offline',
-        label: 'Hors ligne',
-        subtitle: 'Je ne reçois pas de demandes',
+        label: context.tr('availability_offline'),
+        subtitle: context.tr('avail_sub_offline'),
         color: AppColors.textSecondary,
         icon: Icons.cancel_rounded,
       ),
@@ -590,9 +600,9 @@ class _AvailabilitySheetState extends ConsumerState<_AvailabilitySheet> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Changer ma disponibilité',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          Text(
+            context.tr('availability_status'),
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           if (_isLoading)
