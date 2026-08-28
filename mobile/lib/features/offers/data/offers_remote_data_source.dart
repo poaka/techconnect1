@@ -6,7 +6,7 @@ class OffersRemoteDataSource {
   OffersRemoteDataSource(this._client);
 
   Future<List<dynamic>> getOffers() async {
-    final response = await _client.get('/technician/offers');
+    final response = await _client.get('/offers');
     return response.data['data'] as List<dynamic>;
   }
 

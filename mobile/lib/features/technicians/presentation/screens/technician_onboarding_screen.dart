@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../auth/presentation/auth_provider.dart';
@@ -134,7 +135,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Compléter mon profil'),
+        title: Text(context.tr('complete_profile_title')),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -145,45 +146,45 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
             children: [
               const SizedBox(height: 24),
               
-              const Text(
-                'Informations Personnelles',
+              Text(
+                context.tr('personal_info_section'),
                 style: AppTypography.heading3,
               ),
               const SizedBox(height: 16),
               
               AppTextField(
                 controller: _fullNameController,
-                label: 'Nom complet',
-                hint: 'Entrez votre nom',
-                validator: (val) => val == null || val.isEmpty ? 'Champ requis' : null,
+                label: context.tr('full_name_label'),
+                hint: context.tr('full_name_hint'),
+                validator: (val) => val == null || val.isEmpty ? context.tr('field_required') : null,
               ),
               const SizedBox(height: 16),
               
               AppTextField(
                 controller: _phoneController,
-                label: 'Numéro de téléphone principal',
-                hint: 'Ex: +237 6XX XX XX XX',
+                label: context.tr('main_phone_label'),
+                hint: context.tr('main_phone_hint'),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 32),
               
-              const Text(
-                'Informations Professionnelles',
+              Text(
+                context.tr('pro_info_section'),
                 style: AppTypography.heading3,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Ces informations seront visibles par les clients pour vous contacter.',
+              Text(
+                context.tr('pro_info_desc'),
                 style: AppTypography.bodyMedium,
               ),
               const SizedBox(height: 24),
               
               AppTextField(
                 controller: _bioController,
-                label: 'Biographie / Description',
-                hint: 'Parlez de votre expérience et vos spécialités...',
+                label: context.tr('bio_label'),
+                hint: context.tr('bio_hint'),
                 maxLines: 4,
-                validator: (val) => val == null || val.isEmpty ? 'Champ requis' : null,
+                validator: (val) => val == null || val.isEmpty ? context.tr('field_required') : null,
               ),
               const SizedBox(height: 16),
               
@@ -192,35 +193,35 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                   Expanded(
                     child: AppTextField(
                       controller: _yearsController,
-                      label: 'Années d\'expérience',
-                      hint: 'Ex: 5',
+                      label: context.tr('years_exp_label'),
+                      hint: context.tr('years_exp_hint'),
                       keyboardType: TextInputType.number,
-                      validator: (val) => val == null || val.isEmpty ? 'Requis' : null,
+                      validator: (val) => val == null || val.isEmpty ? context.tr('field_required_short') : null,
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: AppTextField(
                       controller: _whatsappController,
-                      label: 'Numéro WhatsApp',
-                      hint: 'Ex: 6XXXXXXXX',
+                      label: context.tr('whatsapp_label'),
+                      hint: context.tr('whatsapp_hint'),
                       keyboardType: TextInputType.phone,
-                      validator: (val) => val == null || val.isEmpty ? 'Requis' : null,
+                      validator: (val) => val == null || val.isEmpty ? context.tr('field_required_short') : null,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               
-              const Text('Tarifs habituels (FCFA)', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(context.tr('usual_rates'), style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
                     child: AppTextField(
                       controller: _priceMinController,
-                      label: 'Minimum',
-                      hint: 'Ex: 5000',
+                      label: context.tr('rate_min'),
+                      hint: '5000',
                       keyboardType: TextInputType.number,
                     ),
                   ),
@@ -228,8 +229,8 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                   Expanded(
                     child: AppTextField(
                       controller: _priceMaxController,
-                      label: 'Maximum',
-                      hint: 'Ex: 25000',
+                      label: context.tr('rate_max'),
+                      hint: '25000',
                       keyboardType: TextInputType.number,
                     ),
                   ),
@@ -237,7 +238,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
               ),
               const SizedBox(height: 24),
 
-              const Text('Métier Principal', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(context.tr('main_profession'), style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               categoriesState.isLoading
                   ? const CircularProgressIndicator()
@@ -246,16 +247,17 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                           children: [
                             const Icon(Icons.error_outline, color: Colors.red),
                             const SizedBox(width: 8),
-                            const Text('Erreur de chargement'),
+                            Text(context.tr('loading_error')),
                             TextButton(
                               onPressed: () => ref.invalidate(categoriesProvider),
-                              child: const Text('Réessayer'),
+                              child: Text(context.tr('retry')),
                             )
                           ],
                         )
                       : DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: _selectedCategoryId,
-                          hint: const Text('Sélectionnez votre métier'),
+                          hint: Text(context.tr('select_profession'), overflow: TextOverflow.ellipsis),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -263,7 +265,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                           items: categoriesState.value?.map((c) {
                             return DropdownMenuItem(
                               value: c.id,
-                              child: Text(c.name),
+                              child: Text(c.name, overflow: TextOverflow.ellipsis),
                             );
                           }).toList() ?? [],
                           onChanged: (val) => setState(() => _selectedCategoryId = val),
@@ -271,7 +273,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                     
               const SizedBox(height: 24),
 
-              const Text('Ville d\'intervention', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(context.tr('intervention_city'), style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               citiesState.isLoading
                   ? const CircularProgressIndicator()
@@ -280,16 +282,17 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                           children: [
                             const Icon(Icons.error_outline, color: Colors.red),
                             const SizedBox(width: 8),
-                            const Text('Erreur de chargement'),
+                            Text(context.tr('loading_error')),
                             TextButton(
                               onPressed: () => ref.invalidate(citiesProvider),
-                              child: const Text('Réessayer'),
+                              child: Text(context.tr('retry')),
                             )
                           ],
                         )
                       : DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: _selectedCityId,
-                          hint: const Text('Sélectionnez votre ville'),
+                          hint: Text(context.tr('select_city'), overflow: TextOverflow.ellipsis),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -297,7 +300,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                           items: citiesState.value?.map((c) {
                             return DropdownMenuItem(
                               value: c.id,
-                              child: Text(c.name),
+                              child: Text(c.name, overflow: TextOverflow.ellipsis),
                             );
                           }).toList() ?? [],
                           onChanged: (val) => setState(() => _selectedCityId = val),
@@ -308,7 +311,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
-                  text: 'Enregistrer mon profil',
+                  text: context.tr('save'),
                   onPressed: _submit,
                   isLoading: updateState.isLoading,
                 ),
