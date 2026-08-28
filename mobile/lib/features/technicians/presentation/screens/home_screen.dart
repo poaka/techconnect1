@@ -326,7 +326,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     ),
   ),
-  floatingActionButton: null,
+  floatingActionButton: user?.role == UserRole.client
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push('/create-request'),
+              icon: const Icon(Icons.add_circle_outline),
+              label: const Text('Demander un technicien'),
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            )
+          : null,
     );
   }
 }
