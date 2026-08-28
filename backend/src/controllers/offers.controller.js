@@ -18,7 +18,7 @@ class OffersController {
       const { data, error } = await supabase
         .from('job_offers')
         .select(`
-          id, status, created_at,
+          id, status,
           request:service_requests(
             id, description, address, latitude, longitude, created_at,
             city:cities(name),
@@ -26,10 +26,13 @@ class OffersController {
             client:users!client_id(full_name, avatar_url)
           )
         `)
-        .eq('technician_id', profile.id)
-        .order('created_at', { ascending: false });
+        .eq('technician_id', profile.id);
 
-      if (error) throw ApiError.internal('Erreur lors de la récupération des offres');
+      if (error) {
+        console.error('Supabase error in getOffers:', error);
+        require('fs').writeFileSync('offers_error.log', JSON.stringify(error, null, 2));
+        throw ApiError.internal('Erreur lors de la récupération des offres');
+      }
 
       res.status(200).json({ data: data || [] });
     } catch (error) {
