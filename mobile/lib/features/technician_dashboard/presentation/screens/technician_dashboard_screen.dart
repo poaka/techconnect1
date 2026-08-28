@@ -31,9 +31,11 @@ class _TechnicianDashboardScreenState extends ConsumerState<TechnicianDashboardS
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE), // Soft premium background
       appBar: AppBar(
-        title: const Text('Tableau de Bord'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        title: const Text('Tableau de Bord', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.primary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [
           Stack(
             alignment: Alignment.center,
@@ -51,7 +53,7 @@ class _TechnicianDashboardScreenState extends ConsumerState<TechnicianDashboardS
                     decoration: BoxDecoration(
                       color: AppColors.error,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary, width: 1.5),
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                     child: Text(
                       unreadCount > 9 ? '9+' : '$unreadCount',
