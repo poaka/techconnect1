@@ -206,7 +206,6 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       request.description ?? context.tr('no_description'),
                       style: TextStyle(fontSize: 15, color: textColor),
                     ),
-                    ),
                   ),
 
                   if (request.imageUrl != null) ...[
