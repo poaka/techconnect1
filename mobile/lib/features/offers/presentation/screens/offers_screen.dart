@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../providers/offers_providers.dart';
 
@@ -16,7 +17,7 @@ class OffersScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nouvelles Missions'),
+        title: Text(context.tr('new_offers_title')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -33,9 +34,9 @@ class OffersScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Aucune offre pour le moment',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  Text(
+                    context.tr('no_offers'),
+                    style: const TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ],
               ),
@@ -56,7 +57,7 @@ class OffersScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Erreur: $err')),
+        error: (err, _) => Center(child: Text('${context.tr('error_prefix')}$err')),
       ),
     );
   }
@@ -79,14 +80,14 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
       await ref.read(offersListProvider.notifier).acceptOffer(widget.offer.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Mission acceptée !'), backgroundColor: AppColors.success),
+          SnackBar(content: Text(context.tr('offer_accepted')), backgroundColor: AppColors.success),
         );
         context.push('/technician/requests');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -100,13 +101,13 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
       await ref.read(offersListProvider.notifier).rejectOffer(widget.offer.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Offre refusée')),
+          SnackBar(content: Text(context.tr('offer_rejected'))),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -137,7 +138,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
               children: [
                 Expanded(
                   child: Text(
-                    request.category?.name ?? 'Service',
+                    request.category?.name ?? context.tr('service'),
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -152,7 +153,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
                       Icon(Icons.timer_outlined, size: 14, color: isUrgent ? AppColors.error : Colors.orange),
                       const SizedBox(width: 4),
                       Text(
-                        minutesLeft > 0 ? '$minutesLeft min. restantes' : 'Expire bientôt',
+                        minutesLeft > 0 ? '$minutesLeft${context.tr('mins_left')}' : context.tr('expires_soon'),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -169,7 +170,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
               children: [
                 const Icon(Icons.person_outline, size: 16, color: Colors.grey),
                 const SizedBox(width: 8),
-                Text(request.client?.fullName ?? 'Client', style: const TextStyle(fontWeight: FontWeight.w500)),
+                Text(request.client?.fullName ?? context.tr('client'), style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),
             if (request.address != null && request.address!.isNotEmpty) ...[
@@ -205,7 +206,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
                 children: [
                   Expanded(
                     child: AppButton(
-                      text: 'Refuser',
+                      text: context.tr('reject'),
                       isOutlined: true,
                       color: AppColors.error,
                       onPressed: _rejectOffer,
@@ -214,7 +215,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: AppButton(
-                      text: 'Accepter',
+                      text: context.tr('accept'),
                       color: AppColors.success,
                       onPressed: _acceptOffer,
                     ),

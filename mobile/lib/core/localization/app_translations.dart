@@ -177,6 +177,17 @@ class AppTranslations {
       'field_required_short': 'Requis',
 
 
+      // Offers
+      'new_offers_title': 'Nouvelles Missions',
+      'no_offers': 'Aucune offre pour le moment',
+      'offer_accepted': 'Mission acceptée !',
+      'offer_rejected': 'Offre refusée.',
+      'error_prefix': 'Erreur: ',
+      'client': 'Client',
+      'service': 'Service',
+      'mins_left': ' min. restantes',
+      'expires_soon': 'Expire bientôt',
+
       // Common & Errors
       'error_title': 'Erreur',
       'success_title': 'Succès',
@@ -358,6 +369,17 @@ class AppTranslations {
       'loading_error': 'Loading error',
       'field_required': 'Required field',
       'field_required_short': 'Required',
+
+      // Offers
+      'new_offers_title': 'New Offers',
+      'no_offers': 'No offers at the moment',
+      'offer_accepted': 'Offer accepted!',
+      'offer_rejected': 'Offer rejected.',
+      'error_prefix': 'Error: ',
+      'client': 'Client',
+      'service': 'Service',
+      'mins_left': ' mins left',
+      'expires_soon': 'Expires soon',
 
       // Common & Errors
       'error_title': 'Error',
