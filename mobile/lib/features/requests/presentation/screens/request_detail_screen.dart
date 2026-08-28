@@ -208,6 +208,26 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     ),
                   ),
 
+                  if (request.imageUrl != null) ...[
+                    const SizedBox(height: 20),
+                    _buildSectionHeader('Photo', secondaryTextColor),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        request.imageUrl!,
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 200,
+                          width: double.infinity,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.broken_image, color: Colors.grey, size: 48),
+                        ),
+                      ),
+                    ),
+                  ],
+
                   if (request.address != null && request.address!.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     _buildSectionHeader(context.tr('address'), secondaryTextColor),

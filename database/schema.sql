@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS service_requests (
     address TEXT,
     latitude NUMERIC(10, 8),
     longitude NUMERIC(11, 8),
+    image_url TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMPTZ

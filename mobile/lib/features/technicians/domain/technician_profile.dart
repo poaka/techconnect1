@@ -55,6 +55,10 @@ class TechnicianProfile {
             ?.map((c) => Category.fromJson(c is Map<String, dynamic> ? (c['category'] ?? c) : {}))
             .toList() ??
         [];
+        
+    if (json['category'] != null && catList.isEmpty) {
+      catList.add(Category.fromJson(json['category'] as Map<String, dynamic>));
+    }
 
     final revList = (json['reviews'] as List<dynamic>?)
             ?.map((r) => Review.fromJson(r as Map<String, dynamic>))

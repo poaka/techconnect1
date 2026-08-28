@@ -5,14 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../shared/widgets/language_selector.dart';
-import '../../../../shared/widgets/theme_toggle_button.dart';
 import '../../../auth/presentation/auth_provider.dart';
 import '../../../auth/domain/user_role.dart';
 import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../providers/technicians_providers.dart';
 import '../widgets/category_item.dart';
-import '../widgets/technician_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -22,8 +19,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final _searchController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -35,28 +30,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _onSearchSubmitted(String query) {
-    if (query.trim().isNotEmpty) {
-      ref.read(technicianFilterProvider.notifier).setQuery(query.trim());
-      final filter = ref.read(technicianFilterProvider);
-      ref
-          .read(technicianListNotifierProvider.notifier)
-          .fetchTechnicians(filter: filter, isRefresh: true);
-      context.push('/directory');
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
     final categoriesAsync = ref.watch(categoriesProvider);
-    final technicianListState = ref.watch(technicianListNotifierProvider);
     final unreadCount = ref.watch(unreadCountProvider);
 
     final screenWidth = MediaQuery.of(context).size.width;
@@ -100,49 +77,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                width: 32,
-                                height: 32,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user != null
-                                      ? '${context.tr('hello_user')}${user.fullName} 👋'
-                                      : context.tr('hello_default'),
-                                  style: AppTypography.heading2.copyWith(
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: const BoxDecoration(
                                       color: Colors.white,
-                                      fontSize: screenWidth < 360 ? 18 : 20),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  context.tr('app_title'),
-                                  style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
-                                ),
-                              ],
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Image.asset(
+                                      'assets/images/logo.png',
+                                      width: 32,
+                                      height: 32,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          user != null
+                                              ? '${context.tr('hello_user')}${user.fullName} 👋'
+                                              : context.tr('hello_default'),
+                                          style: AppTypography.heading2.copyWith(
+                                              color: Colors.white,
+                                              fontSize: screenWidth < 360 ? 18 : 20),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          context.tr('app_title'),
+                                          style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
                         Row(
                           children: [
-                            const ThemeToggleButton(),
-                            const LanguageSelector(),
                             Stack(
                               children: [
                                 IconButton(
@@ -176,38 +157,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    // SEARCH BAR INSIDE HEADER
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
+                    // MASTER CTA CARD (DISPATCH)
+                    if (user?.role == UserRole.client)
+                      GestureDetector(
+                        onTap: () => context.push('/create-request'),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        textInputAction: TextInputAction.search,
-                        onSubmitted: _onSearchSubmitted,
-                        decoration: InputDecoration(
-                          hintText: context.tr('search_placeholder'),
-                          hintStyle: TextStyle(color: Colors.grey[400]),
-                          prefixIcon: const Icon(Icons.search, color: AppColors.primary),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.tune, color: AppColors.primary),
-                            onPressed: () => context.push('/directory'),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.handyman_rounded, color: AppColors.primary, size: 32),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Demander un Technicien',
+                                      style: AppTypography.heading3.copyWith(color: AppColors.textPrimary, fontSize: 18),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Trouvez le meilleur pro instantanément',
+                                      style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.primary, size: 20),
+                            ],
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -261,18 +260,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         return CategoryItem(
                           category: cat,
                           onTap: () {
-                            ref
-                                .read(technicianFilterProvider.notifier)
-                                .resetFilters();
-                            ref
-                                .read(technicianFilterProvider.notifier)
-                                .setCategory(cat.id);
-                            final filter = ref.read(technicianFilterProvider);
-                            ref
-                                .read(technicianListNotifierProvider.notifier)
-                                .fetchTechnicians(
-                                    filter: filter, isRefresh: true);
-                            context.push('/directory');
+                            context.push('/create-request');
                           },
                         );
                       },
@@ -283,70 +271,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const Text('Error loading categories'),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 32),
 
-                // Top Verified Technicians Section Header (Responsive Row)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        context.tr('recommended_artisans'),
-                        style: AppTypography.heading3
-                            .copyWith(fontSize: screenWidth < 360 ? 15 : 16),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                // Active Requests Section (replaces the old directory)
+                if (user?.role == UserRole.client) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Mes Demandes en Cours',
+                          style: AppTypography.heading3
+                              .copyWith(fontSize: screenWidth < 360 ? 15 : 16),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: () => context.push('/directory'),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      TextButton(
+                        onPressed: () => context.push('/client/dashboard'),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(context.tr('see_all'),
+                            style: const TextStyle(fontSize: 13)),
                       ),
-                      child: Text(context.tr('explore_all'),
-                          style: const TextStyle(fontSize: 13)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                // Featured Technicians List
-                if (technicianListState.isLoading &&
-                    technicianListState.items.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (technicianListState.items.isEmpty)
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(24),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: Text(
-                      context.tr('no_technician_found'),
-                      textAlign: TextAlign.center,
-                      style: AppTypography.bodyMedium,
+                    child: Column(
+                      children: [
+                        Icon(Icons.assignment_outlined, size: 48, color: AppColors.textSecondary.withValues(alpha: 0.5)),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Aucune demande en cours',
+                          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () => context.push('/client/dashboard'),
+                          child: const Text('Voir l\'historique'),
+                        ),
+                      ],
                     ),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: technicianListState.items.length,
-                    itemBuilder: (context, index) {
-                      final profile = technicianListState.items[index];
-                      return TechnicianCard(
-                        profile: profile,
-                        onTap: () => context.push('/technicians/${profile.id}'),
-                      );
-                    },
                   ),
+                ],
               ],
             ),
           ),
@@ -358,7 +336,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ? FloatingActionButton.extended(
               onPressed: () => context.push('/create-request'),
               icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Nouvelle demande'),
+              label: const Text('Demander un technicien'),
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             )

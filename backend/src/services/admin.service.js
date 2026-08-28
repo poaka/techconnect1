@@ -14,7 +14,7 @@ class AdminService {
           id, verified, years_experience, price_min, price_max, bio,
           user:users!user_id(id, full_name, email, phone, avatar_url),
           city:cities!city_id(id, name, region:regions!region_id(id, name)),
-          categories:technician_categories(category:categories!category_id(id, name, icon))
+          category:categories!category_id(id, name, icon)
         )
       `)
       .eq('status', 'pending')
@@ -50,7 +50,7 @@ class AdminService {
           id, verified, years_experience, price_min, price_max, bio,
           user:users!user_id(id, full_name, email, phone, avatar_url),
           city:cities!city_id(id, name, region:regions!region_id(id, name)),
-          categories:technician_categories(category:categories!category_id(id, name, icon))
+          category:categories!category_id(id, name, icon)
         )
       `)
       .eq('status', 'rejected')
@@ -222,7 +222,6 @@ class AdminService {
     if (techProfile) {
       console.log(`[AdminService.deleteUser] Deleting technician_profile ${techProfile.id} and child tables...`);
       await supabase.from('technician_documents').delete().eq('technician_id', techProfile.id);
-      await supabase.from('technician_categories').delete().eq('technician_id', techProfile.id);
       await supabase.from('reviews').delete().eq('technician_id', techProfile.id);
       await supabase.from('favorites').delete().eq('technician_id', techProfile.id);
       await supabase.from('service_requests').delete().eq('technician_id', techProfile.id);
@@ -256,7 +255,7 @@ class AdminService {
         id, bio, years_experience, price_min, price_max, whatsapp, verified, availability, rating_avg, rating_count, created_at,
         user:users!user_id(id, full_name, email, phone, avatar_url, created_at),
         city:cities!city_id(id, name, region:regions!region_id(id, name)),
-        categories:technician_categories(category:categories!category_id(id, name, icon))
+        category:categories!category_id(id, name, icon)
       `)
       .order('created_at', { ascending: false });
 

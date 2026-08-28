@@ -44,6 +44,7 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
     String? address,
     double? latitude,
     double? longitude,
+    String? imagePath,
   }) async {
     final newRequest = await _repository.createRequest(
       categoryId: categoryId,
@@ -52,6 +53,7 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
       address: address,
       latitude: latitude,
       longitude: longitude,
+      imagePath: imagePath,
     );
     
     // Add to current list

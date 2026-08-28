@@ -22,17 +22,31 @@ class RequestsRemoteDataSource {
     String? address,
     double? latitude,
     double? longitude,
+    String? imagePath,
   }) async {
+    final Map<String, dynamic> data = {
+      'categoryId': categoryId,
+      'cityId': cityId,
+      'description': description,
+    };
+    if (address != null) data['address'] = address;
+    if (latitude != null) data['latitude'] = latitude;
+    if (longitude != null) data['longitude'] = longitude;
+
+    Object requestData = data;
+
+    if (imagePath != null) {
+      final formData = FormData.fromMap(data);
+      formData.files.add(MapEntry(
+        'image',
+        await MultipartFile.fromFile(imagePath),
+      ));
+      requestData = formData;
+    }
+
     final response = await _client.post(
       '/requests',
-      data: {
-        'categoryId': categoryId,
-        'cityId': cityId,
-        'description': description,
-        if (address != null) 'address': address,
-        if (latitude != null) 'latitude': latitude,
-        if (longitude != null) 'longitude': longitude,
-      },
+      data: requestData,
     );
     return response.data['data'] as Map<String, dynamic>;
   }

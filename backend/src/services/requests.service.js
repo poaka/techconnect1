@@ -6,8 +6,35 @@ class RequestsService {
   /**
    * Phase 6: Create request using Dispatch Engine
    */
-  static async createRequest(clientId, { categoryId, cityId, description, address, latitude, longitude }) {
+  static async createRequest(clientId, { categoryId, cityId, description, address, latitude, longitude }, file = null) {
     if (!supabase) throw ApiError.internal('Base de données indisponible');
+
+    let imageUrl = null;
+    if (file) {
+      try {
+        const fileExt = file.originalname.split('.').pop();
+        const fileName = `${clientId}-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('requests')
+          .upload(fileName, file.buffer, {
+            contentType: file.mimetype,
+            upsert: false
+          });
+          
+        if (uploadError) {
+          console.error('[RequestsService.createRequest] Upload Error:', uploadError);
+        } else {
+          // Get public URL
+          const { data: publicUrlData } = supabase.storage
+            .from('requests')
+            .getPublicUrl(fileName);
+          imageUrl = publicUrlData.publicUrl;
+        }
+      } catch (err) {
+        console.error('[RequestsService.createRequest] File processing error:', err);
+      }
+    }
 
     // 1. Insert unassigned request
     const { data: newRequest, error: createErr } = await supabase
@@ -21,6 +48,7 @@ class RequestsService {
           address: address || null,
           latitude: latitude || null,
           longitude: longitude || null,
+          image_url: imageUrl,
           status: 'unassigned'
         }
       ])
