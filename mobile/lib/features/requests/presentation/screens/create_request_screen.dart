@@ -129,16 +129,17 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                 const SizedBox(height: 8),
                 categoriesAsync.when(
                   data: (categories) => DropdownButtonFormField<String>(
+                    isExpanded: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
-                    hint: const Text('Ex: Plomberie, Électricité...'),
+                    hint: const Text('Ex: Plomberie, Électricité...', overflow: TextOverflow.ellipsis),
                     value: _selectedCategoryId,
                     items: categories.map((cat) {
                       return DropdownMenuItem(
                         value: cat.id,
-                        child: Text(cat.name),
+                        child: Text(cat.name, overflow: TextOverflow.ellipsis),
                       );
                     }).toList(),
                     onChanged: (val) => setState(() => _selectedCategoryId = val),
@@ -154,16 +155,17 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                 const SizedBox(height: 8),
                 citiesAsync.when(
                   data: (cities) => DropdownButtonFormField<String>(
+                    isExpanded: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
-                    hint: const Text('Sélectionnez votre ville'),
+                    hint: const Text('Sélectionnez votre ville', overflow: TextOverflow.ellipsis),
                     value: _selectedCityId,
                     items: cities.map((city) {
                       return DropdownMenuItem(
                         value: city.id,
-                        child: Text(city.name),
+                        child: Text(city.name, overflow: TextOverflow.ellipsis),
                       );
                     }).toList(),
                     onChanged: (val) => setState(() => _selectedCityId = val),
@@ -243,10 +245,13 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => _pickImage(ImageSource.camera),
-                          icon: const Icon(Icons.camera_alt),
-                          label: const Text('Appareil photo'),
+                          icon: const Icon(Icons.camera_alt, size: 20),
+                          label: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text('Caméra'),
+                          ),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                         ),
@@ -255,10 +260,13 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => _pickImage(ImageSource.gallery),
-                          icon: const Icon(Icons.photo_library),
-                          label: const Text('Galerie'),
+                          icon: const Icon(Icons.photo_library, size: 20),
+                          label: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text('Galerie'),
+                          ),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                         ),
