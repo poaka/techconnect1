@@ -77,49 +77,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                width: 32,
-                                height: 32,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
                                 children: [
-                                  Text(
-                                    user != null
-                                        ? '${context.tr('hello_user')}${user.fullName} 👋'
-                                        : context.tr('hello_default'),
-                                    style: AppTypography.heading2.copyWith(
-                                        color: Colors.white,
-                                        fontSize: screenWidth < 360 ? 18 : 20),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Image.asset(
+                                      'assets/images/logo.png',
+                                      width: 32,
+                                      height: 32,
+                                      fit: BoxFit.contain,
+                                    ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    context.tr('app_title'),
-                                    style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          user != null
+                                              ? '${context.tr('hello_user')}${user.fullName} 👋'
+                                              : context.tr('hello_default'),
+                                          style: AppTypography.heading2.copyWith(
+                                              color: Colors.white,
+                                              fontSize: screenWidth < 360 ? 18 : 20),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          context.tr('app_title'),
+                                          style: AppTypography.bodyMedium.copyWith(color: Colors.white70),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
                         Row(
                           children: [
                             Stack(
