@@ -155,8 +155,6 @@ class AppTranslations {
       // Onboarding
       'complete_profile_title': 'Compléter mon profil',
       'personal_info_section': 'Informations Personnelles',
-      'full_name_label': 'Nom complet',
-      'full_name_hint': 'Entrez votre nom',
       'main_phone_label': 'Numéro de téléphone principal',
       'main_phone_hint': 'Ex: +237 6XX XX XX XX',
       'pro_info_section': 'Informations Professionnelles',
@@ -340,8 +338,6 @@ class AppTranslations {
       // Onboarding
       'complete_profile_title': 'Complete My Profile',
       'personal_info_section': 'Personal Information',
-      'full_name_label': 'Full Name',
-      'full_name_hint': 'Enter your name',
       'main_phone_label': 'Main Phone Number',
       'main_phone_hint': 'e.g., +237 6XX XX XX XX',
       'pro_info_section': 'Professional Information',
