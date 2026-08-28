@@ -3,7 +3,7 @@ const RequestsService = require('../services/requests.service');
 class RequestsController {
   static async createRequest(req, res, next) {
     try {
-      const request = await RequestsService.createRequest(req.user.id, req.body);
+      const request = await RequestsService.createRequest(req.user.id, req.body, req.file);
       res.status(201).json({ data: request });
     } catch (error) {
       next(error);

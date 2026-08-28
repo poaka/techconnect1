@@ -36,6 +36,7 @@ class RequestsRepositoryImpl implements RequestsRepository {
     String? address,
     double? latitude,
     double? longitude,
+    String? imagePath,
   }) async {
     try {
       final res = await _remoteDataSource.createRequest(
@@ -45,6 +46,7 @@ class RequestsRepositoryImpl implements RequestsRepository {
         address: address,
         latitude: latitude,
         longitude: longitude,
+        imagePath: imagePath,
       );
       return ServiceRequest.fromJson(res);
     } catch (e) {

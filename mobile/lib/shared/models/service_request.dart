@@ -81,6 +81,7 @@ class ServiceRequest {
   final RequestStatus status;
   final String? description;
   final String? address;
+  final String? imageUrl;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final DateTime? completedAt;
@@ -98,6 +99,7 @@ class ServiceRequest {
     required this.status,
     this.description,
     this.address,
+    this.imageUrl,
     required this.createdAt,
     this.updatedAt,
     this.completedAt,
@@ -115,6 +117,7 @@ class ServiceRequest {
       status: RequestStatus.fromString(json['status']?.toString() ?? 'pending'),
       description: json['description']?.toString(),
       address: json['address']?.toString(),
+      imageUrl: json['image_url']?.toString(),
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'].toString()) : DateTime.now(),
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'].toString()) : null,
       completedAt: json['completed_at'] != null ? DateTime.parse(json['completed_at'].toString()) : null,

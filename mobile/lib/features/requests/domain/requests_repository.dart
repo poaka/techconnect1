@@ -10,6 +10,7 @@ abstract class RequestsRepository {
     String? address,
     double? latitude,
     double? longitude,
+    String? imagePath,
   });
   Future<ServiceRequest> cancelRequest(String id);
   Future<ServiceRequest> completeRequest(String id);
