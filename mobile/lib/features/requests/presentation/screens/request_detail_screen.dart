@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/services/location_service.dart';
@@ -46,13 +44,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       if (mounted) {
         ref.invalidate(requestDetailProvider(widget.requestId));
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Action effectuée avec succès'), backgroundColor: AppColors.success),
+          SnackBar(content: Text(context.tr('action_success')), backgroundColor: AppColors.success),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -71,13 +69,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Position partagée avec succès !'), backgroundColor: AppColors.success),
+          SnackBar(content: Text(context.tr('status_updated')), backgroundColor: AppColors.success),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -85,11 +83,140 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
+  Future<void> _confirmDelete(BuildContext context, ServiceRequest request) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('delete_request_title')),
+        content: Text(context.tr('confirm_delete_request')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(context.tr('reset')),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(context.tr('delete_request'), style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      final deletedText = context.tr('request_deleted');
+      final errPrefix = context.tr('error_prefix');
+
+      setState(() => _isUpdating = true);
+      try {
+        await ref.read(requestListProvider.notifier).deleteRequest(request.id);
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text(deletedText), backgroundColor: AppColors.success),
+          );
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(content: Text('$errPrefix$e'), backgroundColor: AppColors.error),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUpdating = false);
+      }
+    }
+  }
+
+  void _showEditBottomSheet(BuildContext context, ServiceRequest request) {
+    final descController = TextEditingController(text: request.description);
+    final addressController = TextEditingController(text: request.address);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              context.tr('edit_request_title'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: context.tr('description'),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: addressController,
+              decoration: InputDecoration(
+                labelText: context.tr('address'),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            AppButton(
+              text: context.tr('update_request'),
+              onPressed: () async {
+                final newDesc = descController.text.trim();
+                final newAddr = addressController.text.trim();
+                final messenger = ScaffoldMessenger.of(context);
+                final updatedText = context.tr('request_updated');
+                final errPrefix = context.tr('error_prefix');
+
+                Navigator.of(ctx).pop();
+                
+                setState(() => _isUpdating = true);
+                try {
+                  await ref.read(requestListProvider.notifier).updateRequest(request.id, {
+                    'description': newDesc,
+                    'address': newAddr,
+                  });
+                  ref.invalidate(requestDetailProvider(widget.requestId));
+                  if (mounted) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(updatedText), backgroundColor: AppColors.success),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('$errPrefix$e'), backgroundColor: AppColors.error),
+                    );
+                  }
+                } finally {
+                  if (mounted) setState(() => _isUpdating = false);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionButtons(BuildContext context, ServiceRequest request, bool isTechnician) {
     if (isTechnician) {
-      // In Phase 8+, technician no longer accepts/rejects directly in detail screen (they do it via offers API).
-      // They can only mark inProgress -> completed.
-      // Or assigned -> inProgress (if implemented). Currently backend just has completeRequest.
       if (request.status == RequestStatus.inProgress || request.status == RequestStatus.assigned) {
         return SizedBox(
           width: double.infinity,
@@ -100,7 +227,41 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         );
       }
     } else { // Client
-      if (request.status == RequestStatus.unassigned || request.status == RequestStatus.assigned) {
+      if (request.status == RequestStatus.unassigned) {
+        return Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: AppButton(
+                text: context.tr('edit_request'),
+                onPressed: _isUpdating ? null : () => _showEditBottomSheet(context, request),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    text: context.tr('cancel_request'),
+                    isOutlined: true,
+                    color: Colors.orange,
+                    onPressed: _isUpdating ? null : () => _updateStatus(() => ref.read(requestListProvider.notifier).cancelRequest(widget.requestId)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppButton(
+                    text: context.tr('delete_request'),
+                    isOutlined: true,
+                    color: AppColors.error,
+                    onPressed: _isUpdating ? null : () => _confirmDelete(context, request),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      } else if (request.status == RequestStatus.assigned) {
         return SizedBox(
           width: double.infinity,
           child: AppButton(
@@ -136,14 +297,6 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         data: (request) {
           final statusColor = _getStatusColor(request.status);
           final formattedDate = DateFormat('dd/MM/yyyy à HH:mm').format(request.createdAt);
-          
-          final otherPartyName = isTechnician
-              ? (request.client?.fullName ?? context.tr('unknown_client'))
-              : (request.technician?.fullName ?? context.tr('unknown_tech'));
-          
-          final otherPartyPhone = isTechnician
-              ? request.client?.phone
-              : request.technician?.phone;
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -180,17 +333,33 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     _buildInfoRow(context.tr('date'), formattedDate, secondaryTextColor, textColor),
                     if (request.category != null) ...[
                       Divider(color: cardBorder),
-                      _buildInfoRow('Catégorie', request.category!.name, secondaryTextColor, textColor),
+                      _buildInfoRow(context.tr('category'), request.category!.name, secondaryTextColor, textColor),
                     ]
                   ]),
                   
                   const SizedBox(height: 20),
-                  _buildSectionHeader(isTechnician ? context.tr('client_info') : context.tr('technician_info'), secondaryTextColor),
+                  _buildSectionHeader(context.tr('client_information'), secondaryTextColor),
                   _buildInfoCard(cardBg, cardBorder, [
-                    _buildInfoRow('Nom', otherPartyName, secondaryTextColor, textColor),
+                    _buildInfoRow(context.tr('name_label'), request.client?.fullName ?? user?.fullName ?? context.tr('not_provided'), secondaryTextColor, textColor),
                     Divider(color: cardBorder),
-                    _buildInfoRow(context.tr('phone'), otherPartyPhone ?? context.tr('not_provided'), secondaryTextColor, textColor),
+                    _buildInfoRow(context.tr('phone'), request.client?.phone ?? user?.phone ?? context.tr('not_provided'), secondaryTextColor, textColor),
+                    if ((request.client?.email ?? user?.email) != null && (request.client?.email ?? user?.email)!.isNotEmpty) ...[
+                      Divider(color: cardBorder),
+                      _buildInfoRow(context.tr('email_label'), request.client?.email ?? user?.email ?? '', secondaryTextColor, textColor),
+                    ]
                   ]),
+
+                  if (request.technician != null) ...[
+                    const SizedBox(height: 20),
+                    _buildSectionHeader(context.tr('technician_info'), secondaryTextColor),
+                    _buildInfoCard(cardBg, cardBorder, [
+                      _buildInfoRow(context.tr('name_label'), request.technician!.fullName, secondaryTextColor, textColor),
+                      if (request.technician!.phone != null && request.technician!.phone!.isNotEmpty) ...[
+                        Divider(color: cardBorder),
+                        _buildInfoRow(context.tr('phone'), request.technician!.phone!, secondaryTextColor, textColor),
+                      ]
+                    ]),
+                  ],
 
                   const SizedBox(height: 20),
                   _buildSectionHeader(context.tr('description'), secondaryTextColor),
@@ -210,7 +379,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
                   if (request.imageUrl != null) ...[
                     const SizedBox(height: 20),
-                    _buildSectionHeader('Photo', secondaryTextColor),
+                    _buildSectionHeader(context.tr('photo_label'), secondaryTextColor),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.network(
@@ -256,12 +425,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
                   if (request.status == RequestStatus.inProgress || request.status == RequestStatus.assigned) ...[
                     const SizedBox(height: 20),
-                    _buildSectionHeader('Suivi GPS', secondaryTextColor),
+                    _buildSectionHeader(context.tr('gps_tracking'), secondaryTextColor),
                     if (isTechnician)
                       SizedBox(
                         width: double.infinity,
                         child: AppButton(
-                          text: 'Partager ma position',
+                          text: context.tr('share_location'),
                           icon: Icons.my_location,
                           onPressed: _isUpdating ? null : _shareLocation,
                         ),
@@ -282,7 +451,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erreur: $error')),
+        error: (error, _) => Center(child: Text('${context.tr('error_prefix')}$error')),
       ),
     );
   }
@@ -351,16 +520,16 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               children: [
                 const Icon(Icons.location_off_outlined, color: Colors.grey, size: 32),
                 const SizedBox(height: 8),
-                const Text(
-                  'Le technicien n\'a pas encore partagé sa position.',
+                Text(
+                  context.tr('location_not_shared'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
+                  style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 12),
                 TextButton.icon(
                   onPressed: () => ref.refresh(requestLocationProvider(requestId)),
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Actualiser'),
+                  label: Text(context.tr('refresh')),
                 )
               ],
             );
@@ -380,7 +549,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Position mise à jour à $formattedTime',
+                      '${context.tr('location_updated_at')}$formattedTime',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -394,7 +563,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
-                  text: 'Ouvrir dans Maps',
+                  text: context.tr('open_maps'),
                   icon: Icons.map_outlined,
                   isOutlined: true,
                   onPressed: () async {
@@ -404,7 +573,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     } else {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Impossible d\'ouvrir la carte.')),
+                          SnackBar(content: Text(context.tr('cannot_open_maps'))),
                         );
                       }
                     }
@@ -415,7 +584,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Erreur: $err')),
+        error: (err, _) => Center(child: Text('${context.tr('error_prefix')}$err')),
       ),
     );
   }

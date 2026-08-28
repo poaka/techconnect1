@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/app_button.dart';
@@ -30,7 +31,7 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
   void _submit() async {
     if (_rating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez donner une note de 1 à 5 étoiles.')),
+        SnackBar(content: Text(context.tr('rating_required'))),
       );
       return;
     }
@@ -48,8 +49,8 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
       if (next is AsyncData && next.value != null) {
         // Success
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Merci pour votre avis !'),
+          SnackBar(
+            content: Text(context.tr('thanks_for_review')),
             backgroundColor: AppColors.success,
           ),
         );
@@ -60,7 +61,7 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
         }
       } else if (next is AsyncError) {
         final error = next.error;
-        String msg = 'Erreur lors de l\'envoi de l\'avis';
+        String msg = context.tr('error_sending_review');
         if (error is Failure) {
           msg = error.message;
         }
@@ -73,20 +74,20 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
     final submitState = ref.watch(submitReviewProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Évaluer ce service')),
+      appBar: AppBar(title: Text(context.tr('rate_service'))),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Comment s\'est passée l\'intervention ?',
+              Text(
+                context.tr('rate_prompt'),
                 style: AppTypography.heading2,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Votre avis aide les autres utilisateurs à choisir les meilleurs artisans.',
+              Text(
+                context.tr('rate_desc'),
                 style: AppTypography.bodyMedium,
               ),
               const SizedBox(height: 32),
@@ -124,16 +125,16 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
                 ),
 
               const SizedBox(height: 32),
-              const Text(
-                'Laissez un commentaire (optionnel)',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              Text(
+                context.tr('leave_comment'),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _commentController,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: 'Partagez les détails de votre expérience...',
+                  hintText: context.tr('comment_hint'),
                   filled: true,
                   fillColor: AppColors.inputBg,
                   border: OutlineInputBorder(
@@ -151,7 +152,7 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
-                  text: 'Envoyer l\'avis',
+                  text: context.tr('submit_review'),
                   isLoading: submitState.isLoading,
                   onPressed: submitState.isLoading ? null : _submit,
                 ),
@@ -165,11 +166,11 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
 
   String _getRatingText(int rating) {
     switch (rating) {
-      case 1: return 'Très déçu';
-      case 2: return 'Déçu';
-      case 3: return 'Correct';
-      case 4: return 'Très bien';
-      case 5: return 'Parfait, je recommande !';
+      case 1: return context.tr('rating_1');
+      case 2: return context.tr('rating_2');
+      case 3: return context.tr('rating_3');
+      case 4: return context.tr('rating_4');
+      case 5: return context.tr('rating_5');
       default: return '';
     }
   }

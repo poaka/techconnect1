@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../technicians/presentation/providers/technicians_providers.dart';
@@ -38,7 +39,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de la sélection de l\'image: $e')),
+          SnackBar(content: Text('${context.tr('error_prefix')}$e')),
         );
       }
     }
@@ -56,14 +57,14 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
     
     if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez sélectionner une catégorie'), backgroundColor: AppColors.error),
+        SnackBar(content: Text(context.tr('select_category_error')), backgroundColor: AppColors.error),
       );
       return;
     }
     
     if (_selectedCityId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez sélectionner une ville'), backgroundColor: AppColors.error),
+        SnackBar(content: Text(context.tr('select_city_error')), backgroundColor: AppColors.error),
       );
       return;
     }
@@ -81,14 +82,14 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Demande envoyée ! Recherche de techniciens en cours...'), backgroundColor: AppColors.success),
+          SnackBar(content: Text(context.tr('request_sent')), backgroundColor: AppColors.success),
         );
         context.go('/requests');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: AppColors.error),
+          SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -103,7 +104,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Créer une demande'),
+        title: Text(context.tr('create_request_title')),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -113,19 +114,19 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'De quoi avez-vous besoin ?',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                Text(
+                  context.tr('what_do_you_need'),
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Décrivez votre problème et nous trouverons le meilleur technicien disponible pour vous.',
-                  style: TextStyle(color: Colors.grey),
+                Text(
+                  context.tr('describe_problem'),
+                  style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 24),
 
                 // Category Dropdown
-                const Text('Catégorie de service', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(context.tr('service_category'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 categoriesAsync.when(
                   data: (categories) => DropdownButtonFormField<String>(
@@ -134,7 +135,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
-                    hint: const Text('Ex: Plomberie, Électricité...', overflow: TextOverflow.ellipsis),
+                    hint: Text(context.tr('category_hint'), overflow: TextOverflow.ellipsis),
                     value: _selectedCategoryId,
                     items: categories.map((cat) {
                       return DropdownMenuItem(
@@ -143,15 +144,15 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       );
                     }).toList(),
                     onChanged: (val) => setState(() => _selectedCategoryId = val),
-                    validator: (val) => val == null ? 'Requis' : null,
+                    validator: (val) => val == null ? context.tr('field_required_short') : null,
                   ),
                   loading: () => const LinearProgressIndicator(),
-                  error: (_, __) => const Text('Erreur de chargement des catégories', style: TextStyle(color: Colors.red)),
+                  error: (_, __) => Text(context.tr('error_loading_categories'), style: const TextStyle(color: Colors.red)),
                 ),
                 const SizedBox(height: 20),
 
                 // City Dropdown
-                const Text('Votre ville', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(context.tr('your_city'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 citiesAsync.when(
                   data: (cities) => DropdownButtonFormField<String>(
@@ -160,7 +161,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
-                    hint: const Text('Sélectionnez votre ville', overflow: TextOverflow.ellipsis),
+                    hint: Text(context.tr('city_hint'), overflow: TextOverflow.ellipsis),
                     value: _selectedCityId,
                     items: cities.map((city) {
                       return DropdownMenuItem(
@@ -169,26 +170,26 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       );
                     }).toList(),
                     onChanged: (val) => setState(() => _selectedCityId = val),
-                    validator: (val) => val == null ? 'Requis' : null,
+                    validator: (val) => val == null ? context.tr('field_required_short') : null,
                   ),
                   loading: () => const LinearProgressIndicator(),
-                  error: (_, __) => const Text('Erreur de chargement des villes', style: TextStyle(color: Colors.red)),
+                  error: (_, __) => Text(context.tr('error_loading_cities'), style: const TextStyle(color: Colors.red)),
                 ),
                 const SizedBox(height: 20),
 
                 // Description Field
-                const Text('Description du problème', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(context.tr('problem_description'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _descriptionController,
                   maxLines: 5,
                   decoration: InputDecoration(
-                    hintText: 'Soyez le plus précis possible pour aider le technicien à comprendre votre besoin...',
+                    hintText: context.tr('description_hint'),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Veuillez décrire votre besoin';
+                      return context.tr('please_describe_need');
                     }
                     return null;
                   },
@@ -196,19 +197,19 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                 const SizedBox(height: 20),
 
                 // Address Field
-                const Text('Adresse exacte (optionnel)', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(context.tr('exact_address'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _addressController,
                   decoration: InputDecoration(
-                    hintText: 'Quartier, repère, numéro de porte...',
+                    hintText: context.tr('address_hint'),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 const SizedBox(height: 20),
 
                 // Image Picker Field
-                const Text('Photo (optionnel)', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(context.tr('photo_optional'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 if (_imageFile != null)
                   Stack(
@@ -246,9 +247,9 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                         child: OutlinedButton.icon(
                           onPressed: () => _pickImage(ImageSource.camera),
                           icon: const Icon(Icons.camera_alt, size: 20),
-                          label: const FittedBox(
+                          label: FittedBox(
                             fit: BoxFit.scaleDown,
-                            child: Text('Caméra'),
+                            child: Text(context.tr('camera')),
                           ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -261,9 +262,9 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                         child: OutlinedButton.icon(
                           onPressed: () => _pickImage(ImageSource.gallery),
                           icon: const Icon(Icons.photo_library, size: 20),
-                          label: const FittedBox(
+                          label: FittedBox(
                             fit: BoxFit.scaleDown,
-                            child: Text('Galerie'),
+                            child: Text(context.tr('gallery')),
                           ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -279,7 +280,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: AppButton(
-                    text: 'Trouver un technicien',
+                    text: context.tr('find_technician'),
                     isLoading: _isLoading,
                     onPressed: _submitRequest,
                   ),

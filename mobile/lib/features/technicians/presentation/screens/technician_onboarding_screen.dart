@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../auth/presentation/auth_provider.dart';
@@ -76,7 +76,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCityId == null || _selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez sélectionner une ville et un métier.')),
+        SnackBar(content: Text(context.tr('select_city_profession_error'))),
       );
       return;
     }
@@ -111,7 +111,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
     if (profile != null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profil mis à jour avec succès !', style: TextStyle(color: Colors.white)), backgroundColor: AppColors.success),
+          SnackBar(content: Text(context.tr('profile_updated_success'), style: const TextStyle(color: Colors.white)), backgroundColor: AppColors.success),
         );
         // Refresh auth state to get updated user with profile
         ref.read(authNotifierProvider.notifier).checkAuthStatus();

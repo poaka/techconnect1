@@ -78,4 +78,13 @@ class RequestsRemoteDataSource {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>> updateRequest(String id, Map<String, dynamic> data) async {
+    final response = await _client.put('/requests/$id', data: data);
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  Future<void> deleteRequest(String id) async {
+    await _client.delete('/requests/$id');
+  }
 }

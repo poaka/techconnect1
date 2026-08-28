@@ -11,13 +11,13 @@ enum JobOfferStatus {
   String getLocalizedLabel(BuildContext context) {
     switch (this) {
       case JobOfferStatus.pending:
-        return 'En attente'; // Could be localized
+        return context.tr('status_unassigned');
       case JobOfferStatus.accepted:
-        return 'Acceptée';
+        return context.tr('status_in_progress');
       case JobOfferStatus.rejected:
-        return 'Refusée';
+        return context.tr('reject');
       case JobOfferStatus.expired:
-        return 'Expirée';
+        return context.tr('status_cancelled');
     }
   }
 

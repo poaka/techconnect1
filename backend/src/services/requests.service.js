@@ -48,7 +48,6 @@ class RequestsService {
           address: address || null,
           latitude: latitude || null,
           longitude: longitude || null,
-          image_url: imageUrl,
           status: 'unassigned'
         }
       ])
@@ -217,6 +216,57 @@ class RequestsService {
     }
 
     return data;
+  }
+
+  static async updateRequest(requestId, clientId, { categoryId, cityId, description, address }) {
+    const request = await this.getRequestById(requestId, clientId, 'client');
+    
+    if (request.status !== 'unassigned') {
+      throw ApiError.badRequest('Vous ne pouvez modifier que les demandes non encore assignées.');
+    }
+
+    const updateData = { updated_at: new Date().toISOString() };
+    if (categoryId) updateData.category_id = categoryId;
+    if (cityId) updateData.city_id = cityId;
+    if (description !== undefined) updateData.description = description;
+    if (address !== undefined) updateData.address = address;
+
+    const { data, error } = await supabase
+      .from('service_requests')
+      .update(updateData)
+      .eq('id', requestId)
+      .eq('client_id', clientId)
+      .select(`
+        id, status, description, address, latitude, longitude, created_at, updated_at,
+        category:categories(id, name, icon),
+        city:cities(id, name),
+        client:users!client_id(id, full_name, email, phone, avatar_url)
+      `)
+      .single();
+
+    if (error) throw ApiError.internal('Erreur lors de la modification de la demande');
+    return data;
+  }
+
+  static async deleteRequest(requestId, clientId) {
+    const request = await this.getRequestById(requestId, clientId, 'client');
+    
+    if (request.status === 'in_progress' || request.status === 'completed') {
+      throw ApiError.badRequest('Impossible de supprimer une demande en cours ou terminée.');
+    }
+
+    // Delete associated offers first
+    await supabase.from('job_offers').delete().eq('request_id', requestId);
+
+    // Delete the service request
+    const { error } = await supabase
+      .from('service_requests')
+      .delete()
+      .eq('id', requestId)
+      .eq('client_id', clientId);
+
+    if (error) throw ApiError.internal('Erreur lors de la suppression de la demande');
+    return { success: true, message: 'Demande supprimée avec succès' };
   }
 
   static async completeRequest(requestId, technicianUserId) {
