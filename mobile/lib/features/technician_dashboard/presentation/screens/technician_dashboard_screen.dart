@@ -1,9 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../auth/presentation/auth_provider.dart';
 import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../providers/technician_stats_provider.dart';
@@ -16,8 +16,7 @@ class TechnicianDashboardScreen extends ConsumerStatefulWidget {
       _TechnicianDashboardScreenState();
 }
 
-class _TechnicianDashboardScreenState
-    extends ConsumerState<TechnicianDashboardScreen> {
+class _TechnicianDashboardScreenState extends ConsumerState<TechnicianDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
@@ -30,201 +29,327 @@ class _TechnicianDashboardScreenState
         profile.categories.isEmpty;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tableau de Bord'),
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined),
-                onPressed: () => context.push('/technician/notifications'),
-              ),
-              if (unreadCount > 0)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    width: 16,
-                    height: 16,
-                    decoration: const BoxDecoration(
-                      color: AppColors.error,
-                      shape: BoxShape.circle,
+      backgroundColor: const Color(0xFFF8F9FE), // Soft premium background
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () async {
+          ref.invalidate(technicianStatsProvider);
+          await ref.read(technicianStatsProvider.future);
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          slivers: [
+            // ─── PREMIUM HEADER ────────────────────────────────────────────────
+            SliverAppBar(
+              expandedHeight: 220,
+              pinned: true,
+              stretch: true,
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              flexibleSpace: FlexibleSpaceBar(
+                stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+                background: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.accent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    child: Center(
-                      child: Text(
-                        unreadCount > 9 ? '9+' : '$unreadCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
+                  ),
+                  child: Stack(
+                    children: [
+                      // Subtle decorative circles
+                      Positioned(
+                        top: -50,
+                        right: -30,
+                        child: Container(
+                          width: 150,
+                          height: 150,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline_rounded),
-            onPressed: () => context.push('/technician/profile'),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(technicianStatsProvider);
-            await ref.read(technicianStatsProvider.future);
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ─── Greeting ──────────────────────────────────────────────
-                Text(
-                  user != null
-                      ? 'Bonjour, ${user.fullName.split(' ').first} 👋'
-                      : 'Bonjour ! 👋',
-                  style: AppTypography.heading2,
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Voici un résumé de votre activité.',
-                  style: AppTypography.bodyMedium,
-                ),
-                const SizedBox(height: 20),
-
-                // ─── Profile incomplete banner ─────────────────────────────
-                if (isProfileIncomplete) ...[
-                  _buildIncompleteProfileBanner(context),
-                  const SizedBox(height: 20),
-                ],
-
-                // ─── Verification status ───────────────────────────────────
-                statsAsync.when(
-                  loading: () => _buildStatsLoading(),
-                  error: (_, __) => _buildStatsError(
-                    () => ref.invalidate(technicianStatsProvider),
-                  ),
-                  data: (stats) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Verified + Availability chip row
-                      Row(
-                        children: [
-                          _buildBadge(
-                            icon: stats.verified
-                                ? Icons.verified_rounded
-                                : Icons.pending_outlined,
-                            label: stats.verified ? 'Vérifié' : 'En attente de vérification',
-                            color: stats.verified ? AppColors.success : AppColors.warning,
+                      Positioned(
+                        bottom: -20,
+                        left: -40,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.1),
                           ),
-                          const SizedBox(width: 8),
-                          _buildBadge(
-                            icon: Icons.circle,
-                            label: _availabilityLabel(stats.availability),
-                            color: _availabilityColor(stats.availability),
-                          ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 20),
-
-                      // ─── Stats grid ───────────────────────────────────────
-                      Text('Statistiques', style: AppTypography.heading3),
-                      const SizedBox(height: 12),
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1.5,
-                        children: [
-                          _buildStatCard(
-                            icon: Icons.schedule_rounded,
-                            label: 'En attente',
-                            value: '${stats.pendingRequestsCount}',
-                            color: Colors.orange,
+                      // Content
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Spacer(),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // Avatar
+                                  Hero(
+                                    tag: 'profile-avatar',
+                                    child: Container(
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 3),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.2),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          )
+                                        ],
+                                      ),
+                                      child: ClipOval(
+                                        child: user?.avatarUrl != null
+                                            ? CachedNetworkImage(
+                                                imageUrl: user!.avatarUrl!,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Container(
+                                                color: Colors.white,
+                                                child: Center(
+                                                  child: Text(
+                                                    user?.fullName[0].toUpperCase() ?? 'T',
+                                                    style: const TextStyle(
+                                                      fontSize: 24,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: AppColors.primary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  // Greeting
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Bonjour 👋',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.white.withValues(alpha: 0.9),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        Text(
+                                          user?.fullName ?? 'Artisan',
+                                          style: const TextStyle(
+                                            fontSize: 22,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          _buildStatCard(
-                            icon: Icons.check_circle_outline_rounded,
-                            label: 'Terminées',
-                            value: '${stats.completedJobsCount}',
-                            color: AppColors.success,
-                          ),
-                          _buildStatCard(
-                            icon: Icons.star_rounded,
-                            label: 'Note moyenne',
-                            value: stats.ratingCount > 0
-                                ? stats.ratingAvg.toStringAsFixed(1)
-                                : '—',
-                            color: AppColors.accentGold,
-                          ),
-                          _buildStatCard(
-                            icon: Icons.assignment_outlined,
-                            label: 'Total demandes',
-                            value: '${stats.totalRequestsCount}',
-                            color: AppColors.primary,
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 24),
-
-                // ─── Quick actions ─────────────────────────────────────────
-                Text('Actions rapides', style: AppTypography.heading3),
-                const SizedBox(height: 12),
-
-                _buildActionCard(
-                  context: context,
-                  title: 'Nouvelles missions',
-                  subtitle: 'Voir les offres disponibles',
-                  icon: Icons.new_releases_outlined,
-                  color: Colors.orange,
-                  onTap: () => context.push('/technician/offers'),
+              ),
+              actions: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                      onPressed: () => context.push('/technician/notifications'),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        top: 10,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.primary, width: 1.5),
+                          ),
+                          child: Text(
+                            unreadCount > 9 ? '9+' : '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                _buildActionCard(
-                  context: context,
-                  title: 'Demandes en cours',
-                  subtitle: 'Gérer vos chantiers acceptés',
-                  icon: Icons.assignment_outlined,
-                  color: AppColors.primary,
-                  onTap: () => context.push('/technician/requests'),
+                IconButton(
+                  icon: const Icon(Icons.person_outline_rounded, color: Colors.white),
+                  onPressed: () => context.push('/technician/profile'),
                 ),
-                const SizedBox(height: 12),
-                _buildActionCard(
-                  context: context,
-                  title: 'Mon Profil Artisan',
-                  subtitle: 'Mettre à jour vos informations',
-                  icon: Icons.person_search_outlined,
-                  color: AppColors.accent,
-                  onTap: () => context.push('/technician/onboarding'),
-                ),
-                const SizedBox(height: 12),
-                _buildActionCard(
-                  context: context,
-                  title: 'Changer ma disponibilité',
-                  subtitle: 'Indiquer si vous êtes disponible',
-                  icon: Icons.toggle_on_outlined,
-                  color: AppColors.success,
-                  onTap: () => _showAvailabilityDialog(context, ref),
-                ),
+                const SizedBox(width: 8),
               ],
             ),
-          ),
+
+            // ─── BODY CONTENT ──────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Transform.translate(
+                offset: const Offset(0, -20),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8F9FE),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isProfileIncomplete) ...[
+                          _buildPremiumIncompleteProfile(context),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // ─── Verification & Availability ───────────────────
+                        statsAsync.when(
+                          loading: () => _buildStatsLoading(),
+                          error: (_, __) => _buildStatsError(() => ref.invalidate(technicianStatsProvider)),
+                          data: (stats) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  _buildPremiumBadge(
+                                    icon: stats.verified ? Icons.verified_rounded : Icons.pending_outlined,
+                                    label: stats.verified ? 'Profil Vérifié' : 'En attente',
+                                    color: stats.verified ? AppColors.success : AppColors.warning,
+                                    bgColor: stats.verified ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  GestureDetector(
+                                    onTap: () => _showAvailabilityDialog(context, ref),
+                                    child: _buildPremiumBadge(
+                                      icon: Icons.circle,
+                                      label: _availabilityLabel(stats.availability),
+                                      color: _availabilityColor(stats.availability),
+                                      bgColor: Colors.white,
+                                      hasShadow: true,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 28),
+
+                              // ─── Stats Grid ───────────────────────────────
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Aperçu', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                                  Icon(Icons.insights_rounded, color: AppColors.primary.withValues(alpha: 0.5)),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              GridView.count(
+                                crossAxisCount: 2,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                childAspectRatio: 1.25,
+                                children: [
+                                  _buildPremiumStatCard(
+                                    icon: Icons.schedule_rounded,
+                                    label: 'En attente',
+                                    value: '${stats.pendingRequestsCount}',
+                                    color: const Color(0xFFF59E0B),
+                                  ),
+                                  _buildPremiumStatCard(
+                                    icon: Icons.check_circle_rounded,
+                                    label: 'Terminées',
+                                    value: '${stats.completedJobsCount}',
+                                    color: const Color(0xFF10B981),
+                                  ),
+                                  _buildPremiumStatCard(
+                                    icon: Icons.star_rounded,
+                                    label: 'Note moyenne',
+                                    value: stats.ratingCount > 0 ? stats.ratingAvg.toStringAsFixed(1) : '—',
+                                    color: const Color(0xFFFBBF24),
+                                  ),
+                                  _buildPremiumStatCard(
+                                    icon: Icons.cases_rounded,
+                                    label: 'Total Demandes',
+                                    value: '${stats.totalRequestsCount}',
+                                    color: const Color(0xFF3B82F6),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // ─── Quick Actions ──────────────────────────────────
+                        const Text('Actions rapides', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                        const SizedBox(height: 16),
+
+                        _buildPremiumActionCard(
+                          title: 'Nouvelles offres',
+                          subtitle: 'Trouvez de nouvelles opportunités',
+                          icon: Icons.new_releases_rounded,
+                          color: const Color(0xFFF59E0B),
+                          onTap: () => context.push('/technician/offers'),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildPremiumActionCard(
+                          title: 'Mes chantiers',
+                          subtitle: 'Gérer vos demandes en cours',
+                          icon: Icons.assignment_rounded,
+                          color: AppColors.primary,
+                          onTap: () => context.push('/technician/requests'),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildPremiumActionCard(
+                          title: 'Paramètres Profil',
+                          subtitle: 'Mettez à jour vos infos et tarifs',
+                          icon: Icons.person_search_rounded,
+                          color: const Color(0xFF8B5CF6),
+                          onTap: () => context.push('/technician/onboarding'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ─── Helpers ───────────────────────────────────────────────────────────────
+  // ─── Widgets ───────────────────────────────────────────────────────────────
 
   String _availabilityLabel(String availability) {
     switch (availability) {
@@ -250,52 +375,64 @@ class _TechnicianDashboardScreenState
     }
   }
 
-  Widget _buildBadge({
+  Widget _buildPremiumBadge({
     required IconData icon,
     required String label,
     required Color color,
+    required Color bgColor,
+    bool hasShadow = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: bgColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        boxShadow: hasShadow
+            ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]
+            : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: color),
-          const SizedBox(width: 5),
+          const SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: color,
+              fontWeight: FontWeight.bold,
+              color: color.withValues(alpha: 0.9), // Keep opacity for contrast
             ),
           ),
+          if (hasShadow) ...[
+            const SizedBox(width: 4),
+            Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: color),
+          ]
         ],
       ),
     );
   }
 
-  Widget _buildStatCard({
+  Widget _buildPremiumStatCard({
     required IconData icon,
     required String label,
     required String value,
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
@@ -304,33 +441,193 @@ class _TechnicianDashboardScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 18, color: color),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 20, color: color),
+              ),
+            ],
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 value,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.5,
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          highlightColor: color.withValues(alpha: 0.05),
+          splashColor: color.withValues(alpha: 0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: Icon(icon, size: 24, color: color),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FE),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumIncompleteProfile(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFEF2F2), Color(0xFFFEE2E2)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.warning_rounded, color: Colors.red, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Profil Incomplet',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  color: Colors.red,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Ajoutez votre métier et votre ville pour que les clients puissent vous trouver.',
+            style: TextStyle(color: Color(0xFF7F1D1D), fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              minimumSize: const Size(double.infinity, 48),
+            ),
+            onPressed: () => context.push('/technician/onboarding'),
+            child: const Text('Compléter maintenant', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           ),
         ],
       ),
@@ -342,15 +639,22 @@ class _TechnicianDashboardScreenState
       crossAxisCount: 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.5,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 1.25,
       children: List.generate(
         4,
         (_) => Container(
           decoration: BoxDecoration(
-            color: AppColors.border.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(14),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
         ),
@@ -363,8 +667,7 @@ class _TechnicianDashboardScreenState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.errorBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
@@ -372,7 +675,7 @@ class _TechnicianDashboardScreenState
           const SizedBox(width: 12),
           const Expanded(
             child: Text(
-              'Impossible de charger les statistiques.',
+              'Impossible de charger les données.',
               style: TextStyle(color: AppColors.error, fontSize: 13),
             ),
           ),
@@ -385,124 +688,11 @@ class _TechnicianDashboardScreenState
     );
   }
 
-  Widget _buildIncompleteProfileBanner(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Action requise',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.error,
-                  fontSize: 15,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Votre profil est incomplet. Renseignez votre métier et votre ville pour apparaître dans l\'annuaire.',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () => context.push('/technician/onboarding'),
-              child: const Text('Compléter mon profil'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard({
-    required BuildContext context,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 1,
-      shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, size: 26, color: color),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 14,
-                color: AppColors.textSecondary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showAvailabilityDialog(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) => _AvailabilitySheet(onChanged: () {
         ref.invalidate(technicianStatsProvider);
       }),
@@ -522,6 +712,15 @@ class _AvailabilitySheet extends ConsumerStatefulWidget {
 
 class _AvailabilitySheetState extends ConsumerState<_AvailabilitySheet> {
   bool _isLoading = false;
+  late String _selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-select current availability if possible, otherwise default
+    // We would need to read the current state, but for UI sake let's default to available.
+    _selectedValue = 'available';
+  }
 
   Future<void> _setAvailability(String value) async {
     setState(() => _isLoading = true);
@@ -537,7 +736,7 @@ class _AvailabilitySheetState extends ConsumerState<_AvailabilitySheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erreur lors de la mise à jour de la disponibilité.'),
+            content: Text('Erreur lors de la mise à jour.'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -553,64 +752,124 @@ class _AvailabilitySheetState extends ConsumerState<_AvailabilitySheet> {
       (
         value: 'available',
         label: 'Disponible',
-        subtitle: 'Je peux recevoir de nouvelles demandes',
+        subtitle: 'Recevoir de nouvelles demandes',
         color: AppColors.success,
         icon: Icons.check_circle_rounded,
       ),
       (
         value: 'busy',
         label: 'Occupé',
-        subtitle: 'Je suis en mission actuellement',
+        subtitle: 'En mission actuellement',
         color: AppColors.warning,
         icon: Icons.pending_rounded,
       ),
       (
         value: 'offline',
         label: 'Hors ligne',
-        subtitle: 'Je ne reçois pas de demandes',
+        subtitle: 'Ne pas recevoir de demandes',
         color: AppColors.textSecondary,
-        icon: Icons.cancel_rounded,
+        icon: Icons.power_settings_new_rounded,
       ),
     ];
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
+          Container(
+            width: 48,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           const Text(
-            'Changer ma disponibilité',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            'Statut de disponibilité',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          const Text(
+            'Définissez votre statut pour que les clients sachent si vous pouvez intervenir.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 32),
           if (_isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: CircularProgressIndicator(),
-              ),
+            const Padding(
+              padding: EdgeInsets.all(40),
+              child: CircularProgressIndicator(),
             )
           else
-            ...options.map(
-              (opt) => ListTile(
-                leading: Icon(opt.icon, color: opt.color),
-                title: Text(opt.label, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(opt.subtitle),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                onTap: () => _setAvailability(opt.value),
-              ),
+            Column(
+              children: options.map((opt) {
+                final isSelected = _selectedValue == opt.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: InkWell(
+                    onTap: () {
+                      setState(() => _selectedValue = opt.value);
+                      _setAvailability(opt.value);
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isSelected ? opt.color : Colors.grey.shade200,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        color: isSelected ? opt.color.withValues(alpha: 0.05) : Colors.white,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: opt.color.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(opt.icon, color: opt.color, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  opt.label,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: isSelected ? opt.color : AppColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  opt.subtitle,
+                                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected)
+                            Icon(Icons.check_circle_rounded, color: opt.color)
+                          else
+                            Icon(Icons.circle_outlined, color: Colors.grey.shade300),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
         ],
       ),
