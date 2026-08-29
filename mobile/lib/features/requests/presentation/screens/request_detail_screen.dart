@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,6 +27,17 @@ class RequestDetailScreen extends ConsumerStatefulWidget {
 
 class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   bool _isUpdating = false;
+  bool _isLiveSharing = false;
+  Timer? _liveSharingTimer;
+  DateTime? _lastSharedTime;
+  double? _lastSharedLat;
+  double? _lastSharedLng;
+
+  @override
+  void dispose() {
+    _liveSharingTimer?.cancel();
+    super.dispose();
+  }
 
   Color _getStatusColor(RequestStatus status) {
     switch (status) {
@@ -41,8 +53,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
-  Future<void> _shareLocation() async {
-    setState(() => _isUpdating = true);
+  Future<void> _shareLocation({bool isSilent = false}) async {
+    if (!isSilent) setState(() => _isUpdating = true);
     try {
       final locationService = ref.read(locationServiceProvider);
       final position = await locationService.getCurrentPosition();
@@ -51,18 +63,38 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       await repository.updateLocation(widget.requestId, position.latitude, position.longitude);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('position_shared')), backgroundColor: AppColors.success),
-        );
+        setState(() {
+          _lastSharedTime = DateTime.now();
+          _lastSharedLat = position.latitude;
+          _lastSharedLng = position.longitude;
+        });
+        ref.invalidate(requestLocationProvider(widget.requestId));
+        ref.invalidate(liveRequestLocationProvider(widget.requestId));
+        if (!isSilent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.tr('position_shared')), backgroundColor: AppColors.success),
+          );
+        }
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && !isSilent) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
         );
       }
     } finally {
-      if (mounted) setState(() => _isUpdating = false);
+      if (mounted && !isSilent) setState(() => _isUpdating = false);
+    }
+  }
+
+  void _toggleLiveSharing(bool enable) {
+    setState(() => _isLiveSharing = enable);
+    _liveSharingTimer?.cancel();
+    if (enable) {
+      _shareLocation(isSilent: false);
+      _liveSharingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+        _shareLocation(isSilent: true);
+      });
     }
   }
 
@@ -144,7 +176,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     );
 
     if (confirm == true && mounted) {
-      setState(() => _isUpdating = true);
+      _liveSharingTimer?.cancel();
+      setState(() {
+        _isUpdating = true;
+        _isLiveSharing = false;
+      });
       try {
         await ref.read(requestListProvider.notifier).completeRequest(widget.requestId);
         ref.invalidate(requestDetailProvider(widget.requestId));
@@ -772,16 +808,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     const SizedBox(height: 20),
                     _buildSectionHeader(context.tr('gps_tracking'), secondaryTextColor),
                     if (isTechnician)
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppButton(
-                          text: context.tr('share_location'),
-                          icon: Icons.my_location,
-                          onPressed: _isUpdating ? null : _shareLocation,
-                        ),
-                      )
+                      _buildTechnicianLocationManager(cardBg, cardBorder, request)
                     else
-                      _buildClientLocationTracker(cardBg, cardBorder, request.id),
+                      _buildClientLocationTracker(cardBg, cardBorder, request),
                   ],
 
                   const SizedBox(height: 32),
@@ -868,8 +897,125 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     );
   }
 
-  Widget _buildClientLocationTracker(Color cardBg, Color cardBorder, String requestId) {
-    final locationAsync = ref.watch(requestLocationProvider(requestId));
+  Widget _buildTechnicianLocationManager(Color cardBg, Color cardBorder, ServiceRequest request) {
+    final formattedTime = _lastSharedTime != null
+        ? DateFormat('HH:mm:ss').format(_lastSharedTime!)
+        : null;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _isLiveSharing ? AppColors.success : cardBorder,
+          width: _isLiveSharing ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _isLiveSharing ? AppColors.success : Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _isLiveSharing ? context.tr('live_sharing_active') : context.tr('live_sharing_toggle'),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _isLiveSharing ? AppColors.success : null,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+              Switch(
+                value: _isLiveSharing,
+                activeThumbColor: AppColors.success,
+                onChanged: _isUpdating ? null : _toggleLiveSharing,
+              ),
+            ],
+          ),
+          Text(
+            context.tr('live_sharing_hint'),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          if (_lastSharedTime != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, size: 14, color: AppColors.success),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '${context.tr('location_updated_at')}$formattedTime (${_lastSharedLat?.toStringAsFixed(4)}, ${_lastSharedLng?.toStringAsFixed(4)})',
+                      style: const TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  text: context.tr('share_location_now'),
+                  icon: Icons.my_location,
+                  isOutlined: true,
+                  onPressed: _isUpdating ? null : () => _shareLocation(isSilent: false),
+                ),
+              ),
+              if (request.latitude != null && request.longitude != null) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: AppButton(
+                    text: context.tr('open_directions'),
+                    icon: Icons.navigation_outlined,
+                    onPressed: () async {
+                      final url = Uri.parse(
+                        'https://www.google.com/maps/dir/?api=1&destination=${request.latitude},${request.longitude}',
+                      );
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url);
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(context.tr('cannot_open_maps'))),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClientLocationTracker(Color cardBg, Color cardBorder, ServiceRequest request) {
+    final locationAsync = ref.watch(liveRequestLocationProvider(request.id));
     
     return Container(
       width: double.infinity,
@@ -884,16 +1030,16 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           if (location == null) {
             return Column(
               children: [
-                const Icon(Icons.location_off_outlined, color: Colors.grey, size: 32),
+                const Icon(Icons.location_off_outlined, color: Colors.grey, size: 36),
                 const SizedBox(height: 8),
                 Text(
                   context.tr('location_not_shared'),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.grey),
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
                 const SizedBox(height: 12),
                 TextButton.icon(
-                  onPressed: () => ref.refresh(requestLocationProvider(requestId)),
+                  onPressed: () => ref.refresh(liveRequestLocationProvider(request.id)),
                   icon: const Icon(Icons.refresh),
                   label: Text(context.tr('refresh')),
                 )
@@ -901,55 +1047,131 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
             );
           }
 
-          final lat = location['latitude'];
-          final lng = location['longitude'];
+          final lat = double.tryParse(location['latitude'].toString()) ?? 0.0;
+          final lng = double.tryParse(location['longitude'].toString()) ?? 0.0;
           final updatedAt = DateTime.parse(location['updated_at']).toLocal();
           final formattedTime = DateFormat('HH:mm').format(updatedAt);
+
+          // Distance calculation if client destination has coordinates
+          String? distanceText;
+          if (request.latitude != null && request.longitude != null) {
+            final locationService = ref.read(locationServiceProvider);
+            final distanceInMeters = locationService.calculateDistance(
+              startLatitude: lat,
+              startLongitude: lng,
+              endLatitude: request.latitude!,
+              endLongitude: request.longitude!,
+            );
+            distanceText = locationService.formatDistance(distanceInMeters);
+          }
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.my_location, color: AppColors.success),
-                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.delivery_dining, color: AppColors.success, size: 22),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      '${context.tr('location_updated_at')}$formattedTime',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          context.tr('tech_en_route'),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${context.tr('location_updated_at')}$formattedTime',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.refresh, color: AppColors.primary),
-                    onPressed: () => ref.refresh(requestLocationProvider(requestId)),
+                    tooltip: context.tr('refresh'),
+                    onPressed: () => ref.refresh(liveRequestLocationProvider(request.id)),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: AppButton(
-                  text: context.tr('open_maps'),
-                  icon: Icons.map_outlined,
-                  isOutlined: true,
-                  onPressed: () async {
-                    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url);
-                    } else {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(context.tr('cannot_open_maps'))),
-                        );
-                      }
-                    }
-                  },
+              if (distanceText != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.near_me, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${context.tr('distance_to_tech')}$distanceText',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+              ],
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      text: context.tr('open_maps'),
+                      icon: Icons.map_outlined,
+                      isOutlined: true,
+                      onPressed: () async {
+                        final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url);
+                        } else {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(context.tr('cannot_open_maps'))),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                  if (request.technician?.phone != null && request.technician!.phone!.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      style: IconButton.styleFrom(backgroundColor: AppColors.success),
+                      icon: const Icon(Icons.phone, color: Colors.white),
+                      onPressed: () async {
+                        final phoneUrl = Uri.parse('tel:${request.technician!.phone}');
+                        if (await canLaunchUrl(phoneUrl)) {
+                          await launchUrl(phoneUrl);
+                        }
+                      },
+                    ),
+                  ],
+                ],
               ),
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: CircularProgressIndicator(),
+          ),
+        ),
         error: (err, _) => Center(child: Text('${context.tr('error_prefix')}$err')),
       ),
     );
