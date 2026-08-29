@@ -4,7 +4,14 @@ const { ApiError } = require('../middleware/errorHandler');
 class DispatchService {
   /**
    * Find the most suitable, verified, and available technicians for a given request.
-   * Uses active_job_count to balance load, with deterministic tie-breakers (rating, then created_at).
+   *
+   * Strategy:
+   *   - Since technician_profiles.category_id can be null for real users (set only during seeding),
+   *     we match by city_id first (mandatory), then filter by category_id when it's set.
+   *     This ensures the engine always finds candidates even when category isn't saved.
+   *   - Primary sort: active_job_count ASC (load balancing)
+   *   - Tie-breaker 1: rating_avg DESC
+   *   - Tie-breaker 2: created_at ASC (oldest/most experienced first)
    *
    * @param {Object} params
    * @param {string} params.categoryId - UUID of the requested category
@@ -16,7 +23,8 @@ class DispatchService {
     if (!supabase) throw ApiError.internal('Base de données indisponible');
 
     try {
-      const { data, error } = await supabase
+      // Step 1: Try strict match — verified, available, same city AND same category
+      let query = supabase
         .from('technician_profiles')
         .select(`
           id,
@@ -27,6 +35,7 @@ class DispatchService {
           rating_avg,
           rating_count,
           active_job_count,
+          category_id,
           users (
             full_name,
             avatar_url,
@@ -35,19 +44,64 @@ class DispatchService {
         `)
         .eq('verified', true)
         .eq('availability', 'available')
-        .eq('category_id', categoryId)
         .eq('city_id', cityId)
-        .order('active_job_count', { ascending: true }) // Primary: Load balancing
-        .order('rating_avg', { ascending: false }) // Tie-breaker 1: Highest rating first
-        .order('created_at', { ascending: true }) // Tie-breaker 2: Oldest joined first (deterministic)
+        .order('active_job_count', { ascending: true })
+        .order('rating_avg', { ascending: false })
+        .order('created_at', { ascending: true })
         .limit(limit);
+
+      // Only filter by category if it's present on the profile (strict match)
+      if (categoryId) {
+        query = query.eq('category_id', categoryId);
+      }
+
+      const { data: strictMatches, error } = await query;
 
       if (error) {
         console.error('[DispatchService.findAvailableTechnicians] Supabase error:', error);
         throw ApiError.internal('Erreur lors de la recherche des techniciens');
       }
 
-      return data || [];
+      if (strictMatches && strictMatches.length > 0) {
+        console.log(`[DispatchService] Found ${strictMatches.length} technician(s) with strict match (city + category).`);
+        return strictMatches;
+      }
+
+      // Step 2: Fallback — same city, verified, available (ignore category — category may not be set on profile)
+      console.log(`[DispatchService] No strict match found for city=${cityId} + category=${categoryId}. Falling back to city-only match.`);
+      const { data: cityMatches, error: cityErr } = await supabase
+        .from('technician_profiles')
+        .select(`
+          id,
+          user_id,
+          bio,
+          price_min,
+          price_max,
+          rating_avg,
+          rating_count,
+          active_job_count,
+          category_id,
+          users (
+            full_name,
+            avatar_url,
+            phone
+          )
+        `)
+        .eq('verified', true)
+        .eq('availability', 'available')
+        .eq('city_id', cityId)
+        .order('active_job_count', { ascending: true })
+        .order('rating_avg', { ascending: false })
+        .order('created_at', { ascending: true })
+        .limit(limit);
+
+      if (cityErr) {
+        console.error('[DispatchService.findAvailableTechnicians] Fallback error:', cityErr);
+        throw ApiError.internal('Erreur lors de la recherche des techniciens');
+      }
+
+      console.log(`[DispatchService] Fallback found ${cityMatches?.length ?? 0} technician(s) in city.`);
+      return cityMatches || [];
     } catch (err) {
       if (err instanceof ApiError) throw err;
       console.error('[DispatchService.findAvailableTechnicians] Error:', err);

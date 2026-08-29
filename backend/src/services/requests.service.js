@@ -66,14 +66,16 @@ class RequestsService {
       return newRequest; // Request created, but unassigned. Client waits.
     }
 
-    // 3. Create Job Offers
-    const offers = technicians.map(tech => ({
+    // 3. Create Job Offers (status: 'sent' and rank required by live DB schema)
+    const offers = technicians.map((tech, index) => ({
       service_request_id: newRequest.id,
       technician_id: tech.id,
-      status: 'pending'
+      status: 'sent',
+      rank: index + 1  // rank is NOT NULL in live DB; lower = higher priority
     }));
 
-    const { error: offersErr } = await supabase.from('job_offers').insert(offers);
+    const { data: insertedOffers, error: offersErr } = await supabase.from('job_offers').insert(offers).select('id');
+    console.log(`[RequestsService] Created ${insertedOffers?.length ?? 0} job offers for request ${newRequest.id}`);
     if (offersErr) {
       console.error('[RequestsService job offers insert error]', offersErr);
     }
@@ -201,8 +203,8 @@ class RequestsService {
 
     if (error) throw ApiError.internal('Erreur lors de l\'annulation');
 
-    // Invalidate any pending offers
-    await supabase.from('job_offers').update({ status: 'expired' }).eq('service_request_id', requestId).eq('status', 'pending');
+    // Invalidate any pending/sent offers
+    await supabase.from('job_offers').update({ status: 'expired' }).eq('service_request_id', requestId).eq('status', 'sent');
 
     // Notify assigned tech if any
     if (request.assigned_technician_id) {

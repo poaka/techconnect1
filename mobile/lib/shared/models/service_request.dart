@@ -44,8 +44,12 @@ enum RequestStatus {
   static RequestStatus fromString(String value) {
     switch (value.toLowerCase()) {
       case 'unassigned':
+      case 'dispatched': // intermediate state in live DB
+        return RequestStatus.unassigned;
+      case 'pending': // legacy status in live DB — treat as unassigned
         return RequestStatus.unassigned;
       case 'assigned':
+      case 'accepted': // legacy status in live DB — treat as assigned
         return RequestStatus.assigned;
       case 'in_progress':
         return RequestStatus.inProgress;
