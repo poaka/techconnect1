@@ -280,6 +280,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       builder: (bottomSheetCtx) => StatefulBuilder(
         builder: (context, setModalState) {
           Future<void> pickPhoto(ImageSource source) async {
+            final messenger = ScaffoldMessenger.of(context);
+            final errPrefix = context.tr('error_prefix');
             try {
               final pickedFile = await picker.pickImage(source: source, imageQuality: 70);
               if (pickedFile != null) {
@@ -289,8 +291,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               }
             } catch (e) {
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${context.tr('error_prefix')}$e')),
+                messenger.showSnackBar(
+                  SnackBar(content: Text('$errPrefix$e')),
                 );
               }
             }
