@@ -56,6 +56,14 @@ class RequestsRemoteDataSource {
     return response.data['data'] as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> acceptRequest(String id) async {
+    final response = await _client.post('/requests/$id/accept');
+    final data = response.data['data'];
+    return (data is Map<String, dynamic> && data['request'] != null)
+        ? data['request'] as Map<String, dynamic>
+        : data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> startRequest(String id) async {
     final response = await _client.post('/requests/$id/start');
     return response.data['data'] as Map<String, dynamic>;

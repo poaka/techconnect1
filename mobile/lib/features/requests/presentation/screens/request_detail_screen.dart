@@ -472,18 +472,58 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         },
       ),
     );
+  Future<void> _acceptRequestAsTech() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final acceptedText = context.tr('offer_accepted');
+    final errPrefix = context.tr('error_prefix');
+
+    setState(() => _isUpdating = true);
+    try {
+      await ref.read(requestListProvider.notifier).acceptRequest(widget.requestId);
+      ref.invalidate(requestDetailProvider(widget.requestId));
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(acceptedText), backgroundColor: AppColors.success),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('$errPrefix$e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
   }
 
   Widget _buildActionButtons(BuildContext context, ServiceRequest request, bool isTechnician) {
-    final techId = ref.read(authNotifierProvider).user?.technicianProfile?.id;
-    final isAssignedTech = isTechnician &&
-        request.technician != null &&
-        techId != null &&
-        request.technician!.id == techId;
-
     if (isTechnician) {
+      // Technician sees Accept/Reject for unassigned incoming requests
+      if (request.status == RequestStatus.unassigned) {
+        return Row(
+          children: [
+            Expanded(
+              child: AppButton(
+                text: context.tr('reject'),
+                isOutlined: true,
+                color: AppColors.error,
+                onPressed: _isUpdating ? null : () => Navigator.of(context).pop(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: AppButton(
+                text: context.tr('accept'),
+                color: AppColors.success,
+                onPressed: _isUpdating ? null : _acceptRequestAsTech,
+              ),
+            ),
+          ],
+        );
+      }
       // Technician sees Start Job when assigned
-      if (request.status == RequestStatus.assigned && isAssignedTech) {
+      if (request.status == RequestStatus.assigned) {
         return Column(
           children: [
             SizedBox(
@@ -498,7 +538,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         );
       }
       // Technician sees Complete Job when in_progress
-      if (request.status == RequestStatus.inProgress && isAssignedTech) {
+      if (request.status == RequestStatus.inProgress) {
         return SizedBox(
           width: double.infinity,
           child: AppButton(
@@ -748,8 +788,28 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('${context.tr('error_prefix')}$error')),
-      ),
+        error: (error, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
+                const SizedBox(height: 12),
+                Text(
+                  '${context.tr('error_prefix')}$error',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.invalidate(requestDetailProvider(widget.requestId)),
+                  child: Text(context.tr('retry')),
+                ),
+              ],
+            ),
+          ),
+        ),
     );
   }
 

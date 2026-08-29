@@ -39,6 +39,7 @@ router.get('/:id', RequestsController.getRequestById);
 router.put('/:id', requireRole('client'), upload.single('image'), RequestsController.updateRequest);
 router.delete('/:id', requireRole('client'), RequestsController.deleteRequest);
 router.post('/:id/cancel', requireRole('client'), RequestsController.cancelRequest);
+router.post('/:id/accept', requireRole('technician'), RequestsController.acceptRequest);
 router.post('/:id/start', requireRole('technician'), RequestsController.startRequest);
 router.post('/:id/complete', requireRole('technician'), RequestsController.completeRequest);
 

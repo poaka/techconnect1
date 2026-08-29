@@ -69,6 +69,12 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
     return updatedRequest;
   }
 
+  Future<ServiceRequest> acceptRequest(String id) async {
+    final updatedRequest = await _repository.acceptRequest(id);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
   Future<ServiceRequest> startRequest(String id) async {
     final updatedRequest = await _repository.startRequest(id);
     _updateRequestInState(id, updatedRequest);

@@ -64,6 +64,15 @@ class RequestsController {
     }
   }
 
+  static async acceptRequest(req, res, next) {
+    try {
+      const result = await RequestsService.acceptRequest(req.params.id, req.user.id);
+      res.status(200).json({ data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async startRequest(req, res, next) {
     try {
       const updated = await RequestsService.startRequest(req.params.id, req.user.id);

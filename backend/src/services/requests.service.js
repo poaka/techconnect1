@@ -190,27 +190,82 @@ class RequestsService {
       throw ApiError.notFound('Demande de service non trouvée');
     }
 
-    // Access control check
+    // Access control check: clients can only view their own requests
     if (role === 'client' && request.client_id !== userId) {
       throw ApiError.forbidden('Vous n\'avez pas l\'autorisation d\'accéder à cette demande');
     }
-    if (role === 'technician') {
-      // Tech can view if they are assigned, OR if they have a pending offer for it
-      if (request.assigned_technician?.user_id !== userId) {
-        // Check if they have an offer
-        const { data: offer } = await supabase
-          .from('job_offers')
-          .select('id')
-          .eq('service_request_id', requestId)
-          .eq('technician_id', (await this.getTechId(userId)))
-          .single();
-        if (!offer) {
-           throw ApiError.forbidden('Vous n\'avez pas l\'autorisation d\'accéder à cette demande');
-        }
-      }
-    }
 
     return this._formatRequestResponse(request);
+  }
+
+  /**
+   * Technician accepts an incoming request (either via existing job offer or directly)
+   */
+  static async acceptRequest(requestId, technicianUserId) {
+    const techId = await this.getTechId(technicianUserId);
+    if (!techId) throw ApiError.badRequest('Profil technicien introuvable');
+
+    // 1. Check if there is an existing job offer for this technician
+    const { data: offers } = await supabase
+      .from('job_offers')
+      .select('id, status')
+      .eq('service_request_id', requestId)
+      .eq('technician_id', techId)
+      .limit(1);
+
+    if (offers && offers.length > 0 && offers[0].status === 'sent') {
+      const OffersService = require('./offers.service');
+      return await OffersService.acceptOffer(offers[0].id, techId);
+    }
+
+    // 2. Direct atomic assignment
+    const { data: assignedRequest, error: assignErr } = await supabase
+      .from('service_requests')
+      .update({
+        assigned_technician_id: techId,
+        status: 'assigned',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', requestId)
+      .is('assigned_technician_id', null)
+      .select(`
+        id, status, description, address, latitude, longitude, created_at, updated_at,
+        category:categories(id, name, icon),
+        city:cities(id, name),
+        client:users!client_id(id, full_name, email, phone, avatar_url)
+      `)
+      .single();
+
+    if (assignErr || !assignedRequest) {
+      throw ApiError.badRequest('Cette mission a déjà été assignée à un autre technicien ou n\'est plus disponible.');
+    }
+
+    // Invalidate competing offers
+    await supabase
+      .from('job_offers')
+      .update({ status: 'expired' })
+      .eq('service_request_id', requestId)
+      .eq('status', 'sent');
+
+    // Notify client
+    try {
+      if (assignedRequest.client_id) {
+        await supabase.from('notifications').insert([{
+          user_id: assignedRequest.client_id,
+          type: 'request_status_change',
+          title: 'Artisan assigné !',
+          message: 'Un artisan qualifié a accepté votre demande.',
+          metadata: { requestId }
+        }]);
+      }
+    } catch (notifErr) {
+      console.error('[RequestsService.acceptRequest] Notification error:', notifErr);
+    }
+
+    return {
+      message: 'Mission acceptée avec succès',
+      request: this._formatRequestResponse(assignedRequest)
+    };
   }
 
   static async cancelRequest(requestId, clientId) {
