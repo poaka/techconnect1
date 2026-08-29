@@ -240,6 +240,21 @@ class RequestsService {
       throw ApiError.badRequest('Cette mission a déjà été assignée à un autre technicien ou n\'est plus disponible.');
     }
 
+    // Ensure job_offer record exists in job_offers with status 'accepted'
+    try {
+      await supabase
+        .from('job_offers')
+        .insert([{
+          service_request_id: requestId,
+          technician_id: techId,
+          status: 'accepted',
+          rank: 1,
+          responded_at: new Date().toISOString()
+        }]);
+    } catch (offerInsertErr) {
+      console.error('[RequestsService.acceptRequest] Job offer record insert error:', offerInsertErr);
+    }
+
     // Invalidate competing offers
     await supabase
       .from('job_offers')
