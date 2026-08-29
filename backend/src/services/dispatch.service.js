@@ -20,89 +20,132 @@ class DispatchService {
    * @param {number} [params.limit=5] - Maximum number of technicians to return
    * @returns {Promise<Array>} List of suitable technician profiles
    */
-  static async findAvailableTechnicians({ categoryId, cityId, limit = 5 }) {
+  static async findAvailableTechnicians({ categoryId, cityId, targetTechnicianId = null, limit = 5 }) {
     if (!supabase) throw ApiError.internal('Base de données indisponible');
 
     try {
-      // Step 1: Try strict match — verified, available, same city AND same category
-      let query = supabase
-        .from('technician_profiles')
-        .select(`
-          id,
-          user_id,
-          bio,
-          price_min,
-          price_max,
-          rating_avg,
-          rating_count,
-          active_job_count,
-          category_id,
-          users (
-            full_name,
-            avatar_url,
-            phone
-          )
-        `)
-        .eq('verified', true)
-        .eq('availability', 'available')
-        .eq('city_id', cityId)
-        .order('active_job_count', { ascending: true })
-        .order('rating_avg', { ascending: false })
-        .order('created_at', { ascending: true })
-        .limit(limit);
+      const selectFields = `
+        id,
+        user_id,
+        bio,
+        price_min,
+        price_max,
+        rating_avg,
+        rating_count,
+        active_job_count,
+        category_id,
+        verified,
+        city_id,
+        users (
+          full_name,
+          avatar_url,
+          phone
+        )
+      `;
 
-      // Only filter by category if it's present on the profile (strict match)
+      // If targeted to a specific technician, check if they exist
+      if (targetTechnicianId) {
+        const { data: targetTech } = await supabase
+          .from('technician_profiles')
+          .select(selectFields)
+          .eq('id', targetTechnicianId)
+          .single();
+
+        if (targetTech) {
+          console.log(`[DispatchService] Direct target technician specified: ${targetTechnicianId}`);
+          return [targetTech];
+        }
+      }
+
+      // Step 1: Strict match — verified = true, available, same city AND same category
+      if (categoryId && cityId) {
+        const { data: strictMatches, error } = await supabase
+          .from('technician_profiles')
+          .select(selectFields)
+          .eq('verified', true)
+          .eq('availability', 'available')
+          .eq('city_id', cityId)
+          .eq('category_id', categoryId)
+          .order('active_job_count', { ascending: true })
+          .order('rating_avg', { ascending: false })
+          .limit(limit);
+
+        if (!error && strictMatches && strictMatches.length > 0) {
+          console.log(`[DispatchService] Found ${strictMatches.length} verified technician(s) matching city + category.`);
+          return strictMatches;
+        }
+      }
+
+      // Step 2: Available matching city + category (including newly registered technicians)
+      if (categoryId && cityId) {
+        const { data: catCityMatches, error } = await supabase
+          .from('technician_profiles')
+          .select(selectFields)
+          .eq('availability', 'available')
+          .eq('city_id', cityId)
+          .eq('category_id', categoryId)
+          .order('verified', { ascending: false })
+          .order('active_job_count', { ascending: true })
+          .order('rating_avg', { ascending: false })
+          .limit(limit);
+
+        if (!error && catCityMatches && catCityMatches.length > 0) {
+          console.log(`[DispatchService] Found ${catCityMatches.length} available technician(s) matching city + category.`);
+          return catCityMatches;
+        }
+      }
+
+      // Step 3: Available in same city
+      if (cityId) {
+        const { data: cityMatches, error } = await supabase
+          .from('technician_profiles')
+          .select(selectFields)
+          .eq('availability', 'available')
+          .eq('city_id', cityId)
+          .order('verified', { ascending: false })
+          .order('active_job_count', { ascending: true })
+          .order('rating_avg', { ascending: false })
+          .limit(limit);
+
+        if (!error && cityMatches && cityMatches.length > 0) {
+          console.log(`[DispatchService] Found ${cityMatches.length} available technician(s) in city.`);
+          return cityMatches;
+        }
+      }
+
+      // Step 4: Available matching category (any city)
       if (categoryId) {
-        query = query.eq('category_id', categoryId);
+        const { data: catMatches, error } = await supabase
+          .from('technician_profiles')
+          .select(selectFields)
+          .eq('availability', 'available')
+          .eq('category_id', categoryId)
+          .order('verified', { ascending: false })
+          .order('active_job_count', { ascending: true })
+          .order('rating_avg', { ascending: false })
+          .limit(limit);
+
+        if (!error && catMatches && catMatches.length > 0) {
+          console.log(`[DispatchService] Found ${catMatches.length} available technician(s) matching category.`);
+          return catMatches;
+        }
       }
 
-      const { data: strictMatches, error } = await query;
-
-      if (error) {
-        console.error('[DispatchService.findAvailableTechnicians] Supabase error:', error);
-        throw ApiError.internal('Erreur lors de la recherche des techniciens');
-      }
-
-      if (strictMatches && strictMatches.length > 0) {
-        console.log(`[DispatchService] Found ${strictMatches.length} technician(s) with strict match (city + category).`);
-        return strictMatches;
-      }
-
-      // Step 2: Fallback — same city, verified, available (ignore category — category may not be set on profile)
-      console.log(`[DispatchService] No strict match found for city=${cityId} + category=${categoryId}. Falling back to city-only match.`);
-      const { data: cityMatches, error: cityErr } = await supabase
+      // Step 5: Global fallback — any available technician
+      const { data: allAvailable, error } = await supabase
         .from('technician_profiles')
-        .select(`
-          id,
-          user_id,
-          bio,
-          price_min,
-          price_max,
-          rating_avg,
-          rating_count,
-          active_job_count,
-          category_id,
-          users (
-            full_name,
-            avatar_url,
-            phone
-          )
-        `)
-        .eq('verified', true)
+        .select(selectFields)
         .eq('availability', 'available')
-        .eq('city_id', cityId)
+        .order('verified', { ascending: false })
         .order('active_job_count', { ascending: true })
-        .order('rating_avg', { ascending: false })
-        .order('created_at', { ascending: true })
         .limit(limit);
 
-      if (cityErr) {
-        console.error('[DispatchService.findAvailableTechnicians] Fallback error:', cityErr);
-        throw ApiError.internal('Erreur lors de la recherche des techniciens');
+      if (!error && allAvailable && allAvailable.length > 0) {
+        console.log(`[DispatchService] Fallback found ${allAvailable.length} technician(s).`);
+        return allAvailable;
       }
 
-      console.log(`[DispatchService] Fallback found ${cityMatches?.length ?? 0} technician(s) in city.`);
-      return cityMatches || [];
+      return [];
     } catch (err) {
       if (err instanceof ApiError) throw err;
       console.error('[DispatchService.findAvailableTechnicians] Error:', err);
