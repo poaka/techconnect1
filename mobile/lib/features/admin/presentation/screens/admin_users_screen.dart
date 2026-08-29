@@ -89,15 +89,26 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
 
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: roleColor.withOpacity(0.2),
+                    backgroundColor: roleColor.withValues(alpha: 0.2),
                     child: Icon(roleIcon, color: roleColor),
                   ),
-                  title: Text(user.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    user.fullName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.email),
-                      if (user.phone != null) Text(user.phone!),
+                      Text(
+                        user.email,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (user.phone != null)
+                        Text(
+                          user.phone!,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       const SizedBox(height: 4),
                       Text('Inscrit le: $dateFormatted', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     ],
@@ -110,59 +121,68 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                           user.role.name.toUpperCase(),
                           style: TextStyle(color: roleColor, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
-                        backgroundColor: roleColor.withOpacity(0.1),
+                        backgroundColor: roleColor.withValues(alpha: 0.1),
                         side: BorderSide.none,
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
                       ),
-                      const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                        icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
                         onPressed: () {
                           showModalBottomSheet(
                             context: context,
                             backgroundColor: Colors.transparent,
+                            isScrollControlled: true,
                             builder: (ctx) => Container(
-                              padding: const EdgeInsets.all(24),
+                              padding: EdgeInsets.only(
+                                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+                                left: 24,
+                                right: 24,
+                                top: 24,
+                              ),
                               decoration: const BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                               ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const Text(
-                                    'Supprimer l\'utilisateur',
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Êtes-vous sûr de vouloir supprimer ${user.fullName} ? Cette action est irréversible.',
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 24),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: OutlinedButton(
-                                          onPressed: () => Navigator.pop(ctx),
-                                          child: const Text('Annuler'),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    const Text(
+                                      'Supprimer l\'utilisateur',
+                                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Êtes-vous sûr de vouloir supprimer ${user.fullName} ? Cette action est irréversible.',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: () => Navigator.pop(ctx),
+                                            child: const Text('Annuler'),
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: FilledButton(
-                                          style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-                                          onPressed: () {
-                                            Navigator.pop(ctx);
-                                            ref.read(userActionsProvider.notifier).deleteUser(user.id);
-                                          },
-                                          child: const Text('Supprimer'),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: FilledButton(
+                                            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                                            onPressed: () {
+                                              Navigator.pop(ctx);
+                                              ref.read(userActionsProvider.notifier).deleteUser(user.id);
+                                            },
+                                            child: const Text('Supprimer'),
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
