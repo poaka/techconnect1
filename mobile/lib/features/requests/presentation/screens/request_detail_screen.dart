@@ -812,6 +812,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
             ),
           ),
         ),
+      ),
     );
   }
 
