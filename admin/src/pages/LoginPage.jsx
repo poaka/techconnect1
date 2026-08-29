@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -24,85 +24,107 @@ export default function LoginPage() {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Identifiants incorrects');
+      setError(err.response?.data?.message || err.message || 'Identifiants administrateur incorrects');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleQuickFill = () => {
+    setEmail('admin@fixerpro237.cm');
+    setPassword('Password123!');
+    setError('');
+  };
+
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-logo">
-          <img src="/logo.png" alt="FixerPro237 Logo" />
-          <div className="login-brand-text">Tech<span>Connect</span></div>
+    <div className="simple-login-page">
+      <div className="simple-login-card">
+        {/* Logo & Header */}
+        <div className="simple-login-header">
+          <div className="simple-login-logo">
+            <img src="/logo.png" alt="FixerPro237" />
+          </div>
+          <h1 className="simple-login-brand">
+            FixerPro<span>237</span>
+          </h1>
+          <span className="simple-login-tag">Espace Administration</span>
+          <p className="simple-login-subtitle">
+            Connectez-vous pour accéder au tableau de bord
+          </p>
         </div>
 
-        <h1 className="login-title">Accès Administrateur</h1>
-        <p className="login-subtitle">Connectez-vous pour accéder au tableau de bord</p>
-
+        {/* Error alert */}
         {error && (
-          <div className="error-alert" style={{ marginBottom: 20 }}>
+          <div className="simple-login-error">
             <AlertCircle size={16} />
-            {error}
+            <span>{error}</span>
           </div>
         )}
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">Adresse Email</label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+        {/* Form */}
+        <form className="simple-login-form" onSubmit={handleSubmit}>
+          <div className="simple-form-group">
+            <label htmlFor="email">Adresse Email</label>
+            <div className="simple-input-wrapper">
+              <Mail size={20} className="simple-input-icon" />
               <input
+                id="email"
                 type="email"
-                className="form-input"
-                style={{ paddingLeft: 38 }}
                 placeholder="admin@fixerpro237.cm"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
               />
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Mot de passe</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+          <div className="simple-form-group">
+            <label htmlFor="password">Mot de passe</label>
+            <div className="simple-input-wrapper">
+              <Lock size={20} className="simple-input-icon" />
               <input
+                id="password"
                 type={showPw ? 'text' : 'password'}
-                className="form-input"
-                style={{ paddingLeft: 38, paddingRight: 42 }}
                 placeholder="••••••••"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
               />
               <button
                 type="button"
+                className="simple-pw-toggle"
                 onClick={() => setShowPw(!showPw)}
-                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                tabIndex={-1}
+                aria-label="Afficher ou masquer le mot de passe"
               >
-                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPw ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>
 
           <button
             type="submit"
-            className="btn btn-primary"
+            className="simple-submit-btn"
             disabled={loading}
-            style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '0.95rem', marginTop: 4 }}
           >
-            {loading ? <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> : 'Se connecter'}
+            {loading ? <span className="simple-spinner" /> : 'Se connecter'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 28 }}>
-          Tableau de bord réservé aux administrateurs FixerPro237 Cameroun
-        </p>
+        {/* Quick test credentials */}
+        <div className="simple-demo-box">
+          <span>Compte de test :</span>
+          <button type="button" onClick={handleQuickFill}>
+            Remplir automatiquement
+          </button>
+        </div>
+
+        {/* Footer */}
+        <div className="simple-login-footer">
+          FixerPro237 Cameroun • Portail Sécurisé
+        </div>
       </div>
     </div>
   );
