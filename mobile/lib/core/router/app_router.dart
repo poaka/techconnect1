@@ -147,7 +147,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/create-request',
-        builder: (context, state) => const CreateRequestScreen(),
+        builder: (context, state) {
+          final categoryId = state.uri.queryParameters['categoryId'] ?? (state.extra as String?);
+          return CreateRequestScreen(initialCategoryId: categoryId);
+        },
       ),
 
       // ─── Client Shell — 4-tab bottom nav ──────────────────────────────────

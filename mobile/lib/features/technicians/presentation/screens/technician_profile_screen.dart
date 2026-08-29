@@ -428,7 +428,14 @@ class TechnicianProfileScreen extends ConsumerWidget {
           child: AppButton(
             text: context.tr('request_service'),
             onPressed: () {
-              context.push('/create-request');
+              final catId = profileAsync.value?.categories.isNotEmpty == true
+                  ? profileAsync.value!.categories.first.id
+                  : null;
+              if (catId != null) {
+                context.push('/create-request?categoryId=$catId');
+              } else {
+                context.push('/create-request');
+              }
             },
           ),
         ),
