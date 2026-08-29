@@ -71,7 +71,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
               children: [
                 Text(
                   context.tr('search_filters'),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 TextButton(
                   onPressed: () {

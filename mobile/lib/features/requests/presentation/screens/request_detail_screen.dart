@@ -472,6 +472,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         },
       ),
     );
+  }
+
   Future<void> _acceptRequestAsTech() async {
     final messenger = ScaffoldMessenger.of(context);
     final acceptedText = context.tr('offer_accepted');
