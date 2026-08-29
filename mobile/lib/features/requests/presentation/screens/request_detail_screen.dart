@@ -12,6 +12,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/service_request.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../auth/presentation/auth_provider.dart';
+import '../../../technician_dashboard/presentation/providers/technician_stats_provider.dart';
 import '../providers/requests_providers.dart';
 
 class RequestDetailScreen extends ConsumerStatefulWidget {
@@ -97,6 +98,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       try {
         await ref.read(requestListProvider.notifier).startRequest(widget.requestId);
         ref.invalidate(requestDetailProvider(widget.requestId));
+        ref.invalidate(technicianStatsProvider);
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(content: Text(startedText), backgroundColor: AppColors.success),
@@ -146,6 +148,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       try {
         await ref.read(requestListProvider.notifier).completeRequest(widget.requestId);
         ref.invalidate(requestDetailProvider(widget.requestId));
+        ref.invalidate(technicianStatsProvider);
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(content: Text(completedText), backgroundColor: AppColors.success),
@@ -195,6 +198,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       try {
         await ref.read(requestListProvider.notifier).cancelRequest(widget.requestId);
         ref.invalidate(requestDetailProvider(widget.requestId));
+        ref.invalidate(technicianStatsProvider);
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(content: Text(cancelledText), backgroundColor: AppColors.success),
@@ -245,6 +249,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       setState(() => _isUpdating = true);
       try {
         await ref.read(requestListProvider.notifier).deleteRequest(request.id);
+        ref.invalidate(technicianStatsProvider);
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(content: Text(deletedText), backgroundColor: AppColors.success),
@@ -483,6 +488,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     try {
       await ref.read(requestListProvider.notifier).acceptRequest(widget.requestId);
       ref.invalidate(requestDetailProvider(widget.requestId));
+      ref.invalidate(technicianStatsProvider);
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(content: Text(acceptedText), backgroundColor: AppColors.success),
