@@ -93,7 +93,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             // Category Dropdown
             Text(
               context.tr('profession_category'),
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             categoriesAsync.when(
@@ -117,7 +117,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             // Region Dropdown
             Text(
               context.tr('region'),
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             ref.watch(regionsProvider).when(
@@ -147,7 +147,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             // City Dropdown
             Text(
               context.tr('city_location'),
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             citiesAsync.when(
@@ -157,13 +157,8 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                     ? cities.where((c) => c.regionId == _selectedRegion).toList()
                     : cities;
                 
-                // Ensure selectedCity is valid
-                if (_selectedCity != null && !filteredCities.any((c) => c.id == _selectedCity)) {
-                  // We do this silently so the UI handles the mismatch, but we don't reset state here to avoid rebuild loops during render
-                }
-                
                 return DropdownButtonFormField<String>(
-                  value: filteredCities.any((c) => c.id == _selectedCity) ? _selectedCity : null,
+                  initialValue: filteredCities.any((c) => c.id == _selectedCity) ? _selectedCity : null,
                   isExpanded: true,
                   decoration: InputDecoration(hintText: context.tr('all_cities')),
                   items: [
@@ -175,17 +170,17 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                   onChanged: (val) => setState(() => _selectedCity = val),
                 );
               },
-              loading: () => LinearProgressIndicator(),
+              loading: () => const LinearProgressIndicator(),
               error: (_, __) => Text(context.tr('error_loading_cities')),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Availability Filter
             Text(
               context.tr('availability'),
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -210,7 +205,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             // Minimum Rating Choice
             Text(
               context.tr('minimum_rating'),
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Row(

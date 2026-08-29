@@ -256,7 +256,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                         )
                       : DropdownButtonFormField<String>(
                           isExpanded: true,
-                          value: _selectedCategoryId,
+                          initialValue: _selectedCategoryId,
                           hint: Text(context.tr('select_profession'), overflow: TextOverflow.ellipsis),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -291,7 +291,7 @@ class _TechnicianOnboardingScreenState extends ConsumerState<TechnicianOnboardin
                         )
                       : DropdownButtonFormField<String>(
                           isExpanded: true,
-                          value: _selectedCityId,
+                          initialValue: _selectedCityId,
                           hint: Text(context.tr('select_city'), overflow: TextOverflow.ellipsis),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

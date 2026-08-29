@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/network/dio_client.dart';
 import '../../../../shared/models/service_request.dart';
 import '../../../auth/domain/app_user.dart';
 import '../../../auth/presentation/auth_provider.dart';

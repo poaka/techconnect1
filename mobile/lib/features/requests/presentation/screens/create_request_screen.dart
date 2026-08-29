@@ -136,7 +136,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                     hint: Text(context.tr('category_hint'), overflow: TextOverflow.ellipsis),
-                    value: _selectedCategoryId,
+                    initialValue: _selectedCategoryId,
                     items: categories.map((cat) {
                       return DropdownMenuItem(
                         value: cat.id,
@@ -162,7 +162,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                     hint: Text(context.tr('city_hint'), overflow: TextOverflow.ellipsis),
-                    value: _selectedCityId,
+                    initialValue: _selectedCityId,
                     items: cities.map((city) {
                       return DropdownMenuItem(
                         value: city.id,
