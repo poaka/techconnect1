@@ -65,6 +65,16 @@ class RequestsRepositoryImpl implements RequestsRepository {
   }
 
   @override
+  Future<ServiceRequest> acceptRequest(String id) async {
+    try {
+      final res = await _remoteDataSource.acceptRequest(id);
+      return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
   Future<ServiceRequest> startRequest(String id) async {
     try {
       final res = await _remoteDataSource.startRequest(id);
@@ -103,9 +113,9 @@ class RequestsRepositoryImpl implements RequestsRepository {
   }
 
   @override
-  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data) async {
+  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data, {String? imagePath}) async {
     try {
-      final res = await _remoteDataSource.updateRequest(id, data);
+      final res = await _remoteDataSource.updateRequest(id, data, imagePath: imagePath);
       return ServiceRequest.fromJson(res);
     } catch (e) {
       throw ErrorMapper.mapExceptionToFailure(e);

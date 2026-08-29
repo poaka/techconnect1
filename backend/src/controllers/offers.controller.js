@@ -18,15 +18,17 @@ class OffersController {
       const { data, error } = await supabase
         .from('job_offers')
         .select(`
-          id, status,
+          id, status, rank,
           request:service_requests!service_request_id(
-            id, description, address, latitude, longitude,
+            id, description, address, latitude, longitude, created_at,
             city:cities(name),
             category:categories(name, icon),
             client:users!client_id(full_name, avatar_url)
           )
         `)
-        .eq('technician_id', profile.id);
+        .eq('technician_id', profile.id)
+        .eq('status', 'sent')  // Only show actionable (new) offers
+        .order('rank', { ascending: true }); // Show highest priority first
 
       if (error) {
         console.error('Supabase error in getOffers:', error);

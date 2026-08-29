@@ -44,8 +44,12 @@ enum RequestStatus {
   static RequestStatus fromString(String value) {
     switch (value.toLowerCase()) {
       case 'unassigned':
+      case 'dispatched': // intermediate state in live DB
+        return RequestStatus.unassigned;
+      case 'pending': // legacy status in live DB — treat as unassigned
         return RequestStatus.unassigned;
       case 'assigned':
+      case 'accepted': // legacy status in live DB — treat as assigned
         return RequestStatus.assigned;
       case 'in_progress':
         return RequestStatus.inProgress;
@@ -122,7 +126,9 @@ class ServiceRequest {
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'].toString()) : null,
       completedAt: json['completed_at'] != null ? DateTime.parse(json['completed_at'].toString()) : null,
       client: json['client'] != null ? AppUser.fromJson(json['client'] as Map<String, dynamic>) : null,
-      technician: json['technician'] != null ? TechnicianProfile.fromJson(json['technician'] as Map<String, dynamic>) : null,
+      technician: (json['assigned_technician'] ?? json['technician']) != null
+          ? TechnicianProfile.fromJson((json['assigned_technician'] ?? json['technician']) as Map<String, dynamic>)
+          : null,
       // For category, since backend might return a nested obj or just id
       category: json['category'] != null ? Category.fromJson(json['category'] as Map<String, dynamic>) : null,
       hasReview: json['review'] != null && (json['review'] is List ? (json['review'] as List).isNotEmpty : true),

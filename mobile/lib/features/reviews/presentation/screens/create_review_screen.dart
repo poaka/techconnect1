@@ -94,23 +94,29 @@ class _CreateReviewScreenState extends ConsumerState<CreateReviewScreen> {
               
               // Star Rating
               Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(5, (index) {
-                    final starIndex = index + 1;
-                    return IconButton(
-                      iconSize: 48,
-                      onPressed: () {
-                        setState(() {
-                          _rating = starIndex;
-                        });
-                      },
-                      icon: Icon(
-                        _rating >= starIndex ? Icons.star_rounded : Icons.star_outline_rounded,
-                        color: AppColors.accentGold,
-                      ),
-                    );
-                  }),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(5, (index) {
+                      final starIndex = index + 1;
+                      return IconButton(
+                        iconSize: 40,
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                        constraints: const BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () {
+                          setState(() {
+                            _rating = starIndex;
+                          });
+                        },
+                        icon: Icon(
+                          _rating >= starIndex ? Icons.star_rounded : Icons.star_outline_rounded,
+                          color: AppColors.accentGold,
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ),
               if (_rating > 0)

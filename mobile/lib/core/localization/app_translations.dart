@@ -309,6 +309,7 @@ class AppTranslations {
       'job_started': 'Mission démarrée ! Le client a été notifié.',
       'leave_review': 'Laisser un avis',
       'status_updated': 'Statut mis à jour avec succès',
+      'change_photo': 'Changer la photo',
     },
     'en': {
       // General & App Name
@@ -617,6 +618,7 @@ class AppTranslations {
       'job_started': 'Job started! The client has been notified.',
       'leave_review': 'Leave a Review',
       'status_updated': 'Status updated successfully',
+      'change_photo': 'Change Photo',
     },
   };
 }

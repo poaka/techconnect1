@@ -224,7 +224,7 @@ class AdminService {
       await supabase.from('technician_documents').delete().eq('technician_id', techProfile.id);
       await supabase.from('reviews').delete().eq('technician_id', techProfile.id);
       await supabase.from('favorites').delete().eq('technician_id', techProfile.id);
-      await supabase.from('service_requests').delete().eq('technician_id', techProfile.id);
+      await supabase.from('service_requests').delete().eq('assigned_technician_id', techProfile.id);
       await supabase.from('technician_profiles').delete().eq('id', techProfile.id);
     }
 
@@ -276,7 +276,7 @@ class AdminService {
         id, status, description, address, created_at, updated_at, completed_at,
         category:categories(id, name, icon),
         client:users!client_id(id, full_name, email, phone, avatar_url),
-        technician:technician_profiles!technician_id(
+        assigned_technician:technician_profiles!assigned_technician_id(
           id, user:users!user_id(id, full_name, email, phone, avatar_url),
           city:cities(id, name)
         ),
