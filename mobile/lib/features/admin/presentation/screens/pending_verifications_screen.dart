@@ -74,12 +74,16 @@ class PendingVerificationsScreen extends ConsumerWidget {
                     leading: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primarySubtle.withOpacity(0.3),
+                        color: AppColors.primarySubtle.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.description_outlined, color: AppColors.primary),
                     ),
-                    title: Text(techName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(
+                      techName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Column(
