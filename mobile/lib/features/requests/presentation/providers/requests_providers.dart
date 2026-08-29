@@ -81,8 +81,8 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
     return updatedRequest;
   }
 
-  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data) async {
-    final updatedRequest = await _repository.updateRequest(id, data);
+  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data, {String? imagePath}) async {
+    final updatedRequest = await _repository.updateRequest(id, data, imagePath: imagePath);
     _updateRequestInState(id, updatedRequest);
     return updatedRequest;
   }

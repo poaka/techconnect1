@@ -36,7 +36,7 @@ router.get('/', RequestsController.getRequests);
 router.get('/:id', RequestsController.getRequestById);
 
 // Lifecycle Endpoints
-router.put('/:id', requireRole('client'), RequestsController.updateRequest);
+router.put('/:id', requireRole('client'), upload.single('image'), RequestsController.updateRequest);
 router.delete('/:id', requireRole('client'), RequestsController.deleteRequest);
 router.post('/:id/cancel', requireRole('client'), RequestsController.cancelRequest);
 router.post('/:id/start', requireRole('technician'), RequestsController.startRequest);

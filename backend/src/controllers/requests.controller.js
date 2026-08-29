@@ -75,7 +75,7 @@ class RequestsController {
 
   static async updateRequest(req, res, next) {
     try {
-      const updated = await RequestsService.updateRequest(req.params.id, req.user.id, req.body);
+      const updated = await RequestsService.updateRequest(req.params.id, req.user.id, req.body, req.file);
       res.status(200).json({ data: updated });
     } catch (error) {
       next(error);

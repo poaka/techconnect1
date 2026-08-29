@@ -4,6 +4,27 @@ const DispatchService = require('./dispatch.service');
 
 class RequestsService {
   /**
+   * Helper to format request and extract attached image URL if present
+   */
+  static _formatRequestResponse(req) {
+    if (!req) return req;
+    let description = req.description || '';
+    let imageUrl = null;
+
+    const match = description.match(/\[IMAGE_ATTACHMENT:(.*?)\]/);
+    if (match) {
+      imageUrl = match[1];
+      description = description.replace(/\[IMAGE_ATTACHMENT:.*?\]/, '').trim();
+    }
+
+    return {
+      ...req,
+      description,
+      image_url: imageUrl
+    };
+  }
+
+  /**
    * Phase 6: Create request using Dispatch Engine
    */
   static async createRequest(clientId, { categoryId, cityId, description, address, latitude, longitude }, file = null) {
@@ -36,6 +57,11 @@ class RequestsService {
       }
     }
 
+    let finalDescription = description || '';
+    if (imageUrl) {
+      finalDescription = `${finalDescription}\n[IMAGE_ATTACHMENT:${imageUrl}]`;
+    }
+
     // 1. Insert unassigned request
     const { data: newRequest, error: createErr } = await supabase
       .from('service_requests')
@@ -44,7 +70,7 @@ class RequestsService {
           client_id: clientId,
           category_id: categoryId,
           city_id: cityId,
-          description,
+          description: finalDescription,
           address: address || null,
           latitude: latitude || null,
           longitude: longitude || null,
@@ -63,7 +89,7 @@ class RequestsService {
     const technicians = await DispatchService.findAvailableTechnicians({ categoryId, cityId, limit: 5 });
 
     if (technicians.length === 0) {
-      return newRequest; // Request created, but unassigned. Client waits.
+      return this._formatRequestResponse(newRequest); // Request created, but unassigned. Client waits.
     }
 
     // 3. Create Job Offers (status: 'sent' and rank required by live DB schema)
@@ -94,7 +120,7 @@ class RequestsService {
       console.error('[RequestsService notification insert error]', notifErr);
     }
 
-    return newRequest;
+    return this._formatRequestResponse(newRequest);
   }
 
   static async getRequests(userId, role, statusFilter = null) {
@@ -138,7 +164,7 @@ class RequestsService {
       throw ApiError.internal('Erreur lors de la récupération des demandes');
     }
 
-    return data || [];
+    return (data || []).map(r => this._formatRequestResponse(r));
   }
 
   static async getRequestById(requestId, userId, role) {
@@ -184,7 +210,7 @@ class RequestsService {
       }
     }
 
-    return request;
+    return this._formatRequestResponse(request);
   }
 
   static async cancelRequest(requestId, clientId) {
@@ -217,20 +243,49 @@ class RequestsService {
        }]);
     }
 
-    return data;
+    return this._formatRequestResponse(data);
   }
 
-  static async updateRequest(requestId, clientId, { categoryId, cityId, description, address }) {
+  static async updateRequest(requestId, clientId, { categoryId, cityId, description, address }, file = null) {
     const request = await this.getRequestById(requestId, clientId, 'client');
-    
-    if (request.status !== 'unassigned') {
+
+    // Allow edit on 'unassigned' and 'pending' (legacy live DB status = same as unassigned)
+    if (request.status !== 'unassigned' && request.status !== 'pending') {
       throw ApiError.badRequest('Vous ne pouvez modifier que les demandes non encore assignées.');
+    }
+
+    // Handle image upload if a new image is provided
+    let newImageUrl = null;
+    if (file) {
+      try {
+        const fileExt = file.originalname.split('.').pop();
+        const fileName = `${clientId}-${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('requests')
+          .upload(fileName, file.buffer, { contentType: file.mimetype, upsert: false });
+        if (!uploadError) {
+          const { data: publicUrlData } = supabase.storage.from('requests').getPublicUrl(fileName);
+          newImageUrl = publicUrlData.publicUrl;
+        } else {
+          console.error('[RequestsService.updateRequest] Image upload error:', uploadError);
+        }
+      } catch (err) {
+        console.error('[RequestsService.updateRequest] Image processing error:', err);
+      }
+    }
+
+    // Determine final description with image attachment
+    const baseDesc = description !== undefined ? description : request.description;
+    const finalImage = newImageUrl || request.image_url;
+    let finalDescription = baseDesc;
+    if (finalImage) {
+      finalDescription = `${baseDesc}\n[IMAGE_ATTACHMENT:${finalImage}]`;
     }
 
     const updateData = { updated_at: new Date().toISOString() };
     if (categoryId) updateData.category_id = categoryId;
     if (cityId) updateData.city_id = cityId;
-    if (description !== undefined) updateData.description = description;
+    if (description !== undefined || newImageUrl !== null) updateData.description = finalDescription;
     if (address !== undefined) updateData.address = address;
 
     const { data, error } = await supabase
@@ -246,8 +301,12 @@ class RequestsService {
       `)
       .single();
 
-    if (error) throw ApiError.internal('Erreur lors de la modification de la demande');
-    return data;
+    if (error) {
+      console.error('[RequestsService.updateRequest error]', error);
+      throw ApiError.internal('Erreur lors de la modification de la demande');
+    }
+
+    return this._formatRequestResponse(data);
   }
 
   static async deleteRequest(requestId, clientId) {
@@ -304,7 +363,7 @@ class RequestsService {
       console.error('[RequestsService.startRequest] Notification error:', notifErr);
     }
 
-    return data;
+    return this._formatRequestResponse(data);
   }
 
   static async completeRequest(requestId, technicianUserId) {
@@ -332,7 +391,7 @@ class RequestsService {
       metadata: { requestId }
     }]);
 
-    return data;
+    return this._formatRequestResponse(data);
   }
 
   static async updateLocation(requestId, technicianUserId, latitude, longitude) {
