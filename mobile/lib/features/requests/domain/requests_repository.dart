@@ -13,10 +13,11 @@ abstract class RequestsRepository {
     String? imagePath,
   });
   Future<ServiceRequest> cancelRequest(String id);
+  Future<ServiceRequest> acceptRequest(String id);
   Future<ServiceRequest> startRequest(String id);
   Future<ServiceRequest> completeRequest(String id);
   Future<void> updateLocation(String id, double latitude, double longitude);
   Future<Map<String, dynamic>?> getLocation(String id);
-  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data);
+  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data, {String? imagePath});
   Future<void> deleteRequest(String id);
 }

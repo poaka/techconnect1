@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:convert';
 import 'lib/features/technicians/domain/technician_profile.dart';
 

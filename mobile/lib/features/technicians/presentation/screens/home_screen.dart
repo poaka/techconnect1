@@ -260,7 +260,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         return CategoryItem(
                           category: cat,
                           onTap: () {
-                            context.push('/create-request');
+                            context.push('/create-request?categoryId=${cat.id}');
                           },
                         );
                       },

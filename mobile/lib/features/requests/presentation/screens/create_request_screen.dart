@@ -11,7 +11,9 @@ import '../../../technicians/presentation/providers/technicians_providers.dart';
 import '../providers/requests_providers.dart';
 
 class CreateRequestScreen extends ConsumerStatefulWidget {
-  const CreateRequestScreen({super.key});
+  final String? initialCategoryId;
+
+  const CreateRequestScreen({super.key, this.initialCategoryId});
 
   @override
   ConsumerState<CreateRequestScreen> createState() => _CreateRequestScreenState();
@@ -27,6 +29,12 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
   bool _isLoading = false;
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategoryId = widget.initialCategoryId;
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -136,7 +144,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                     hint: Text(context.tr('category_hint'), overflow: TextOverflow.ellipsis),
-                    value: _selectedCategoryId,
+                    initialValue: categories.any((cat) => cat.id == _selectedCategoryId) ? _selectedCategoryId : null,
                     items: categories.map((cat) {
                       return DropdownMenuItem(
                         value: cat.id,
@@ -162,7 +170,7 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                     hint: Text(context.tr('city_hint'), overflow: TextOverflow.ellipsis),
-                    value: _selectedCityId,
+                    initialValue: _selectedCityId,
                     items: cities.map((city) {
                       return DropdownMenuItem(
                         value: city.id,

@@ -56,6 +56,14 @@ class RequestsRemoteDataSource {
     return response.data['data'] as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> acceptRequest(String id) async {
+    final response = await _client.post('/requests/$id/accept');
+    final data = response.data['data'];
+    return (data is Map<String, dynamic> && data['request'] != null)
+        ? data['request'] as Map<String, dynamic>
+        : data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> startRequest(String id) async {
     final response = await _client.post('/requests/$id/start');
     return response.data['data'] as Map<String, dynamic>;
@@ -84,8 +92,17 @@ class RequestsRemoteDataSource {
     }
   }
 
-  Future<Map<String, dynamic>> updateRequest(String id, Map<String, dynamic> data) async {
-    final response = await _client.put('/requests/$id', data: data);
+  Future<Map<String, dynamic>> updateRequest(String id, Map<String, dynamic> data, {String? imagePath}) async {
+    Object requestData = data;
+    if (imagePath != null) {
+      final formData = FormData.fromMap(data);
+      formData.files.add(MapEntry(
+        'image',
+        await MultipartFile.fromFile(imagePath),
+      ));
+      requestData = formData;
+    }
+    final response = await _client.put('/requests/$id', data: requestData);
     return response.data['data'] as Map<String, dynamic>;
   }
 

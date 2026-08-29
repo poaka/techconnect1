@@ -452,13 +452,13 @@ class TechniciansService {
   static async getTechnicianStats(userId) {
     if (!supabase) {
       return {
-        pendingRequestsCount: 2,
-        acceptedRequestsCount: 1,
+        pendingRequestsCount: 0,
+        acceptedRequestsCount: 0,
         inProgressRequestsCount: 0,
-        completedJobsCount: 5,
-        totalRequestsCount: 8,
-        ratingAvg: 4.5,
-        ratingCount: 4,
+        completedJobsCount: 0,
+        totalRequestsCount: 0,
+        ratingAvg: 0,
+        ratingCount: 0,
         availability: 'available',
         verified: false,
       };
@@ -467,36 +467,66 @@ class TechniciansService {
     // Get or auto-create the technician profile
     const profile = await this._ensureProfileExists(userId);
 
-    // Count requests by status in one call
-    const statusCounts = {
-      pending: 0,
-      accepted: 0,
-      in_progress: 0,
-      completed: 0,
-    };
+    // Count requests by status in parallel using correct column assigned_technician_id
+    const [
+      { count: assignedCount },
+      { count: inProgressCount },
+      { count: completedCount },
+      { count: pendingOffersCount },
+      { data: reviewsData }
+    ] = await Promise.all([
+      supabase
+        .from('service_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('assigned_technician_id', profile.id)
+        .eq('status', 'assigned'),
+      supabase
+        .from('service_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('assigned_technician_id', profile.id)
+        .eq('status', 'in_progress'),
+      supabase
+        .from('service_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('assigned_technician_id', profile.id)
+        .eq('status', 'completed'),
+      supabase
+        .from('job_offers')
+        .select('*', { count: 'exact', head: true })
+        .eq('technician_id', profile.id)
+        .eq('status', 'sent'),
+      supabase
+        .from('reviews')
+        .select('rating')
+        .eq('technician_id', profile.id)
+    ]);
 
-    const statuses = ['pending', 'accepted', 'in_progress', 'completed'];
-    await Promise.all(
-      statuses.map(async (status) => {
-        const { count } = await supabase
-          .from('service_requests')
-          .select('*', { count: 'exact', head: true })
-          .eq('technician_id', profile.id)
-          .eq('status', status);
-        statusCounts[status] = count || 0;
-      })
-    );
+    const assigned = assignedCount || 0;
+    const inProgress = inProgressCount || 0;
+    const completed = completedCount || 0;
+    const pendingOffers = pendingOffersCount || 0;
+
+    let ratingAvg = parseFloat(profile.rating_avg) || 0;
+    let ratingCount = profile.rating_count || 0;
+
+    if (reviewsData && reviewsData.length > 0) {
+      ratingCount = reviewsData.length;
+      ratingAvg = parseFloat((reviewsData.reduce((sum, r) => sum + r.rating, 0) / ratingCount).toFixed(1));
+    }
+
+    const totalRequests = assigned + inProgress + completed;
+    const pendingRequests = pendingOffers + assigned;
 
     return {
-      pendingRequestsCount: statusCounts.pending,
-      acceptedRequestsCount: statusCounts.accepted,
-      inProgressRequestsCount: statusCounts.in_progress,
-      completedJobsCount: statusCounts.completed,
-      totalRequestsCount: Object.values(statusCounts).reduce((a, b) => a + b, 0),
-      ratingAvg: parseFloat(profile.rating_avg) || 0,
-      ratingCount: profile.rating_count || 0,
-      availability: profile.availability,
-      verified: profile.verified,
+      pendingRequestsCount: pendingRequests,
+      acceptedRequestsCount: assigned,
+      inProgressRequestsCount: inProgress,
+      completedJobsCount: completed,
+      totalRequestsCount: totalRequests,
+      ratingAvg: ratingAvg,
+      ratingCount: ratingCount,
+      availability: profile.availability || 'available',
+      verified: profile.verified || false,
     };
   }
 
