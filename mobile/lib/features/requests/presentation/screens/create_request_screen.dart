@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/services/location_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../technicians/presentation/providers/technicians_providers.dart';
@@ -27,6 +28,9 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
   String? _selectedCategoryId;
   String? _selectedCityId;
   bool _isLoading = false;
+  bool _isDetectingLocation = false;
+  double? _latitude;
+  double? _longitude;
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
 
@@ -60,6 +64,34 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
     super.dispose();
   }
 
+  Future<void> _detectCurrentLocation() async {
+    setState(() => _isDetectingLocation = true);
+    try {
+      final locationService = ref.read(locationServiceProvider);
+      final position = await locationService.getCurrentPosition();
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        if (_addressController.text.trim().isEmpty) {
+          _addressController.text = 'Position GPS (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)})';
+        }
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.tr('location_detected')), backgroundColor: AppColors.success),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDetectingLocation = false);
+    }
+  }
+
   Future<void> _submitRequest() async {
     if (!_formKey.currentState!.validate()) return;
     
@@ -85,6 +117,8 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
             cityId: _selectedCityId!,
             description: _descriptionController.text.trim(),
             address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+            latitude: _latitude,
+            longitude: _longitude,
             imagePath: _imageFile?.path,
           );
 
@@ -205,8 +239,23 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                 const SizedBox(height: 20),
 
                 // Address Field
-                Text(context.tr('exact_address'), style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(context.tr('exact_address'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                    TextButton.icon(
+                      onPressed: _isDetectingLocation ? null : _detectCurrentLocation,
+                      icon: _isDetectingLocation
+                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.my_location, size: 16),
+                      label: Text(
+                        _isDetectingLocation ? context.tr('detecting_location') : context.tr('use_my_location'),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
                 TextFormField(
                   controller: _addressController,
                   decoration: InputDecoration(
@@ -214,6 +263,36 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
+                if (_latitude != null && _longitude != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline, color: AppColors.success, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'GPS: ${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)}',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => setState(() {
+                            _latitude = null;
+                            _longitude = null;
+                          }),
+                          child: const Icon(Icons.close, size: 16, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
 
                 // Image Picker Field

@@ -6,48 +6,112 @@ final locationServiceProvider = Provider<LocationService>((ref) {
 });
 
 class LocationService {
-  /// Determine the current position of the device.
-  /// When the location services are not enabled or permissions
-  /// are denied the `Future` will return an error.
-  Future<Position> getCurrentPosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  /// Checks whether GPS/Location services are enabled on the device.
+  Future<bool> isLocationServiceEnabled() async {
+    return await Geolocator.isLocationServiceEnabled();
+  }
 
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  /// Request and verify location permissions.
+  /// Throws descriptive exceptions in case permissions are denied.
+  Future<bool> checkAndRequestPermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the 
-      // App to enable the location services.
-      throw Exception('Les services de localisation sont désactivés.');
+      throw Exception('Les services de localisation (GPS) sont désactivés.');
     }
 
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale 
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        throw Exception('Les permissions de localisation sont refusées.');
+        throw Exception('L\'accès à la localisation a été refusé.');
       }
     }
-    
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately. 
-      throw Exception(
-        'Les permissions de localisation sont refusées de manière permanente.',
-      );
-    } 
 
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-      ),
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception(
+        'L\'accès à la localisation est refusé de façon permanente. Veuillez l\'activer dans les réglages de l\'appareil.',
+      );
+    }
+
+    return true;
+  }
+
+  /// Open device app settings if permission was permanently denied
+  Future<bool> openAppSettings() async {
+    return await Geolocator.openAppSettings();
+  }
+
+  /// Open location settings to enable GPS
+  Future<bool> openLocationSettings() async {
+    return await Geolocator.openLocationSettings();
+  }
+
+  /// Determine the current position of the device with timeout and fallback.
+  Future<Position> getCurrentPosition({
+    LocationAccuracy accuracy = LocationAccuracy.high,
+    Duration timeLimit = const Duration(seconds: 12),
+  }) async {
+    await checkAndRequestPermission();
+
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: LocationSettings(
+          accuracy: accuracy,
+          timeLimit: timeLimit,
+        ),
+      );
+    } catch (_) {
+      // Fallback: try last known position or medium accuracy if high accuracy timed out
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) return lastKnown;
+
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+    }
+  }
+
+  /// Real-time position update stream
+  Stream<Position> getPositionStream({
+    LocationAccuracy accuracy = LocationAccuracy.high,
+    int distanceFilter = 10,
+    int intervalDurationSeconds = 10,
+  }) {
+    final locationSettings = LocationSettings(
+      accuracy: accuracy,
+      distanceFilter: distanceFilter,
+      timeLimit: Duration(seconds: intervalDurationSeconds),
+    );
+
+    return Geolocator.getPositionStream(locationSettings: locationSettings);
+  }
+
+  /// Calculate distance in meters between two geographical coordinates
+  double calculateDistance({
+    required double startLatitude,
+    required double startLongitude,
+    required double endLatitude,
+    required double endLongitude,
+  }) {
+    return Geolocator.distanceBetween(
+      startLatitude,
+      startLongitude,
+      endLatitude,
+      endLongitude,
     );
   }
+
+  /// Formats distance in meters to a human-readable string (m or km)
+  String formatDistance(double distanceInMeters) {
+    if (distanceInMeters < 1000) {
+      return '${distanceInMeters.round()} m';
+    } else {
+      final km = distanceInMeters / 1000.0;
+      return '${km.toStringAsFixed(1)} km';
+    }
+  }
 }
+

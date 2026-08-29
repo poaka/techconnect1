@@ -6,6 +6,12 @@
 		<string>FixerPro237 a besoin d'accéder à votre galerie pour changer votre photo de profil ou uploader des documents.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>FixerPro237 a besoin d'accéder à votre caméra pour prendre une photo de profil ou des documents.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>FixerPro237 a besoin de votre position pour le suivi en direct de l'intervention et la localisation de l'adresse.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>FixerPro237 a besoin de votre position pour partager vos déplacements avec le client pendant l'intervention.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>FixerPro237 a besoin de votre position pour le suivi en direct de votre intervention.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>

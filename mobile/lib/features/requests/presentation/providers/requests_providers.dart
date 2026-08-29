@@ -124,3 +124,22 @@ final requestLocationProvider = FutureProvider.family<Map<String, dynamic>?, Str
   final repository = ref.watch(requestsRepositoryProvider);
   return repository.getLocation(requestId);
 });
+
+// Periodic live location stream for real-time tracking on active mission screen
+final liveRequestLocationProvider = StreamProvider.autoDispose.family<Map<String, dynamic>?, String>((ref, requestId) async* {
+  final repository = ref.watch(requestsRepositoryProvider);
+  
+  // Emit initial fetch immediately
+  yield await repository.getLocation(requestId);
+  
+  // Poll every 12 seconds while this provider is active on screen
+  await for (final _ in Stream.periodic(const Duration(seconds: 12))) {
+    try {
+      final loc = await repository.getLocation(requestId);
+      yield loc;
+    } catch (_) {
+      // Ignore transient errors to keep previous location on screen
+    }
+  }
+});
+
