@@ -240,27 +240,70 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
 
                 // Address Field
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(context.tr('exact_address'), style: const TextStyle(fontWeight: FontWeight.bold)),
-                    TextButton.icon(
-                      onPressed: _isDetectingLocation ? null : _detectCurrentLocation,
-                      icon: _isDetectingLocation
-                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.my_location, size: 16),
-                      label: Text(
-                        _isDetectingLocation ? context.tr('detecting_location') : context.tr('use_my_location'),
-                        style: const TextStyle(fontSize: 12),
+                    Expanded(
+                      child: Text(
+                        context.tr('exact_address'),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: InkWell(
+                        onTap: _isDetectingLocation ? null : _detectCurrentLocation,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_isDetectingLocation)
+                                const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              else
+                                const Icon(Icons.my_location, size: 16, color: AppColors.primary),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  _isDetectingLocation ? context.tr('detecting_location') : context.tr('use_my_location'),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 TextFormField(
                   controller: _addressController,
                   decoration: InputDecoration(
                     hintText: context.tr('address_hint'),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    suffixIcon: IconButton(
+                      icon: _isDetectingLocation
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.my_location, size: 20, color: AppColors.primary),
+                      tooltip: context.tr('use_my_location'),
+                      onPressed: _isDetectingLocation ? null : _detectCurrentLocation,
+                    ),
                   ),
                 ),
                 if (_latitude != null && _longitude != null) ...[
