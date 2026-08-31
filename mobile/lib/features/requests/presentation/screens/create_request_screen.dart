@@ -81,10 +81,41 @@ class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
           SnackBar(content: Text(context.tr('location_detected')), backgroundColor: AppColors.success),
         );
       }
-    } catch (e) {
+    } on LocationServiceDisabledException {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${context.tr('error_prefix')}$e'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(context.tr('enable_location_gps')),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: context.tr('open_location_settings'),
+              textColor: Colors.white,
+              onPressed: () => ref.read(locationServiceProvider).openLocationSettings(),
+            ),
+          ),
+        );
+      }
+    } on LocationPermissionDeniedForeverException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('location_permission_denied')),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: context.tr('open_location_settings'),
+              textColor: Colors.white,
+              onPressed: () => ref.read(locationServiceProvider).openAppSettings(),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final message = e.toString().replaceFirst('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: AppColors.error),
         );
       }
     } finally {
