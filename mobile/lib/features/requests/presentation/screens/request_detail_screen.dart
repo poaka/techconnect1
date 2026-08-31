@@ -54,7 +54,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   }
 
   Future<void> _shareLocation({bool isSilent = false}) async {
-    if (!isSilent) setState(() => _isUpdating = true);
+    if (!isSilent) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      setState(() => _isUpdating = true);
+    }
     try {
       final locationService = ref.read(locationServiceProvider);
       final position = await locationService.getCurrentPosition();
@@ -71,18 +74,24 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         ref.invalidate(requestLocationProvider(widget.requestId));
         ref.invalidate(liveRequestLocationProvider(widget.requestId));
         if (!isSilent) {
+          ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.tr('position_shared')), backgroundColor: AppColors.success),
+            SnackBar(
+              content: Text(context.tr('position_shared')),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 3),
+            ),
           );
         }
       }
     } on LocationServiceDisabledException {
       if (mounted && !isSilent) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.tr('enable_location_gps')),
             backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: context.tr('open_location_settings'),
               textColor: Colors.white,
@@ -93,11 +102,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       }
     } on LocationPermissionDeniedForeverException {
       if (mounted && !isSilent) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.tr('location_permission_denied')),
             backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: context.tr('open_location_settings'),
               textColor: Colors.white,
@@ -108,9 +118,14 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted && !isSilent) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         final message = e.toString().replaceFirst('Exception: ', '');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(message),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     } finally {

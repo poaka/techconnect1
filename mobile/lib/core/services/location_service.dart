@@ -38,11 +38,7 @@ class LocationService {
   /// Request and verify location permissions.
   /// Throws descriptive typed exceptions in case permissions are denied or disabled.
   Future<bool> checkAndRequestPermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw LocationServiceDisabledException();
-    }
-
+    // 1. Check and request runtime permissions FIRST so the app has rights to query hardware
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -53,6 +49,20 @@ class LocationService {
 
     if (permission == LocationPermission.deniedForever) {
       throw LocationPermissionDeniedForeverException();
+    }
+
+    // 2. Check whether GPS/Location services are enabled on the device
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Check if last known position exists before failing
+      try {
+        final lastKnown = await Geolocator.getLastKnownPosition();
+        if (lastKnown == null) {
+          throw LocationServiceDisabledException();
+        }
+      } catch (_) {
+        throw LocationServiceDisabledException();
+      }
     }
 
     return true;
