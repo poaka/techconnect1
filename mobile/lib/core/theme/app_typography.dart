@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// TechConnect Cameroun — Design Token System: Typography Scale
+/// FixerPro237 Cameroun — Design Token System: Typography Scale
 abstract class AppTypography {
   static const TextStyle display = TextStyle(
     fontSize: 28.0,

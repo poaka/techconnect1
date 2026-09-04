@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../providers/technicians_providers.dart';
@@ -68,9 +69,9 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Filtres de recherche',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  context.tr('search_filters'),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 TextButton(
                   onPressed: () {
@@ -82,7 +83,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                       _selectedMinRating = null;
                     });
                   },
-                  child: const Text('Réinitialiser'),
+                  child: Text(context.tr('reset')),
                 ),
               ],
             ),
@@ -90,18 +91,18 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             const SizedBox(height: 12),
 
             // Category Dropdown
-            const Text(
-              'Métier / Catégorie',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            Text(
+              context.tr('profession_category'),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             categoriesAsync.when(
               data: (categories) => DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
                 isExpanded: true,
-                decoration: const InputDecoration(hintText: 'Toutes les catégories'),
+                decoration: InputDecoration(hintText: context.tr('all_categories')),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('Toutes les catégories')),
+                  DropdownMenuItem(value: null, child: Text(context.tr('all_categories'))),
                   ...categories.map(
                     (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
                   ),
@@ -109,23 +110,23 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                 onChanged: (val) => setState(() => _selectedCategory = val),
               ),
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const Text('Erreur de chargement des catégories'),
+              error: (_, __) => Text(context.tr('error_loading_categories')),
             ),
             const SizedBox(height: 16),
 
             // Region Dropdown
-            const Text(
-              'Région',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            Text(
+              context.tr('region'),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             ref.watch(regionsProvider).when(
               data: (regions) => DropdownButtonFormField<String>(
                 initialValue: _selectedRegion,
                 isExpanded: true,
-                decoration: const InputDecoration(hintText: 'Toutes les régions'),
+                decoration: InputDecoration(hintText: context.tr('all_regions')),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('Toutes les régions')),
+                  DropdownMenuItem(value: null, child: Text(context.tr('all_regions'))),
                   ...regions.map(
                     (r) => DropdownMenuItem(value: r.id, child: Text(r.name)),
                   ),
@@ -139,14 +140,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                 },
               ),
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const Text('Erreur de chargement des régions'),
+              error: (_, __) => Text(context.tr('error_loading_regions')),
             ),
             const SizedBox(height: 16),
 
             // City Dropdown
-            const Text(
-              'Ville / Localisation',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            Text(
+              context.tr('city_location'),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             citiesAsync.when(
@@ -156,17 +157,12 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                     ? cities.where((c) => c.regionId == _selectedRegion).toList()
                     : cities;
                 
-                // Ensure selectedCity is valid
-                if (_selectedCity != null && !filteredCities.any((c) => c.id == _selectedCity)) {
-                  // We do this silently so the UI handles the mismatch, but we don't reset state here to avoid rebuild loops during render
-                }
-                
                 return DropdownButtonFormField<String>(
-                  value: filteredCities.any((c) => c.id == _selectedCity) ? _selectedCity : null,
+                  initialValue: filteredCities.any((c) => c.id == _selectedCity) ? _selectedCity : null,
                   isExpanded: true,
-                  decoration: const InputDecoration(hintText: 'Toutes les villes'),
+                  decoration: InputDecoration(hintText: context.tr('all_cities')),
                   items: [
-                    const DropdownMenuItem(value: null, child: Text('Toutes les villes')),
+                    DropdownMenuItem(value: null, child: Text(context.tr('all_cities'))),
                     ...filteredCities.map(
                       (c) => DropdownMenuItem(value: c.id, child: Text('${c.name} (${c.regionName ?? 'Cameroun'})')),
                     ),
@@ -175,21 +171,21 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                 );
               },
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const Text('Erreur de chargement des villes'),
+              error: (_, __) => Text(context.tr('error_loading_cities')),
             ),
             const SizedBox(height: 16),
 
-            // Availability Status Toggle
-            const Text(
-              'Disponibilité',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            // Availability Filter
+            Text(
+              context.tr('availability'),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: _FilterChip(
-                    label: 'Tous',
+                    label: context.tr('all'),
                     isSelected: _selectedAvailability == null,
                     onTap: () => setState(() => _selectedAvailability = null),
                   ),
@@ -197,7 +193,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _FilterChip(
-                    label: 'Disponible',
+                    label: context.tr('available'),
                     isSelected: _selectedAvailability == 'available',
                     onTap: () => setState(() => _selectedAvailability = 'available'),
                   ),
@@ -207,15 +203,15 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             const SizedBox(height: 16),
 
             // Minimum Rating Choice
-            const Text(
-              'Note minimale',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            Text(
+              context.tr('minimum_rating'),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 _RatingChip(
-                  label: 'Toutes',
+                  label: context.tr('all_feminine'),
                   isSelected: _selectedMinRating == null,
                   onTap: () => setState(() => _selectedMinRating = null),
                 ),
@@ -243,7 +239,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
 
             // Apply Button
             AppButton(
-              text: 'Appliquer les filtres',
+              text: context.tr('apply_filters'),
               onPressed: () {
                 final filterNotifier = ref.read(technicianFilterProvider.notifier);
                 filterNotifier.setCategory(_selectedCategory);

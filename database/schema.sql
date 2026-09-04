@@ -1,4 +1,4 @@
--- TechConnect Cameroun — Database Schema
+-- FixerPro237 Cameroun — Database Schema
 -- Supabase-managed PostgreSQL Database Script
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -20,7 +20,13 @@ EXCEPTION
 END $$;
 
 DO $$ BEGIN
-    CREATE TYPE request_status AS ENUM ('pending', 'accepted', 'rejected', 'in_progress', 'completed', 'cancelled');
+    CREATE TYPE request_status AS ENUM ('unassigned', 'dispatched', 'assigned', 'in_progress', 'completed', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE job_offer_status AS ENUM ('pending', 'accepted', 'rejected', 'expired');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -83,6 +89,7 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS technician_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
     bio TEXT,
     years_experience INT DEFAULT 0 CHECK (years_experience >= 0),
     price_min NUMERIC(10, 2) DEFAULT 0.00 CHECK (price_min >= 0),
@@ -91,18 +98,14 @@ CREATE TABLE IF NOT EXISTS technician_profiles (
     city_id UUID REFERENCES cities(id) ON DELETE SET NULL,
     verified BOOLEAN DEFAULT FALSE,
     availability availability_status DEFAULT 'available',
+    active_job_count INT DEFAULT 0 CHECK (active_job_count >= 0),
     rating_avg NUMERIC(3, 2) DEFAULT 0.00 CHECK (rating_avg >= 0.00 AND rating_avg <= 5.00),
     rating_count INT DEFAULT 0 CHECK (rating_count >= 0),
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- 6. Technician Categories Junction Table
-CREATE TABLE IF NOT EXISTS technician_categories (
-    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
-    category_id UUID NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
-    PRIMARY KEY (technician_id, category_id)
-);
+-- (Table technician_categories removed because 1 technician = 1 category)
 
 -- 7. Technician Verification Documents Table
 CREATE TABLE IF NOT EXISTS technician_documents (
@@ -120,14 +123,40 @@ CREATE TABLE IF NOT EXISTS technician_documents (
 CREATE TABLE IF NOT EXISTS service_requests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
-    category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
-    status request_status DEFAULT 'pending',
+    assigned_technician_id UUID REFERENCES technician_profiles(id) ON DELETE SET NULL,
+    category_id UUID NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    city_id UUID NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
+    status request_status DEFAULT 'unassigned',
     description TEXT NOT NULL,
     address TEXT,
+    latitude NUMERIC(10, 8),
+    longitude NUMERIC(11, 8),
+    image_url TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMPTZ
+);
+
+-- 8.5. Job Offers Table
+CREATE TABLE IF NOT EXISTS job_offers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    request_id UUID NOT NULL REFERENCES service_requests(id) ON DELETE CASCADE,
+    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
+    status job_offer_status DEFAULT 'pending',
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    responded_at TIMESTAMPTZ,
+    CONSTRAINT unique_offer_per_tech_req UNIQUE (request_id, technician_id)
+);
+
+-- 8.6. Location Updates Table (Live GPS Tracking)
+CREATE TABLE IF NOT EXISTS location_updates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    request_id UUID NOT NULL REFERENCES service_requests(id) ON DELETE CASCADE,
+    technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
+    latitude NUMERIC(10, 8) NOT NULL,
+    longitude NUMERIC(11, 8) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_location_per_req UNIQUE (request_id)
 );
 
 -- 9. Reviews Table (Enforced 1 review per completed request)
@@ -174,8 +203,10 @@ CREATE INDEX IF NOT EXISTS idx_tech_profiles_verified ON technician_profiles(ver
 CREATE INDEX IF NOT EXISTS idx_tech_profiles_availability ON technician_profiles(availability);
 CREATE INDEX IF NOT EXISTS idx_tech_profiles_rating ON technician_profiles(rating_avg DESC);
 CREATE INDEX IF NOT EXISTS idx_requests_client ON service_requests(client_id);
-CREATE INDEX IF NOT EXISTS idx_requests_technician ON service_requests(technician_id);
+CREATE INDEX IF NOT EXISTS idx_requests_assigned_tech ON service_requests(assigned_technician_id);
 CREATE INDEX IF NOT EXISTS idx_requests_status ON service_requests(status);
+CREATE INDEX IF NOT EXISTS idx_job_offers_tech_status ON job_offers(technician_id, status);
+CREATE INDEX IF NOT EXISTS idx_location_updates_req ON location_updates(request_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_technician ON reviews(technician_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_client ON favorites(client_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);
@@ -204,6 +235,32 @@ CREATE OR REPLACE TRIGGER trigger_technician_profiles_updated_at
 CREATE OR REPLACE TRIGGER trigger_service_requests_updated_at
     BEFORE UPDATE ON service_requests
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Maintain active_job_count for technicians
+CREATE OR REPLACE FUNCTION maintain_active_job_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If assigned
+    IF (TG_OP = 'UPDATE' AND OLD.assigned_technician_id IS NULL AND NEW.assigned_technician_id IS NOT NULL) THEN
+        UPDATE technician_profiles SET active_job_count = active_job_count + 1 WHERE id = NEW.assigned_technician_id;
+    END IF;
+    -- If completed or cancelled
+    IF (TG_OP = 'UPDATE' AND OLD.status IN ('assigned', 'in_progress') AND NEW.status IN ('completed', 'cancelled') AND NEW.assigned_technician_id IS NOT NULL) THEN
+        UPDATE technician_profiles SET active_job_count = GREATEST(active_job_count - 1, 0) WHERE id = NEW.assigned_technician_id;
+    END IF;
+    -- If technician changed (edge case)
+    IF (TG_OP = 'UPDATE' AND OLD.assigned_technician_id IS NOT NULL AND NEW.assigned_technician_id IS NOT NULL AND OLD.assigned_technician_id != NEW.assigned_technician_id) THEN
+        UPDATE technician_profiles SET active_job_count = GREATEST(active_job_count - 1, 0) WHERE id = OLD.assigned_technician_id;
+        UPDATE technician_profiles SET active_job_count = active_job_count + 1 WHERE id = NEW.assigned_technician_id;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trigger_maintain_active_job_count
+    AFTER UPDATE OF assigned_technician_id, status ON service_requests
+    FOR EACH ROW EXECUTE FUNCTION maintain_active_job_count();
 
 -- Automatic calculation of rating_avg and rating_count for technicians
 CREATE OR REPLACE FUNCTION refresh_technician_rating()
@@ -316,16 +373,17 @@ ON CONFLICT (name) DO NOTHING;
 -- Seed Default Test Accounts (Passwords hashed with bcrypt 10 rounds)
 -- Hash for "admin" is "$2a$10$TtTqE0qamOh3UC4OgIUPK.fJVaCPSFxqUMaPmAMbtS1sSXEohvhqm"
 INSERT INTO users (id, full_name, email, phone, password_hash, role) VALUES
-    ('30000000-0000-0000-0000-000000000001', 'Admin TechConnect', 'admin@gmail.com', '+237690000000', '$2a$10$TtTqE0qamOh3UC4OgIUPK.fJVaCPSFxqUMaPmAMbtS1sSXEohvhqm', 'admin'),
-    ('30000000-0000-0000-0000-000000000002', 'Jean Client', 'client@techconnect.cm', '+237691111111', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'client'),
-    ('30000000-0000-0000-0000-000000000003', 'Samuel Électricien', 'samuel@techconnect.cm', '+237692222222', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'technician')
+    ('30000000-0000-0000-0000-000000000001', 'Admin FixerPro237', 'admin@gmail.com', '+237690000000', '$2a$10$TtTqE0qamOh3UC4OgIUPK.fJVaCPSFxqUMaPmAMbtS1sSXEohvhqm', 'admin'),
+    ('30000000-0000-0000-0000-000000000002', 'Jean Client', 'client@fixerpro237.cm', '+237691111111', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'client'),
+    ('30000000-0000-0000-0000-000000000003', 'Samuel Électricien', 'samuel@fixerpro237.cm', '+237692222222', '$2b$10$iWbH0dFjA6wB78E/.1oZse0V71gE.e1Vd3jH.nCj1x/32uO4mZk.S', 'technician')
 ON CONFLICT (email) DO NOTHING;
 
 -- Seed Technician Profile for Samuel
-INSERT INTO technician_profiles (id, user_id, bio, years_experience, price_min, price_max, whatsapp, city_id, verified, availability) VALUES
-    ('40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', 'Électricien qualifié avec 8 ans d''expérience à Yaoundé. Spécialiste dépannage rapide et câblage moderne.', 8, 5000.00, 25000.00, '+237692222222', '10000000-0000-0000-0000-000000000001', TRUE, 'available')
+INSERT INTO technician_profiles (id, user_id, category_id, bio, years_experience, price_min, price_max, whatsapp, city_id, verified, availability, active_job_count) VALUES
+    ('40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', 'Électricien qualifié avec 8 ans d''expérience à Yaoundé. Spécialiste dépannage rapide et câblage moderne.', 8, 5000.00, 25000.00, '+237692222222', '10000000-0000-0000-0000-000000000001', TRUE, 'available', 0)
 ON CONFLICT (user_id) DO UPDATE SET
     id = EXCLUDED.id,
+    category_id = EXCLUDED.category_id,
     bio = EXCLUDED.bio,
     years_experience = EXCLUDED.years_experience,
     price_min = EXCLUDED.price_min,
@@ -333,14 +391,10 @@ ON CONFLICT (user_id) DO UPDATE SET
     whatsapp = EXCLUDED.whatsapp,
     city_id = EXCLUDED.city_id,
     verified = EXCLUDED.verified,
-    availability = EXCLUDED.availability;
+    availability = EXCLUDED.availability,
+    active_job_count = EXCLUDED.active_job_count;
 
--- Link Samuel to Category "Électricien"
-INSERT INTO technician_categories (technician_id, category_id)
-SELECT id, '20000000-0000-0000-0000-000000000001'
-FROM technician_profiles
-WHERE user_id = '30000000-0000-0000-0000-000000000003'
-ON CONFLICT DO NOTHING;
+-- (Samuel is now linked directly in technician_profiles)
 
 
 -- ==========================================
@@ -385,5 +439,33 @@ USING (
   EXISTS (
     SELECT 1 FROM public.users
     WHERE users.id = auth.uid() AND users.role = 'admin'
+  )
+);
+
+-- ==========================================
+-- Location Updates RLS (GPS Tracking)
+-- ==========================================
+
+ALTER TABLE public.location_updates ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Technicians can insert/update their own location for active assigned requests
+CREATE POLICY "Technicians can manage location for their assigned requests"
+ON public.location_updates
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM public.technician_profiles tp
+    WHERE tp.id = technician_id AND tp.user_id = auth.uid()
+  )
+);
+
+-- Policy: Clients can view location of their own requests
+CREATE POLICY "Clients can view location of their requests"
+ON public.location_updates
+FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.service_requests sr
+    WHERE sr.id = request_id AND sr.client_id = auth.uid()
   )
 );

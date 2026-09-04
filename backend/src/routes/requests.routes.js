@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const RequestsController = require('../controllers/requests.controller');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { ApiError } = require('../middleware/errorHandler');
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -19,9 +20,13 @@ router.use(requireAuth);
 router.post(
   '/',
   requireRole('client'),
+  upload.single('image'),
   [
-    body('technicianId').notEmpty().withMessage('L\'identifiant du technicien est requis'),
+    body('categoryId').notEmpty().withMessage('La catégorie est requise'),
+    body('cityId').notEmpty().withMessage('La ville est requise'),
     body('description').trim().notEmpty().withMessage('La description de la demande est requise'),
+    body('latitude').optional().isNumeric(),
+    body('longitude').optional().isNumeric(),
     validateRequest
   ],
   RequestsController.createRequest
@@ -30,13 +35,25 @@ router.post(
 router.get('/', RequestsController.getRequests);
 router.get('/:id', RequestsController.getRequestById);
 
-router.patch(
-  '/:id/status',
+// Lifecycle Endpoints
+router.put('/:id', requireRole('client'), upload.single('image'), RequestsController.updateRequest);
+router.delete('/:id', requireRole('client'), RequestsController.deleteRequest);
+router.post('/:id/cancel', requireRole('client'), RequestsController.cancelRequest);
+router.post('/:id/accept', requireRole('technician'), RequestsController.acceptRequest);
+router.post('/:id/start', requireRole('technician'), RequestsController.startRequest);
+router.post('/:id/complete', requireRole('technician'), RequestsController.completeRequest);
+
+// GPS Endpoints (Phase 7)
+router.post(
+  '/:id/location',
+  requireRole('technician'),
   [
-    body('status').isIn(['pending', 'accepted', 'rejected', 'in_progress', 'completed', 'cancelled']).withMessage('Statut invalide'),
+    body('latitude').isNumeric().withMessage('Latitude valide requise'),
+    body('longitude').isNumeric().withMessage('Longitude valide requise'),
     validateRequest
   ],
-  RequestsController.updateRequestStatus
+  RequestsController.updateLocation
 );
+router.get('/:id/location', RequestsController.getLocation);
 
 module.exports = router;

@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Header title="Tableau de Bord" subtitle="Vue d'ensemble de la plateforme TechConnect" onRefresh={fetchStats} />
+      <Header title="Tableau de Bord" subtitle="Vue d'ensemble de la plateforme FixerPro237" onRefresh={fetchStats} />
       <div className="page-body">
         {loading ? (
           <div className="loading-box"><div className="spinner" /></div>

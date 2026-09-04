@@ -1,4 +1,4 @@
-package com.techconnect.mobile
+package com.fixerpro237.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

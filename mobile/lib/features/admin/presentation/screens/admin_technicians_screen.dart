@@ -57,25 +57,39 @@ class AdminTechniciansScreen extends ConsumerWidget {
                 
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: tech.isVerified ? AppColors.success.withOpacity(0.2) : Colors.orange.withOpacity(0.2),
+                    backgroundColor: tech.isVerified ? AppColors.success.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
                     child: Icon(
                       tech.isVerified ? Icons.verified : Icons.pending_actions,
                       color: tech.isVerified ? AppColors.success : Colors.orange,
                     ),
                   ),
-                  title: Text(tech.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    tech.fullName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tech.email ?? 'Pas d\'email'),
-                      Text('${tech.cityName ?? "Ville inconnue"} • ${tech.yearsExperience} ans d\'exp.'),
+                      Text(
+                        tech.email ?? 'Pas d\'email',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        '${tech.cityName ?? "Ville inconnue"} • ${tech.yearsExperience} ans d\'exp.',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                   trailing: Column(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.star, color: Colors.amber, size: 16),
-                      Text(tech.ratingAvg.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                        tech.ratingAvg.toStringAsFixed(1),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
                     ],
                   ),
                 );

@@ -45,8 +45,15 @@ class AdminCitiesScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final city = cities[index];
                 return ListTile(
-                  title: Text(city.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Région: ${city.regionName ?? 'Inconnue'}'),
+                  title: Text(
+                    city.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    'Région: ${city.regionName ?? 'Inconnue'}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -173,43 +180,44 @@ class AdminCitiesScreen extends ConsumerWidget {
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  cityId == null ? 'Nouvelle ville' : 'Modifier la ville',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                TextField(
-                  controller: controller,
-                  decoration: const InputDecoration(labelText: 'Nom de la ville'),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'Région'),
-                  value: selectedRegionId,
-                  items: regions.map((r) => DropdownMenuItem(
-                    value: r.id,
-                    child: Text(r.name),
-                  )).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      selectedRegionId = val;
-                    });
-                  },
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text('Annuler'),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    cityId == null ? 'Nouvelle ville' : 'Modifier la ville',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: controller,
+                    decoration: const InputDecoration(labelText: 'Nom de la ville'),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Région'),
+                    initialValue: selectedRegionId,
+                    items: regions.map((r) => DropdownMenuItem(
+                      value: r.id,
+                      child: Text(r.name),
+                    )).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        selectedRegionId = val;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Annuler'),
+                        ),
                       ),
-                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton(
@@ -240,9 +248,10 @@ class AdminCitiesScreen extends ConsumerWidget {
                 ),
               ],
             ),
-          );
-        }
-      ),
-    );
-  }
+          ),
+        );
+      },
+    ),
+  );
+}
 }

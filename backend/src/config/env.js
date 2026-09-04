@@ -22,7 +22,7 @@ module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   supabaseUrl: process.env.SUPABASE_URL || '',
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  jwtSecret: process.env.JWT_SECRET || 'dev_jwt_secret_key_techconnect',
+  jwtSecret: process.env.JWT_SECRET || 'dev_jwt_secret_key_fixerpro237',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   corsOrigin: process.env.CORS_ORIGIN || '*',
   authRateLimitWindowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS || '900000', 10),

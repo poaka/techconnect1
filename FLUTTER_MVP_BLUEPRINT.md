@@ -1,4 +1,4 @@
-# TechConnect Cameroun — Flutter Mobile MVP Blueprint
+# FixerPro237 Cameroun — Flutter Mobile MVP Blueprint
 
 **Source of truth used to build this plan:** Cahier de Charges v1.0, Full Specification Book v2.0, Research Report (Chapters 1–2), and the confirmed architecture decision that Express remains the intermediary between clients and Supabase.
 

@@ -30,17 +30,23 @@ class RequestsRepositoryImpl implements RequestsRepository {
 
   @override
   Future<ServiceRequest> createRequest({
-    required String technicianId,
-    String? categoryId,
+    required String categoryId,
+    required String cityId,
     required String description,
     String? address,
+    double? latitude,
+    double? longitude,
+    String? imagePath,
   }) async {
     try {
       final res = await _remoteDataSource.createRequest(
-        technicianId: technicianId,
         categoryId: categoryId,
+        cityId: cityId,
         description: description,
         address: address,
+        latitude: latitude,
+        longitude: longitude,
+        imagePath: imagePath,
       );
       return ServiceRequest.fromJson(res);
     } catch (e) {
@@ -49,10 +55,77 @@ class RequestsRepositoryImpl implements RequestsRepository {
   }
 
   @override
-  Future<ServiceRequest> updateRequestStatus(String id, RequestStatus status) async {
+  Future<ServiceRequest> cancelRequest(String id) async {
     try {
-      final res = await _remoteDataSource.updateRequestStatus(id, status.toSnakeCase());
+      final res = await _remoteDataSource.cancelRequest(id);
       return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<ServiceRequest> acceptRequest(String id) async {
+    try {
+      final res = await _remoteDataSource.acceptRequest(id);
+      return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<ServiceRequest> startRequest(String id) async {
+    try {
+      final res = await _remoteDataSource.startRequest(id);
+      return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<ServiceRequest> completeRequest(String id) async {
+    try {
+      final res = await _remoteDataSource.completeRequest(id);
+      return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<void> updateLocation(String id, double latitude, double longitude) async {
+    try {
+      await _remoteDataSource.updateLocation(id, latitude, longitude);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getLocation(String id) async {
+    try {
+      return await _remoteDataSource.getLocation(id);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data, {String? imagePath}) async {
+    try {
+      final res = await _remoteDataSource.updateRequest(id, data, imagePath: imagePath);
+      return ServiceRequest.fromJson(res);
+    } catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    }
+  }
+
+  @override
+  Future<void> deleteRequest(String id) async {
+    try {
+      await _remoteDataSource.deleteRequest(id);
     } catch (e) {
       throw ErrorMapper.mapExceptionToFailure(e);
     }

@@ -37,7 +37,11 @@ class AdminRegionsScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final region = regions[index];
                 return ListTile(
-                  title: Text(region.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    region.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -137,48 +141,50 @@ class AdminRegionsScreen extends ConsumerWidget {
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              regionId == null ? 'Nouvelle région' : 'Modifier la région',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(labelText: 'Nom de la région'),
-            ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Annuler'),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                regionId == null ? 'Nouvelle région' : 'Modifier la région',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(labelText: 'Nom de la région'),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Annuler'),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () {
-                      if (controller.text.isNotEmpty) {
-                        if (regionId == null) {
-                          ref.read(regionActionsProvider.notifier).createRegion({'name': controller.text});
-                        } else {
-                          ref.read(regionActionsProvider.notifier).updateRegion(regionId, {'name': controller.text});
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        if (controller.text.isNotEmpty) {
+                          if (regionId == null) {
+                            ref.read(regionActionsProvider.notifier).createRegion({'name': controller.text});
+                          } else {
+                            ref.read(regionActionsProvider.notifier).updateRegion(regionId, {'name': controller.text});
+                          }
+                          Navigator.pop(ctx);
                         }
-                        Navigator.pop(ctx);
-                      }
-                    },
-                    child: const Text('Enregistrer'),
+                      },
+                      child: const Text('Enregistrer'),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

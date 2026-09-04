@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../providers/technicians_providers.dart';
@@ -74,7 +75,7 @@ class _TechnicianDirectoryScreenState extends ConsumerState<TechnicianDirectoryS
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Annuaire des Artisans'),
+        title: Text(context.tr('directory_title_long')),
         actions: [
           IconButton(
             icon: Stack(
@@ -121,7 +122,7 @@ class _TechnicianDirectoryScreenState extends ConsumerState<TechnicianDirectoryS
                       onChanged: _onSearchChanged,
                       style: const TextStyle(fontSize: 13.5),
                       decoration: InputDecoration(
-                        hintText: 'Rechercher métier, nom...',
+                        hintText: context.tr('search_artisan_hint'),
                         hintStyle: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                         prefixIcon: const Icon(Icons.search, size: 20),
                         suffixIcon: _searchController.text.isNotEmpty
@@ -144,7 +145,7 @@ class _TechnicianDirectoryScreenState extends ConsumerState<TechnicianDirectoryS
                     onPressed: _openFilterBottomSheet,
                     icon: const Icon(Icons.tune_rounded, size: 16),
                     label: Text(
-                      activeCount > 0 ? '($activeCount)' : 'Filtres',
+                      activeCount > 0 ? '($activeCount)' : context.tr('filters'),
                       style: const TextStyle(fontSize: 12.5),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -165,7 +166,7 @@ class _TechnicianDirectoryScreenState extends ConsumerState<TechnicianDirectoryS
                   scrollDirection: Axis.horizontal,
                   children: [
                     Chip(
-                      label: const Text('Réinitialiser tout', style: TextStyle(fontSize: 12)),
+                      label: Text(context.tr('reset_all'), style: const TextStyle(fontSize: 12)),
                       onDeleted: () {
                         _searchController.clear();
                         ref.read(technicianFilterProvider.notifier).resetFilters();
@@ -205,28 +206,28 @@ class _TechnicianDirectoryScreenState extends ConsumerState<TechnicianDirectoryS
                                     onPressed: () {
                                       ref.read(technicianListNotifierProvider.notifier).fetchTechnicians(isRefresh: true);
                                     },
-                                    child: const Text('Réessayer'),
+                                    child: Text(context.tr('retry')),
                                   ),
                                 ],
                               ),
                             ),
                           )
                         : technicianListState.items.isEmpty
-                            ? const Center(
+                            ? Center(
                                 child: Padding(
-                                  padding: EdgeInsets.all(24.0),
+                                  padding: const EdgeInsets.all(24.0),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.search_off_rounded, size: 54, color: AppColors.textSecondary),
-                                      SizedBox(height: 12),
+                                      const Icon(Icons.search_off_rounded, size: 54, color: AppColors.textSecondary),
+                                      const SizedBox(height: 12),
                                       Text(
-                                        'Aucun artisan trouvé',
-                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                        context.tr('no_artisan_found'),
+                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                       ),
-                                      SizedBox(height: 6),
+                                      const SizedBox(height: 6),
                                       Text(
-                                        'Essayez de modifier vos critères de recherche ou vos filtres.',
+                                        context.tr('try_changing_filters'),
                                         textAlign: TextAlign.center,
                                         style: AppTypography.bodyMedium,
                                       ),

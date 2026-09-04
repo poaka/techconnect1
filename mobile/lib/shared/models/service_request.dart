@@ -5,21 +5,18 @@ import '../../features/auth/domain/app_user.dart';
 import '../../features/technicians/domain/technician_profile.dart';
 
 enum RequestStatus {
-  pending,
-  accepted,
-  rejected,
+  unassigned,
+  assigned,
   inProgress,
   completed,
   cancelled;
 
   String get label {
     switch (this) {
-      case RequestStatus.pending:
-        return 'En attente';
-      case RequestStatus.accepted:
-        return 'Acceptée';
-      case RequestStatus.rejected:
-        return 'Refusée';
+      case RequestStatus.unassigned:
+        return 'Recherche en cours...';
+      case RequestStatus.assigned:
+        return 'Assignée';
       case RequestStatus.inProgress:
         return 'En cours';
       case RequestStatus.completed:
@@ -31,12 +28,10 @@ enum RequestStatus {
 
   String getLocalizedLabel(BuildContext context) {
     switch (this) {
-      case RequestStatus.pending:
-        return context.tr('status_pending');
-      case RequestStatus.accepted:
-        return context.tr('status_accepted');
-      case RequestStatus.rejected:
-        return context.tr('status_rejected');
+      case RequestStatus.unassigned:
+        return context.tr('status_unassigned');
+      case RequestStatus.assigned:
+        return context.tr('status_assigned');
       case RequestStatus.inProgress:
         return context.tr('status_in_progress');
       case RequestStatus.completed:
@@ -48,30 +43,31 @@ enum RequestStatus {
 
   static RequestStatus fromString(String value) {
     switch (value.toLowerCase()) {
-      case 'accepted':
-        return RequestStatus.accepted;
-      case 'rejected':
-        return RequestStatus.rejected;
+      case 'unassigned':
+      case 'dispatched': // intermediate state in live DB
+        return RequestStatus.unassigned;
+      case 'pending': // legacy status in live DB — treat as unassigned
+        return RequestStatus.unassigned;
+      case 'assigned':
+      case 'accepted': // legacy status in live DB — treat as assigned
+        return RequestStatus.assigned;
       case 'in_progress':
         return RequestStatus.inProgress;
       case 'completed':
         return RequestStatus.completed;
       case 'cancelled':
         return RequestStatus.cancelled;
-      case 'pending':
       default:
-        return RequestStatus.pending;
+        return RequestStatus.unassigned;
     }
   }
 
   String toSnakeCase() {
     switch (this) {
-      case RequestStatus.pending:
-        return 'pending';
-      case RequestStatus.accepted:
-        return 'accepted';
-      case RequestStatus.rejected:
-        return 'rejected';
+      case RequestStatus.unassigned:
+        return 'unassigned';
+      case RequestStatus.assigned:
+        return 'assigned';
       case RequestStatus.inProgress:
         return 'in_progress';
       case RequestStatus.completed:
@@ -89,6 +85,9 @@ class ServiceRequest {
   final RequestStatus status;
   final String? description;
   final String? address;
+  final double? latitude;
+  final double? longitude;
+  final String? imageUrl;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final DateTime? completedAt;
@@ -106,6 +105,9 @@ class ServiceRequest {
     required this.status,
     this.description,
     this.address,
+    this.latitude,
+    this.longitude,
+    this.imageUrl,
     required this.createdAt,
     this.updatedAt,
     this.completedAt,
@@ -123,11 +125,16 @@ class ServiceRequest {
       status: RequestStatus.fromString(json['status']?.toString() ?? 'pending'),
       description: json['description']?.toString(),
       address: json['address']?.toString(),
+      latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
+      longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
+      imageUrl: json['image_url']?.toString(),
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'].toString()) : DateTime.now(),
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'].toString()) : null,
       completedAt: json['completed_at'] != null ? DateTime.parse(json['completed_at'].toString()) : null,
       client: json['client'] != null ? AppUser.fromJson(json['client'] as Map<String, dynamic>) : null,
-      technician: json['technician'] != null ? TechnicianProfile.fromJson(json['technician'] as Map<String, dynamic>) : null,
+      technician: (json['assigned_technician'] ?? json['technician']) != null
+          ? TechnicianProfile.fromJson((json['assigned_technician'] ?? json['technician']) as Map<String, dynamic>)
+          : null,
       // For category, since backend might return a nested obj or just id
       category: json['category'] != null ? Category.fromJson(json['category'] as Map<String, dynamic>) : null,
       hasReview: json['review'] != null && (json['review'] is List ? (json['review'] as List).isNotEmpty : true),

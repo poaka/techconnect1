@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/app_button.dart';
@@ -22,7 +23,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
   Future<void> _openWhatsApp(BuildContext context, String? rawPhone) async {
     if (rawPhone == null || rawPhone.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Numéro de téléphone non renseigné pour cet artisan.')),
+        SnackBar(content: Text(context.tr('no_phone_provided'))),
       );
       return;
     }
@@ -35,19 +36,19 @@ class TechnicianProfileScreen extends ConsumerWidget {
       digits = '237$digits';
     }
 
-    final url = 'https://wa.me/$digits?text=Bonjour,%20je%20vous%20contacte%20depuis%20l\'application%20TechConnect%20Cameroun.';
+    final url = 'https://wa.me/$digits?text=Bonjour,%20je%20vous%20contacte%20depuis%20l\'application%20FixerPro237%20Cameroun.';
 
     try {
       final launched = await launchUrlString(url, mode: LaunchMode.externalApplication);
       if (!launched && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Impossible d\'ouvrir WhatsApp.')),
+          SnackBar(content: Text(context.tr('cannot_open_whatsapp'))),
         );
       }
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur lors de l\'ouverture de WhatsApp.')),
+          SnackBar(content: Text(context.tr('error_opening_whatsapp'))),
         );
       }
     }
@@ -56,7 +57,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
   Future<void> _makePhoneCall(BuildContext context, String? rawPhone) async {
     if (rawPhone == null || rawPhone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Numéro de téléphone non disponible.')),
+        SnackBar(content: Text(context.tr('phone_not_available'))),
       );
       return;
     }
@@ -66,7 +67,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Impossible de lancer l\'appel téléphonique.')),
+          SnackBar(content: Text(context.tr('cannot_launch_call'))),
         );
       }
     }
@@ -80,7 +81,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil de l\'Artisan'),
+        title: Text(context.tr('technician_profile')),
         actions: [
           IconButton(
             icon: Icon(
@@ -100,14 +101,14 @@ class TechnicianProfileScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.report_problem_outlined, color: Colors.orange),
-            tooltip: 'Signaler cet artisan',
+            tooltip: context.tr('report_artisan'),
             onPressed: () => _showReportDialog(context, ref),
           ),
         ],
       ),
       body: profileAsync.when(
         data: (profile) {
-          final primaryCategory = profile.categories.isNotEmpty ? profile.categories.first.name : 'Artisan / Technicien';
+          final primaryCategory = profile.categories.isNotEmpty ? profile.categories.first.name : context.tr('default_artisan');
           final locationText = [profile.cityName, profile.regionName].where((e) => e != null && e.isNotEmpty).join(', ');
 
           return SafeArea(
@@ -244,7 +245,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: AppButton(
-                          text: 'Appeler',
+                          text: context.tr('call'),
                           icon: Icons.phone_rounded,
                           isOutlined: true,
                           onPressed: () => _makePhoneCall(context, profile.phone),
@@ -255,7 +256,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 20),
 
                   // Bio / Description
-                  const Text('À propos', style: AppTypography.heading3),
+                  Text(context.tr('about'), style: AppTypography.heading3),
                   const SizedBox(height: 6),
                   Container(
                     width: double.infinity,
@@ -268,7 +269,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
                     child: Text(
                       profile.bio != null && profile.bio!.isNotEmpty
                           ? profile.bio!
-                          : 'Aucune description rédigée pour le moment.',
+                          : context.tr('no_description_yet'),
                       style: AppTypography.bodyMedium,
                     ),
                   ),
@@ -276,7 +277,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
 
                   // Pricing & Rates
                   if (profile.priceMin > 0 || profile.priceMax > 0) ...[
-                    const Text('Tarifs indicatifs', style: AppTypography.heading3),
+                    Text(context.tr('indicative_rates'), style: AppTypography.heading3),
                     const SizedBox(height: 6),
                     Container(
                       width: double.infinity,
@@ -289,7 +290,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Fourchette de prix', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          Text(context.tr('price_range'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                           Text(
                             '${profile.priceMin.toStringAsFixed(0)} - ${profile.priceMax.toStringAsFixed(0)} FCFA',
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
@@ -302,7 +303,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
 
                   // Skills & Categories List
                   if (profile.categories.isNotEmpty) ...[
-                    const Text('Compétences & Métiers', style: AppTypography.heading3),
+                    Text(context.tr('skills_and_trades'), style: AppTypography.heading3),
                     const SizedBox(height: 6),
                     Wrap(
                       spacing: 8,
@@ -325,8 +326,8 @@ class TechnicianProfileScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Avis des clients', style: AppTypography.heading3),
-                      Text('${profile.reviews.length} avis', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      Text(context.tr('customer_reviews'), style: AppTypography.heading3),
+                      Text('${profile.reviews.length}${context.tr('reviews_count')}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -341,7 +342,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.border),
                       ),
-                      child: const Text('Aucun avis client pour l\'instant.', style: AppTypography.bodyMedium),
+                      child: Text(context.tr('no_reviews_yet'), style: AppTypography.bodyMedium),
                     )
                   else
                     ListView.builder(
@@ -393,7 +394,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
         ),
         error: (err, stack) => Scaffold(
           appBar: AppBar(
-            title: const Text('Erreur'),
+            title: Text(context.tr('error_title')),
             actions: [
               IconButton(
                 icon: const Icon(Icons.flag_outlined),
@@ -409,11 +410,11 @@ class TechnicianProfileScreen extends ConsumerWidget {
                 children: [
                   const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                   const SizedBox(height: 12),
-                  const Text('Impossible de charger le profil de l\'artisan'),
+                  Text(context.tr('cannot_load_profile')),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => ref.refresh(technicianDetailProvider(technicianId)),
-                    child: const Text('Réessayer'),
+                    child: Text(context.tr('retry')),
                   ),
                 ],
               ),
@@ -425,9 +426,16 @@ class TechnicianProfileScreen extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: AppButton(
-            text: 'Demander un service',
+            text: context.tr('request_service'),
             onPressed: () {
-              context.push('/technicians/$technicianId/request');
+              final catId = profileAsync.value?.categories.isNotEmpty == true
+                  ? profileAsync.value!.categories.first.id
+                  : null;
+              if (catId != null) {
+                context.push('/create-request?categoryId=$catId');
+              } else {
+                context.push('/create-request');
+              }
             },
           ),
         ),
@@ -459,25 +467,25 @@ class TechnicianProfileScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Signaler l\'artisan',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                context.tr('report_artisan'),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              const Text('Veuillez expliquer pourquoi vous signalez cet artisan. Notre équipe examinera votre demande.'),
+              Text(context.tr('report_reason_desc')),
               const SizedBox(height: 16),
               TextField(
                 controller: reasonController,
-                decoration: const InputDecoration(
-                  labelText: 'Raison (ex: Arnaque, Comportement inapproprié)',
+                decoration: InputDecoration(
+                  labelText: context.tr('report_reason_label'),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: detailsController,
-                decoration: const InputDecoration(
-                  labelText: 'Détails supplémentaires...',
+                decoration: InputDecoration(
+                  labelText: context.tr('additional_details'),
                 ),
                 maxLines: 3,
               ),
@@ -487,7 +495,7 @@ class TechnicianProfileScreen extends ConsumerWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuler'),
+                      child: Text(context.tr('cancel')),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -504,18 +512,18 @@ class TechnicianProfileScreen extends ConsumerWidget {
                           if (context.mounted) {
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Signalement envoyé avec succès. Merci.')),
+                              SnackBar(content: Text(context.tr('report_sent_success'))),
                             );
                           }
                         } catch (e) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Erreur: $e')),
+                              SnackBar(content: Text('${context.tr('error_prefix')}$e')),
                             );
                           }
                         }
                       },
-                      child: const Text('Signaler'),
+                      child: Text(context.tr('report')),
                     ),
                   ),
                 ],

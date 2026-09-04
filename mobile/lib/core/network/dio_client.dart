@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -10,20 +9,13 @@ String get defaultApiBaseUrl {
   if (envUrl.isNotEmpty) return envUrl;
 
   if (kDebugMode) {
-    if (kIsWeb) {
-      return 'http://localhost:5000/api';
-    }
-
-    if (Platform.isAndroid) {
-      // 10.0.2.2 is the official QEMU host loopback alias for Android Emulators.
-      return 'http://10.0.2.2:5000/api';
-    }
-
-    return 'http://localhost:5000/api';
+    // 192.168.1.33 is your computer's local Wi-Fi IP address.
+    // This allows both physical devices and emulators to connect to the backend over Wi-Fi.
+    return 'http://192.168.1.33:5000/api';
   }
 
   // Release mode / Production URL on Render
-  return 'https://techconnect1-api.onrender.com/api';
+  return 'https://fixerpro2371-api.onrender.com/api';
 }
 
 class DioClient {
@@ -37,8 +29,8 @@ class DioClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl ?? defaultApiBaseUrl,
-        connectTimeout: const Duration(seconds: 2), // Optimized timeout
-        receiveTimeout: const Duration(seconds: 6),
+        connectTimeout: const Duration(seconds: 15), // Increased timeout for slow networks
+        receiveTimeout: const Duration(seconds: 45), // Increased to allow image uploads to complete
         headers: {
           'Content-Type': 'application/json',
         },

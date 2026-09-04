@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
-/// TechConnect Cameroun — Central Flutter Theme (Light & Dark Mode)
+/// FixerPro237 Cameroun — Central Flutter Theme (Light & Dark Mode)
 abstract class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(

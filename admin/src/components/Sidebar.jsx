@@ -36,9 +36,9 @@ export default function Sidebar() {
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <img src="/logo.png" alt="TechConnect Logo" />
+        <img src="/logo.png" alt="FixerPro237 Logo" />
         <div className="sidebar-logo-text">
-          <span className="sidebar-logo-title">TechConnect</span>
+          <span className="sidebar-logo-title">FixerPro237</span>
           <span className="sidebar-logo-sub">Administration</span>
         </div>
       </div>

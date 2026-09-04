@@ -23,7 +23,8 @@ class ValidationFailure extends Failure {
 
 class NetworkFailure extends Failure {
   const NetworkFailure([
-    super.message = 'Erreur de connexion réseau. Veuillez vérifier votre connexion 3G/4G.',
+    super.message =
+        'Erreur de connexion réseau. Veuillez vérifier votre connexion.',
     String? code,
     dynamic details,
   ]) : super(code: code, details: details);

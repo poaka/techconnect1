@@ -19,7 +19,7 @@ class Review {
     return Review(
       id: json['id']?.toString() ?? '',
       requestId: json['request_id']?.toString() ?? '',
-      clientName: json['client_name']?.toString() ?? json['client']?['full_name']?.toString() ?? 'Client TechConnect',
+      clientName: json['client_name']?.toString() ?? json['client']?['full_name']?.toString() ?? 'Client FixerPro237',
       rating: double.tryParse(json['rating']?.toString() ?? '0') ?? 0.0,
       comment: json['comment']?.toString(),
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,

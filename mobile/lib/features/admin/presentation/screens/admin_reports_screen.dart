@@ -98,7 +98,7 @@ class _ReportCard extends ConsumerWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+        side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -115,23 +115,25 @@ class _ReportCard extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     report.reason,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text(date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                const SizedBox(width: 6),
+                Text(date, style: const TextStyle(color: Colors.grey, fontSize: 11)),
               ],
             ),
             const SizedBox(height: 12),
-            Text('Signalé par: ${report.client?.fullName ?? 'Inconnu'}'),
+            Text('Signalé par: ${report.client?.fullName ?? 'Inconnu'}', overflow: TextOverflow.ellipsis),
             Text('Technicien: ${report.technician?.fullName ?? 'Inconnu'}', 
-                 style: const TextStyle(fontWeight: FontWeight.w600)),
+                 style: const TextStyle(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
             if (report.details != null && report.details!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text('Détails: ${report.details}'),
@@ -143,9 +145,9 @@ class _ReportCard extends ConsumerWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.1),
+                  color: AppColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.success.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
                 ),
                 child: Text('Action prise: ${report.actionTaken}', style: const TextStyle(color: AppColors.success)),
               ),
@@ -185,49 +187,51 @@ class _ReportCard extends ConsumerWidget {
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Résoudre le signalement',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              const Text('Quelle action avez-vous prise concernant ce technicien ? (ex: Avertissement envoyé, Compte suspendu, etc.)'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: actionController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Action prise...',
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Résoudre le signalement',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuler'),
-                    ),
+                const SizedBox(height: 16),
+                const Text('Quelle action avez-vous prise concernant ce technicien ? (ex: Avertissement envoyé, Compte suspendu, etc.)'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: actionController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    hintText: 'Action prise...',
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        final action = actionController.text.trim();
-                        if (action.isEmpty) return;
-                        ref.read(reportActionsProvider.notifier).resolveReport(report.id, action);
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Résoudre'),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Annuler'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () {
+                          final action = actionController.text.trim();
+                          if (action.isEmpty) return;
+                          ref.read(reportActionsProvider.notifier).resolveReport(report.id, action);
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Résoudre'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },

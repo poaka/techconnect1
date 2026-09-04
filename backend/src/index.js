@@ -9,6 +9,7 @@ const { errorHandler, ApiError } = require('./middleware/errorHandler');
 const authRoutes = require('./routes/auth.routes');
 const techniciansRoutes = require('./routes/technicians.routes');
 const requestsRoutes = require('./routes/requests.routes');
+const offersRoutes = require('./routes/offers.routes');
 const reviewsRoutes = require('./routes/reviews.routes');
 const favoritesRoutes = require('./routes/favorites.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
@@ -38,7 +39,7 @@ app.use('/api/uploads', express.static(uploadsDir));
 // Root welcome route
 app.get('/', (req, res) => {
   res.status(200).json({
-    message: 'Bienvenue sur l\'API TechConnect Cameroun',
+    message: 'Bienvenue sur l\'API FixerPro237 Cameroun',
     health: '/health',
     version: '1.0.0'
   });
@@ -56,7 +57,7 @@ app.get('/setup-admin', async (req, res) => {
     const { data, error } = await supabase
       .from('users')
       .upsert([{
-        full_name: 'Admin TechConnect',
+        full_name: 'Admin FixerPro237',
         email: 'admin@gmail.com',
         phone: '+237690000000',
         password_hash: hash,
@@ -80,7 +81,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     env: env.nodeEnv,
-    service: 'TechConnect Cameroun REST API'
+    service: 'FixerPro237 Cameroun REST API'
   });
 });
 
@@ -88,6 +89,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/technicians', techniciansRoutes);
 app.use('/api/requests', requestsRoutes);
+app.use('/api/offers', offersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/favorites', favoritesRoutes);
 app.use('/api/notifications', notificationsRoutes);
@@ -106,7 +108,7 @@ app.use(errorHandler);
 if (require.main === module) {
   app.listen(env.port, () => {
     console.log(`\n=================================================`);
-    console.log(`🚀 TechConnect Cameroun API Backend en cours d'exécution`);
+    console.log(`🚀 FixerPro237 Cameroun API Backend en cours d'exécution`);
     console.log(`📍 URL: http://localhost:${env.port}`);
     console.log(`🏥 Health Check: http://localhost:${env.port}/health`);
     console.log(`🛠️  Admin Verification Stand-in: http://localhost:${env.port}/admin/verify`);

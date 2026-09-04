@@ -1,4 +1,9 @@
-# TechConnect Cameroun — Project Specification
+# FixerPro237 — Project Specification
+
+**DÉCISIONS TRANCHÉES (Phase 0):**
+1. **Annuaire vs Dispatch** : Modèle de Dispatch (le client poste une demande, le système trouve et assigne le technicien).
+2. **Flutter vs React** : L'architecture complète est préservée (Mobile en Flutter, Web en React, Backend en Express JS, Base de données sur Supabase).
+3. **1 vs N catégories** : 1 seule catégorie par technicien (relation 1-to-many).
 
 **Status:** Living document — reflects the current locked decisions as of July 2026 (Express-in-the-middle architecture, mobile scope = Client + Technician).
 **Source of truth chain:** Cahier de Charges v1.0 → Full Specification Book v2.0 → this document (consolidates and supersedes wording conflicts between the two, e.g. the "Visitor" role, which is folded into Client everywhere in this doc).
@@ -28,8 +33,9 @@ In Cameroon, finding a reliable technician — electrician, plumber, mechanic, c
 | Module | Description |
 |---|---|
 | Authentication | Register (Client/Technician), login, JWT sessions, password recovery, RBAC |
-| Technician Directory | Search, multi-filter (city, region, category, availability, rating, price), sort, pagination |
-| Service Request Workflow | Client → Technician request lifecycle: Pending → Accepted → In Progress → Completed / Rejected / Cancelled |
+| Service Dispatch Engine | Client describes the problem → System identifies suitable, verified, available technicians in the same city → Sorts by lowest active job count → Dispatches job offers → First to accept is assigned |
+| Service Request Workflow | Lifecycle: Unassigned → Dispatched (Offers Pending) → Assigned (Accepted) → In Progress → Completed / Cancelled |
+| Live GPS Tracking | Client can track the assigned technician's real-time location once the job is in progress |
 | Verification | Technician uploads ID + certificate; Admin approves/rejects before the profile is publicly marked "verified" |
 | Rating & Review | 1–5 stars + written comment, only after a request is Completed; drives the technician's public reputation score |
 | Favorites | Client saves technicians for quick access later |
@@ -39,10 +45,10 @@ In Cameroon, finding a reliable technician — electrician, plumber, mechanic, c
 ## 5. User Flows
 
 ### 5.1 Client
-Browse (no account needed) → Register/Login → Search & filter Directory → View Technician Profile → Send Service Request → Track status in "My Requests" → On Completed: Rate & Review → Manage Favorites → Receive in-app Notifications on every status change.
+Register/Login → Select Service Category & City → Describe the Problem → Submit Request → System Dispatches Offers to Technicians → A Technician Accepts → Request is Assigned → Track Technician via Live GPS → On Completed: Rate & Review → Receive in-app Notifications on every status change.
 
 ### 5.2 Technician
-Register (role=technician) → Complete professional profile (bio, experience, price range, categories, city, WhatsApp) → Upload ID + certificate for verification → (Admin approves) → Receive incoming requests → Accept/Reject → Mark In Progress → Mark Completed → Rating accrues on public profile → Toggle availability at any time.
+Register (role=technician) → Complete professional profile (bio, experience, price range, single category, city, WhatsApp) → Upload ID + certificate for verification → (Admin approves) → Receive Dispatched Job Offers → Accept/Reject → Mark In Progress → Broadcast GPS Location → Mark Completed → Rating accrues on public profile → Toggle availability at any time.
 
 ### 5.3 Administrator (web only)
 Login → Review pending verification documents → Approve/reject technician accounts → Manage categories/regions/cities → Manage/suspend/delete user accounts → View platform-wide analytics.
@@ -54,11 +60,11 @@ Login → Review pending verification documents → Approve/reject technician ac
 - 21 seeded service categories, 10 regions with major cities (Cameroon-specific, admin-extensible).
 - JWT auth with bcrypt password hashing, RBAC on every protected route.
 - Structured verification workflow (manual admin review, not automated).
+- Live GPS tracking for assigned interventions.
 
 **Explicitly excluded from V1** (documented, not forgotten):
 - Real-time chat between client and technician.
 - Mobile Money integration (MTN MoMo, Orange Money).
-- GPS/proximity-based search.
 - AI-driven recommendation engine.
 - Voice search.
 - Push notifications (FCM), SMS, WhatsApp delivery channels — in-app only for V1.
@@ -67,7 +73,7 @@ Login → Review pending verification documents → Approve/reject technician ac
 
 ## 7. Differentiation Strategy
 
-Per the competitive analysis (WhatsApp/Facebook, iCiyaTout, TAQ App, MboaTek, Senvato, IMHOTEP): none of the existing options combine **structured identity verification** + a **full trackable request lifecycle** + a **reputation system tied to confirmed completed jobs**. TechConnect's bet is "trust as the product" — not just another open directory, but a platform where a technician's rating actually means something because it's gated behind a real completed transaction, and where identity has been checked by a human admin before the profile goes live.
+Per the competitive analysis (WhatsApp/Facebook, iCiyaTout, TAQ App, MboaTek, Senvato, IMHOTEP): none of the existing options combine **structured identity verification** + a **full trackable request lifecycle** + a **reputation system tied to confirmed completed jobs**. FixerPro237's bet is "trust as the product" — not just another open directory, but a platform where a technician's rating actually means something because it's gated behind a real completed transaction, and where identity has been checked by a human admin before the profile goes live.
 
 ## 8. Non-Functional Requirements
 

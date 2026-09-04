@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:get_storage/get_storage.dart';
 
 class StorageService {
@@ -34,9 +35,13 @@ class StorageService {
     await _box.remove(isLoggedInKey);
   }
 
-  /// Retrieves the saved language code ('fr' or 'en') from GetStorage. Defaults to 'fr'.
+  /// Retrieves the saved language code ('fr' or 'en') from GetStorage. Defaults to system locale.
   String getSavedLanguage() {
-    return _box.read<String>(languageKey) ?? 'fr';
+    final saved = _box.read<String>(languageKey);
+    if (saved != null) return saved;
+    
+    final systemLang = ui.PlatformDispatcher.instance.locale.languageCode;
+    return systemLang == 'en' ? 'en' : 'fr';
   }
 
   /// Saves the user's preferred language code to GetStorage.

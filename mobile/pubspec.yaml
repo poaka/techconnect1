@@ -1,5 +1,5 @@
 name: mobile
-description: "TechConnect Cameroun Mobile Application (Client & Technician)"
+description: "FixerPro237 Cameroun Mobile Application (Client & Technician)"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -21,6 +21,7 @@ dependencies:
   intl: ^0.20.2
   url_launcher: ^6.3.0
   get_storage: ^2.1.1
+  geolocator: ^13.0.1
 
 dependency_overrides:
   path_provider_android: 2.2.12

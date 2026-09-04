@@ -37,13 +37,20 @@ class AdminCategoriesScreen extends ConsumerWidget {
                 final category = categories[index];
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.primarySubtle.withOpacity(0.2),
+                    backgroundColor: AppColors.primarySubtle.withValues(alpha: 0.2),
                     child: category.iconName != null
                         ? Text(category.iconName!, style: const TextStyle(fontSize: 24))
                         : const Icon(Icons.category, color: AppColors.primary),
                   ),
-                  title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(category.description ?? 'Pas de description'),
+                  title: Text(
+                    category.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    category.description ?? 'Pas de description',
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -96,64 +103,66 @@ class AdminCategoriesScreen extends ConsumerWidget {
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                isEditing ? 'Modifier la catégorie' : 'Nouvelle catégorie',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Nom de la catégorie'),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: iconController,
-                decoration: const InputDecoration(labelText: 'Emoji (ex: 🔧)'),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Annuler'),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  isEditing ? 'Modifier la catégorie' : 'Nouvelle catégorie',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Nom de la catégorie'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: descController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: iconController,
+                  decoration: const InputDecoration(labelText: 'Emoji (ex: 🔧)'),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Annuler'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        final data = {
-                          'name': nameController.text.trim(),
-                          'description': descController.text.trim(),
-                          'icon_name': iconController.text.trim(),
-                        };
-                        if (data['name']!.isEmpty) return;
-                        
-                        if (isEditing) {
-                          ref.read(categoryActionsProvider.notifier).updateCategory(category.id, data);
-                        } else {
-                          ref.read(categoryActionsProvider.notifier).createCategory(data);
-                        }
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Enregistrer'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () {
+                          final data = {
+                            'name': nameController.text.trim(),
+                            'description': descController.text.trim(),
+                            'icon_name': iconController.text.trim(),
+                          };
+                          if (data['name']!.isEmpty) return;
+                          
+                          if (isEditing) {
+                            ref.read(categoryActionsProvider.notifier).updateCategory(category.id, data);
+                          } else {
+                            ref.read(categoryActionsProvider.notifier).createCategory(data);
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: Text(isEditing ? 'Enregistrer' : 'Créer'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },

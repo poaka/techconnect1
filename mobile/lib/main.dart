@@ -14,13 +14,13 @@ void main() async {
   await GetStorage.init();
   runApp(
     const ProviderScope(
-      child: TechConnectApp(),
+      child: FixerPro237App(),
     ),
   );
 }
 
-class TechConnectApp extends ConsumerWidget {
-  const TechConnectApp({super.key});
+class FixerPro237App extends ConsumerWidget {
+  const FixerPro237App({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +29,7 @@ class TechConnectApp extends ConsumerWidget {
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp.router(
-      title: 'TechConnect Cameroun',
+      title: 'FixerPro237 Cameroun',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

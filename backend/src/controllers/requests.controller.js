@@ -3,7 +3,7 @@ const RequestsService = require('../services/requests.service');
 class RequestsController {
   static async createRequest(req, res, next) {
     try {
-      const request = await RequestsService.createRequest(req.user.id, req.body);
+      const request = await RequestsService.createRequest(req.user.id, req.body, req.file);
       res.status(201).json({ data: request });
     } catch (error) {
       next(error);
@@ -28,11 +28,73 @@ class RequestsController {
     }
   }
 
-  static async updateRequestStatus(req, res, next) {
+  static async cancelRequest(req, res, next) {
     try {
-      const { status } = req.body;
-      const updated = await RequestsService.updateRequestStatus(req.params.id, req.user.id, req.user.role, status);
+      const updated = await RequestsService.cancelRequest(req.params.id, req.user.id);
       res.status(200).json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async completeRequest(req, res, next) {
+    try {
+      const updated = await RequestsService.completeRequest(req.params.id, req.user.id);
+      res.status(200).json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+  static async updateLocation(req, res, next) {
+    try {
+      const { latitude, longitude } = req.body;
+      const updated = await RequestsService.updateLocation(req.params.id, req.user.id, latitude, longitude);
+      res.status(200).json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getLocation(req, res, next) {
+    try {
+      const location = await RequestsService.getLocation(req.params.id, req.user.id, req.user.role);
+      res.status(200).json({ data: location });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async acceptRequest(req, res, next) {
+    try {
+      const result = await RequestsService.acceptRequest(req.params.id, req.user.id);
+      res.status(200).json({ data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async startRequest(req, res, next) {
+    try {
+      const updated = await RequestsService.startRequest(req.params.id, req.user.id);
+      res.status(200).json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateRequest(req, res, next) {
+    try {
+      const updated = await RequestsService.updateRequest(req.params.id, req.user.id, req.body, req.file);
+      res.status(200).json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deleteRequest(req, res, next) {
+    try {
+      const result = await RequestsService.deleteRequest(req.params.id, req.user.id);
+      res.status(200).json({ data: result });
     } catch (error) {
       next(error);
     }

@@ -1,6 +1,6 @@
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/network/dio_client.dart';
 import '../../../../shared/models/service_request.dart';
 import '../../../auth/domain/app_user.dart';
 import '../../../auth/presentation/auth_provider.dart';
@@ -70,6 +70,7 @@ class ReportActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(adminReportsProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -93,6 +94,7 @@ class CategoryActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(adminCategoriesProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -104,6 +106,7 @@ class CategoryActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(adminCategoriesProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -115,6 +118,7 @@ class CategoryActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(adminCategoriesProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -147,6 +151,7 @@ class ReviewDocumentNotifier extends StateNotifier<AsyncValue<void>> {
       _ref.invalidate(pendingVerificationsProvider);
       _ref.invalidate(platformStatsProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -171,6 +176,7 @@ class UserActionsNotifier extends StateNotifier<AsyncValue<void>> {
       _ref.invalidate(adminUsersProvider);
       _ref.invalidate(platformStatsProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -194,6 +200,7 @@ class RegionActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(regionsProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -205,6 +212,7 @@ class RegionActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(regionsProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -216,6 +224,7 @@ class RegionActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(regionsProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -239,6 +248,7 @@ class CityActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(citiesProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -250,6 +260,7 @@ class CityActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(citiesProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }
@@ -261,6 +272,7 @@ class CityActionsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       _ref.invalidate(citiesProvider);
     } catch (e, st) {
+      debugPrint('[AdminProviders] Error: $e\n$st');
       state = AsyncValue.error(e, st);
     }
   }

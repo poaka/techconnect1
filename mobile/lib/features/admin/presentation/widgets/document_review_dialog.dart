@@ -30,7 +30,7 @@ class _DocumentReviewDialogState extends ConsumerState<DocumentReviewDialog> {
     if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
       return rawUrl;
     }
-    const base = 'https://techconnect1-api.onrender.com';
+    const base = 'https://fixerpro2371-api.onrender.com';
     final cleanPath = rawUrl.startsWith('/') ? rawUrl : '/$rawUrl';
     return '$base$cleanPath';
   }
@@ -234,7 +234,7 @@ class _DocumentReviewDialogState extends ConsumerState<DocumentReviewDialog> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.6),
+                                      color: Colors.black.withValues(alpha: 0.6),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: const Row(
