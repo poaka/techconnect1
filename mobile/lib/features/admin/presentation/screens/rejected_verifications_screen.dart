@@ -68,12 +68,16 @@ class RejectedVerificationsScreen extends ConsumerWidget {
                     leading: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.error.withOpacity(0.1),
+                        color: AppColors.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.cancel_outlined, color: AppColors.error),
                     ),
-                    title: Text(techName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(
+                      techName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Column(
@@ -83,7 +87,12 @@ class RejectedVerificationsScreen extends ConsumerWidget {
                           Text('Soumis le: $dateFormatted', style: const TextStyle(fontSize: 12)),
                           if (doc.rejectionReason != null) ...[
                             const SizedBox(height: 4),
-                            Text('Motif: ${doc.rejectionReason}', style: const TextStyle(color: AppColors.error, fontSize: 12)),
+                            Text(
+                              'Motif: ${doc.rejectionReason}',
+                              style: const TextStyle(color: AppColors.error, fontSize: 12),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ]
                         ],
                       ),

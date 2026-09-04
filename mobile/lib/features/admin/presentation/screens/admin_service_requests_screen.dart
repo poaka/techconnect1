@@ -18,15 +18,13 @@ class _AdminServiceRequestsScreenState extends ConsumerState<AdminServiceRequest
 
   Color _getStatusColor(RequestStatus status) {
     switch (status) {
-      case RequestStatus.pending:
+      case RequestStatus.unassigned:
         return Colors.orange;
-      case RequestStatus.accepted:
-        return Colors.blue;
+      case RequestStatus.assigned:
       case RequestStatus.inProgress:
-        return Colors.purple;
+        return AppColors.primary;
       case RequestStatus.completed:
         return AppColors.success;
-      case RequestStatus.rejected:
       case RequestStatus.cancelled:
         return AppColors.error;
     }
@@ -77,7 +75,7 @@ class _AdminServiceRequestsScreenState extends ConsumerState<AdminServiceRequest
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(request.status).withOpacity(0.15),
+                  color: _getStatusColor(request.status).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -277,7 +275,7 @@ class _AdminServiceRequestsScreenState extends ConsumerState<AdminServiceRequest
                     leading: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.15),
+                        color: statusColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(Icons.assignment_outlined, color: statusColor),
@@ -292,10 +290,11 @@ class _AdminServiceRequestsScreenState extends ConsumerState<AdminServiceRequest
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.15),
+                            color: statusColor.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(

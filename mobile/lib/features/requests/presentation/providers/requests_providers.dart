@@ -38,16 +38,22 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
   }
 
   Future<ServiceRequest> createRequest({
-    required String technicianId,
-    String? categoryId,
+    required String categoryId,
+    required String cityId,
     required String description,
     String? address,
+    double? latitude,
+    double? longitude,
+    String? imagePath,
   }) async {
     final newRequest = await _repository.createRequest(
-      technicianId: technicianId,
       categoryId: categoryId,
+      cityId: cityId,
       description: description,
       address: address,
+      latitude: latitude,
+      longitude: longitude,
+      imagePath: imagePath,
     );
     
     // Add to current list
@@ -57,10 +63,45 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
     return newRequest;
   }
 
-  Future<ServiceRequest> updateStatus(String id, RequestStatus newStatus) async {
-    final updatedRequest = await _repository.updateRequestStatus(id, newStatus);
-    
-    // Update in current list
+  Future<ServiceRequest> cancelRequest(String id) async {
+    final updatedRequest = await _repository.cancelRequest(id);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  Future<ServiceRequest> acceptRequest(String id) async {
+    final updatedRequest = await _repository.acceptRequest(id);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  Future<ServiceRequest> startRequest(String id) async {
+    final updatedRequest = await _repository.startRequest(id);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  Future<ServiceRequest> completeRequest(String id) async {
+    final updatedRequest = await _repository.completeRequest(id);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  Future<ServiceRequest> updateRequest(String id, Map<String, dynamic> data, {String? imagePath}) async {
+    final updatedRequest = await _repository.updateRequest(id, data, imagePath: imagePath);
+    _updateRequestInState(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  Future<void> deleteRequest(String id) async {
+    await _repository.deleteRequest(id);
+    if (state.hasValue) {
+      final updatedList = state.value!.where((req) => req.id != id).toList();
+      state = AsyncValue.data(updatedList);
+    }
+  }
+
+  void _updateRequestInState(String id, ServiceRequest updatedRequest) {
     if (state.hasValue) {
       final updatedList = state.value!.map<ServiceRequest>((req) {
         if (req.id == id) {
@@ -70,7 +111,6 @@ class RequestListNotifier extends StateNotifier<AsyncValue<List<ServiceRequest>>
       }).toList();
       state = AsyncValue.data(updatedList);
     }
-    return updatedRequest;
   }
 }
 
@@ -79,3 +119,27 @@ final requestDetailProvider = FutureProvider.family<ServiceRequest, String>((ref
   final repository = ref.watch(requestsRepositoryProvider);
   return repository.getRequestById(id);
 });
+
+final requestLocationProvider = FutureProvider.family<Map<String, dynamic>?, String>((ref, requestId) async {
+  final repository = ref.watch(requestsRepositoryProvider);
+  return repository.getLocation(requestId);
+});
+
+// Periodic live location stream for real-time tracking on active mission screen
+final liveRequestLocationProvider = StreamProvider.autoDispose.family<Map<String, dynamic>?, String>((ref, requestId) async* {
+  final repository = ref.watch(requestsRepositoryProvider);
+  
+  // Emit initial fetch immediately
+  yield await repository.getLocation(requestId);
+  
+  // Poll every 12 seconds while this provider is active on screen
+  await for (final _ in Stream.periodic(const Duration(seconds: 12))) {
+    try {
+      final loc = await repository.getLocation(requestId);
+      yield loc;
+    } catch (_) {
+      // Ignore transient errors to keep previous location on screen
+    }
+  }
+});
+

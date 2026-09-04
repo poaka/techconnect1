@@ -12,7 +12,7 @@ class ReviewsService {
     // Fetch the request
     const { data: request, error: reqErr } = await supabase
       .from('service_requests')
-      .select('id, client_id, technician_id, status')
+      .select('id, client_id, assigned_technician_id, status')
       .eq('id', requestId)
       .single();
 
@@ -28,12 +28,16 @@ class ReviewsService {
       throw ApiError.badRequest('Seules les demandes terminées peuvent faire l\'objet d\'un avis');
     }
 
+    if (!request.assigned_technician_id) {
+      throw ApiError.badRequest('Aucun technicien assigné à cette demande');
+    }
+
     // Check existing review
     const { data: existingReview } = await supabase
       .from('reviews')
       .select('id')
       .eq('request_id', requestId)
-      .single();
+      .maybeSingle();
 
     if (existingReview) {
       throw ApiError.conflict('Cette demande a déjà fait l\'objet d\'un avis');
@@ -45,7 +49,7 @@ class ReviewsService {
         {
           request_id: requestId,
           client_id: clientId,
-          technician_id: request.technician_id,
+          technician_id: request.assigned_technician_id,
           rating: rating,
           comment: comment || null
         }
@@ -59,6 +63,28 @@ class ReviewsService {
     if (insertErr) {
       console.error('[ReviewsService.createReview error]', insertErr);
       throw ApiError.internal('Erreur lors de l\'enregistrement de l\'avis');
+    }
+
+    // Update technician rating_avg and rating_count in background
+    try {
+      const { data: allReviews } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('technician_id', request.assigned_technician_id);
+
+      if (allReviews && allReviews.length > 0) {
+        const count = allReviews.length;
+        const avg = allReviews.reduce((sum, r) => sum + r.rating, 0) / count;
+        await supabase
+          .from('technician_profiles')
+          .update({
+            rating_avg: parseFloat(avg.toFixed(2)),
+            rating_count: count
+          })
+          .eq('id', request.assigned_technician_id);
+      }
+    } catch (calcErr) {
+      console.error('[ReviewsService.createReview] Rating recalculation error:', calcErr);
     }
 
     return newReview;

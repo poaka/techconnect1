@@ -12,10 +12,10 @@ class OffersService {
   static async acceptOffer(offerId, technicianId) {
     if (!supabase) throw ApiError.internal('Base de données indisponible');
 
-    // 1. Fetch the offer to get the request_id and verify ownership
+    // 1. Fetch the offer to get the service_request_id and verify ownership
     const { data: offer, error: offerErr } = await supabase
       .from('job_offers')
-      .select('id, request_id, technician_id, status')
+      .select('id, service_request_id, technician_id, status')
       .eq('id', offerId)
       .single();
 
@@ -27,7 +27,7 @@ class OffersService {
       throw ApiError.forbidden('Cette offre ne vous est pas destinée');
     }
 
-    if (offer.status !== 'pending') {
+    if (offer.status !== 'sent') {
       throw ApiError.badRequest(`Cette offre est déjà ${offer.status}`);
     }
 
@@ -41,7 +41,7 @@ class OffersService {
         status: 'assigned',
         updated_at: new Date().toISOString()
       })
-      .eq('id', offer.request_id)
+      .eq('id', offer.service_request_id)
       .is('assigned_technician_id', null) // <-- The Atomic CAS constraint
       .select()
       .single();
@@ -68,10 +68,25 @@ class OffersService {
     // Invalidate all other competing offers for this same request
     await supabase
       .from('job_offers')
-      .update({ status: 'expired' }) // We use 'expired' for those who didn't respond in time
-      .eq('request_id', offer.request_id)
+      .update({ status: 'expired' }) // 'expired' = valid in live DB
+      .eq('service_request_id', offer.service_request_id)
       .neq('id', offerId)
-      .eq('status', 'pending');
+      .eq('status', 'sent');
+
+    // 4. Notify client that a technician accepted
+    try {
+      if (assignedRequest && assignedRequest.client_id) {
+        await supabase.from('notifications').insert([{
+          user_id: assignedRequest.client_id,
+          type: 'request_status_change',
+          title: 'Artisan assigné !',
+          message: 'Un artisan qualifié a accepté votre demande et prend en charge votre intervention.',
+          metadata: { requestId: offer.service_request_id }
+        }]);
+      }
+    } catch (notifErr) {
+      console.error('[OffersService.acceptOffer] Notification error:', notifErr);
+    }
 
     return {
       message: 'Mission acceptée avec succès',
@@ -93,16 +108,16 @@ class OffersService {
 
     if (offerErr || !offer) throw ApiError.notFound('Offre introuvable');
     if (offer.technician_id !== technicianId) throw ApiError.forbidden('Accès refusé');
-    if (offer.status !== 'pending') throw ApiError.badRequest(`Offre déjà ${offer.status}`);
+    if (offer.status !== 'sent') throw ApiError.badRequest(`Offre déjà ${offer.status}`);
 
     const { data, error } = await supabase
       .from('job_offers')
-      .update({ status: 'rejected', responded_at: new Date().toISOString() })
+      .update({ status: 'declined', responded_at: new Date().toISOString() })
       .eq('id', offerId)
       .select()
       .single();
 
-    if (error) throw ApiError.internal('Erreur lors du rejet de l\'offre');
+    if (error) throw ApiError.internal('Erreur lors du refus de l\'offre');
 
     // Here we could trigger a re-dispatch if we wanted to dynamically invite more technicians,
     // but that would typically be handled by a background cron or trigger.

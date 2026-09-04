@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/technicians_providers.dart';
 import '../widgets/category_item.dart';
@@ -15,7 +16,7 @@ class CategoriesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Toutes les catégories'),
+        title: Text(context.tr('all_categories')),
       ),
       body: SafeArea(
         child: categoriesAsync.when(
@@ -26,18 +27,18 @@ class CategoriesScreen extends ConsumerWidget {
               children: [
                 const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 48),
                 const SizedBox(height: 16),
-                const Text('Erreur lors du chargement des catégories'),
+                Text(context.tr('error_loading_categories')),
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () => ref.invalidate(categoriesProvider),
-                  child: const Text('Réessayer'),
+                  child: Text(context.tr('retry')),
                 ),
               ],
             ),
           ),
           data: (categories) {
             if (categories.isEmpty) {
-              return const Center(child: Text('Aucune catégorie trouvée.'));
+              return Center(child: Text(context.tr('no_category_found')));
             }
 
             return GridView.builder(
