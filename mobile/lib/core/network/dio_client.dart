@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../storage/secure_storage_service.dart';
 import 'jwt_interceptor.dart';
 
-const bool useLocalBackend = true; // Set to true to test locally, false to test Render
+const bool useLocalBackend = false; // Set to true to test locally, false to test Render
 
 String get defaultApiBaseUrl {
   const envUrl = String.fromEnvironment('API_BASE_URL');
