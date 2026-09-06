@@ -48,20 +48,20 @@ class TechnicianProfile {
 
   factory TechnicianProfile.fromJson(Map<String, dynamic> json) {
     // Handle nested user object or root fields
-    final userMap = json['user'] is Map<String, dynamic> ? json['user'] : json;
-    final cityMap = json['city'] is Map<String, dynamic> ? json['city'] : null;
+    final userMap = json['user'] is Map ? Map<String, dynamic>.from(json['user']) : json;
+    final cityMap = json['city'] is Map ? Map<String, dynamic>.from(json['city']) : null;
 
     final catList = (json['categories'] as List<dynamic>?)
-            ?.map((c) => Category.fromJson(c is Map<String, dynamic> ? (c['category'] ?? c) : {}))
+            ?.map((c) => Category.fromJson(c is Map ? Map<String, dynamic>.from(c['category'] ?? c) : {}))
             .toList() ??
         [];
         
     if (json['category'] != null && catList.isEmpty) {
-      catList.add(Category.fromJson(json['category'] as Map<String, dynamic>));
+      catList.add(Category.fromJson(json['category'] is Map ? Map<String, dynamic>.from(json['category']) : {}));
     }
 
     final revList = (json['reviews'] as List<dynamic>?)
-            ?.map((r) => Review.fromJson(r as Map<String, dynamic>))
+            ?.map((r) => Review.fromJson(r is Map ? Map<String, dynamic>.from(r) : {}))
             .toList() ??
         [];
 

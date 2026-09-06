@@ -13,12 +13,14 @@ abstract class ErrorMapper {
 
     if (dioError.response != null && dioError.response?.data != null) {
       final data = dioError.response?.data;
-      if (data is Map<String, dynamic> && data.containsKey('error')) {
-        final errObj = data['error'];
-        if (errObj is Map<String, dynamic>) {
-          final code = errObj['code']?.toString() ?? 'UNKNOWN_ERROR';
-          final message = errObj['message']?.toString() ?? 'Une erreur s\'est produite.';
-          final details = errObj['details'];
+      if (data is Map) {
+        final mapData = Map<String, dynamic>.from(data);
+        final errObj = mapData['error'] ?? mapData['message'] ?? mapData;
+        if (errObj is Map) {
+          final errMap = Map<String, dynamic>.from(errObj);
+          final code = errMap['code']?.toString() ?? 'UNKNOWN_ERROR';
+          final message = errMap['message']?.toString() ?? 'Une erreur s\'est produite.';
+          final details = errMap['details'];
 
           if (code == 'UNAUTHORIZED' || code == 'FORBIDDEN') {
             return AuthFailure(message, code: code, details: details);
@@ -26,7 +28,11 @@ abstract class ErrorMapper {
             return ValidationFailure(message, code: code, details: details);
           }
           return ServerFailure.named(message, code: code, details: details);
+        } else if (errObj is String && errObj.isNotEmpty) {
+          return ServerFailure.named(errObj);
         }
+      } else if (data is String && data.isNotEmpty) {
+        return ServerFailure.named(data);
       }
     }
 
