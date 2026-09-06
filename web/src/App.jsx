@@ -79,7 +79,7 @@ export default function App() {
               <div className="hero-actions">
                 <a href={apkUrl} download="FixerPro237-Cameroun.apk" className="btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.05rem' }}>
                   <Download size={22} />
-                  <span>Télécharger pour Android (51.4 MB)</span>
+                  <span>Télécharger pour Android (59.1 MB)</span>
                 </a>
                 <a href="#how-it-works" className="btn-secondary">
                   <span>Découvrir le fonctionnement</span>
@@ -341,7 +341,7 @@ export default function App() {
 
             <a href={apkUrl} download="FixerPro237-Cameroun.apk" className="btn-primary" style={{ background: '#FFFFFF', color: 'var(--primary-dark)', fontSize: '1.1rem', padding: '1.1rem 2.5rem' }}>
               <Download size={24} color="var(--primary)" />
-              <span style={{ fontWeight: '800' }}>Télécharger l'APK (58.9 MB)</span>
+              <span style={{ fontWeight: '800' }}>Télécharger l'APK (59.1 MB)</span>
             </a>
 
             {/* Direct Install Instructions Box */}
