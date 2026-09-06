@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/models/job_offer.dart';
 import '../../../technician_dashboard/presentation/providers/technician_stats_provider.dart';
 import '../providers/offers_providers.dart';
 
@@ -70,7 +71,7 @@ class OffersScreen extends ConsumerWidget {
 }
 
 class _OfferCard extends ConsumerStatefulWidget {
-  final dynamic offer;
+  final JobOffer offer;
   const _OfferCard({required this.offer});
 
   @override
@@ -83,7 +84,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
   Future<void> _acceptOffer() async {
     setState(() => _isLoading = true);
     try {
-      await ref.read(offersListProvider.notifier).acceptOffer(widget.offer['id']);
+      await ref.read(offersListProvider.notifier).acceptOffer(widget.offer.id);
       ref.invalidate(technicianStatsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -105,7 +106,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
   Future<void> _rejectOffer() async {
     setState(() => _isLoading = true);
     try {
-      await ref.read(offersListProvider.notifier).rejectOffer(widget.offer['id']);
+      await ref.read(offersListProvider.notifier).rejectOffer(widget.offer.id);
       ref.invalidate(technicianStatsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -125,8 +126,8 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
 
   @override
   Widget build(BuildContext context) {
-    final offer = widget.offer as Map<String, dynamic>;
-    final request = offer['request'] as Map<String, dynamic>?;
+    final offer = widget.offer;
+    final request = offer.request;
     if (request == null) return const SizedBox.shrink();
 
     return Card(
@@ -138,7 +139,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              request['category']?['name'] ?? context.tr('service'),
+              request.category?.name ?? context.tr('service'),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -146,21 +147,21 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
               children: [
                 const Icon(Icons.person_outline, size: 16, color: Colors.grey),
                 const SizedBox(width: 8),
-                Text(request['client']?['full_name'] ?? context.tr('client'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                Text(request.client?.fullName ?? context.tr('client'), style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),
-            if (request['address'] != null && request['address'].toString().isNotEmpty) ...[
+            if (request.address != null && request.address!.isNotEmpty) ...[
               const SizedBox(height: 4),
               Row(
                 children: [
                   const Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(request['address'], maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  Expanded(child: Text(request.address!, maxLines: 1, overflow: TextOverflow.ellipsis)),
                 ],
               ),
             ],
             const SizedBox(height: 12),
-            if (request['description'] != null && request['description'].toString().isNotEmpty)
+            if (request.description != null && request.description!.isNotEmpty)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -169,7 +170,7 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  request['description'],
+                  request.description!,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
