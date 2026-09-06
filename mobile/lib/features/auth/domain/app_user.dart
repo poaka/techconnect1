@@ -31,8 +31,8 @@ class AppUser {
       role: UserRole.fromString(json['role']?.toString() ?? 'client'),
       avatarUrl: json['avatar_url']?.toString(),
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      technicianProfile: json['technician_profile'] != null 
-          ? TechnicianProfile.fromJson(json['technician_profile'] as Map<String, dynamic>)
+      technicianProfile: json['technician_profile'] is Map 
+          ? TechnicianProfile.fromJson(Map<String, dynamic>.from(json['technician_profile'] as Map))
           : null,
     );
   }

@@ -27,7 +27,7 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
         role: role,
       );
-      final user = AppUser.fromJson(res['user']);
+      final user = AppUser.fromJson(Map<String, dynamic>.from(res['user'] as Map));
       final token = res['token'] as String;
       await _storageService.saveAuthData(token: token);
       return user;
@@ -46,7 +46,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
       );
-      final user = AppUser.fromJson(res['user']);
+      final user = AppUser.fromJson(Map<String, dynamic>.from(res['user'] as Map));
       final token = res['token'] as String;
       await _storageService.saveAuthData(token: token);
       return user;

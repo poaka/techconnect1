@@ -63,7 +63,7 @@ class JobOffer {
       status: JobOfferStatus.fromString(json['status']?.toString() ?? 'pending'),
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'].toString()) : DateTime.now(),
       expiresAt: json['expires_at'] != null ? DateTime.parse(json['expires_at'].toString()) : DateTime.now().add(const Duration(minutes: 5)),
-      request: json['request'] != null ? ServiceRequest.fromJson(json['request'] as Map<String, dynamic>) : null,
+      request: json['request'] is Map ? ServiceRequest.fromJson(Map<String, dynamic>.from(json['request'] as Map)) : null,
     );
   }
 }

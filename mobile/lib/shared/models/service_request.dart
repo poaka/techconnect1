@@ -131,12 +131,12 @@ class ServiceRequest {
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'].toString()) : DateTime.now(),
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'].toString()) : null,
       completedAt: json['completed_at'] != null ? DateTime.parse(json['completed_at'].toString()) : null,
-      client: json['client'] != null ? AppUser.fromJson(json['client'] as Map<String, dynamic>) : null,
-      technician: (json['assigned_technician'] ?? json['technician']) != null
-          ? TechnicianProfile.fromJson((json['assigned_technician'] ?? json['technician']) as Map<String, dynamic>)
+      client: json['client'] is Map ? AppUser.fromJson(Map<String, dynamic>.from(json['client'] as Map)) : null,
+      technician: (json['assigned_technician'] ?? json['technician']) is Map
+          ? TechnicianProfile.fromJson(Map<String, dynamic>.from((json['assigned_technician'] ?? json['technician']) as Map))
           : null,
       // For category, since backend might return a nested obj or just id
-      category: json['category'] != null ? Category.fromJson(json['category'] as Map<String, dynamic>) : null,
+      category: json['category'] is Map ? Category.fromJson(Map<String, dynamic>.from(json['category'] as Map)) : null,
       hasReview: json['review'] != null && (json['review'] is List ? (json['review'] as List).isNotEmpty : true),
     );
   }
