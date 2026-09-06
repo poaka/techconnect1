@@ -2,7 +2,7 @@ const http = require('http');
 const app = require('../src/index');
 
 async function runComprehensiveTests() {
-  console.log('--- Starting FixerPro Comprehensive Backend Test Suite ---');
+  console.log('--- Starting FixerPro Full Stack (Backend + Admin) Test Suite ---');
   
   const server = http.createServer(app);
   await new Promise((resolve) => server.listen(5002, resolve));
@@ -14,6 +14,7 @@ async function runComprehensiveTests() {
   let clientUser = null;
   let techToken = '';
   let techUser = null;
+  let adminToken = '';
   let requestId = '';
   let offerId = '';
   let cityId = '';
@@ -161,7 +162,7 @@ async function runComprehensiveTests() {
     const notifRes = await apiCall('GET', '/api/notifications', null, techToken);
     assertTest('GET /api/notifications', notifRes.status === 200 && notifRes.body.data?.notifications !== undefined);
 
-    // 14. Accept Offer (if an offer exists for tech)
+    // 14. Accept Offer
     if (offerId) {
       const acceptRes = await apiCall('POST', `/api/offers/${offerId}/accept`, null, techToken);
       assertTest('POST /api/offers/:id/accept (Tech)', acceptRes.status === 200, JSON.stringify(acceptRes.body));
@@ -177,6 +178,34 @@ async function runComprehensiveTests() {
 
       const removeFavRes = await apiCall('DELETE', `/api/favorites/${techProfileId}`, null, clientToken);
       assertTest('DELETE /api/favorites/:techProfileId', removeFavRes.status === 200, JSON.stringify(removeFavRes.body));
+    }
+
+    // ── 16-22. Admin Suite Testing ──
+    const adminLoginRes = await apiCall('POST', '/api/auth/login', {
+      email: 'admin@fixerpro237.cm',
+      password: 'Password123!'
+    });
+    assertTest('POST /api/auth/login (Admin)', adminLoginRes.status === 200 && adminLoginRes.body.data?.token, JSON.stringify(adminLoginRes.body));
+    adminToken = adminLoginRes.body.data?.token;
+
+    if (adminToken) {
+      const adminStatsRes = await apiCall('GET', '/api/admin/stats', null, adminToken);
+      assertTest('GET /api/admin/stats', adminStatsRes.status === 200 && adminStatsRes.body.data?.usersCount !== undefined);
+
+      const adminUsersRes = await apiCall('GET', '/api/admin/users', null, adminToken);
+      assertTest('GET /api/admin/users', adminUsersRes.status === 200 && Array.isArray(adminUsersRes.body.data));
+
+      const adminTechsRes = await apiCall('GET', '/api/admin/technicians', null, adminToken);
+      assertTest('GET /api/admin/technicians', adminTechsRes.status === 200 && Array.isArray(adminTechsRes.body.data));
+
+      const adminReqsRes = await apiCall('GET', '/api/admin/requests', null, adminToken);
+      assertTest('GET /api/admin/requests', adminReqsRes.status === 200 && Array.isArray(adminReqsRes.body.data));
+
+      const adminVerifsRes = await apiCall('GET', '/api/admin/verifications', null, adminToken);
+      assertTest('GET /api/admin/verifications', adminVerifsRes.status === 200 && Array.isArray(adminVerifsRes.body.data));
+
+      const adminCatsRes = await apiCall('GET', '/api/admin/categories', null, adminToken);
+      assertTest('GET /api/admin/categories', adminCatsRes.status === 200 && Array.isArray(adminCatsRes.body.data));
     }
 
   } catch (err) {
