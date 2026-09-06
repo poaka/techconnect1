@@ -745,9 +745,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       children: [
                         Icon(Icons.info_outline, color: statusColor, size: 20),
                         const SizedBox(width: 8),
-                        Text(
-                          '${context.tr('request_info')} : ${request.status.getLocalizedLabel(context)}',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: statusColor),
+                        Flexible(
+                          child: Text(
+                            '${context.tr('request_info')} : ${request.status.getLocalizedLabel(context)}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: statusColor),
+                          ),
                         ),
                       ],
                     ),
@@ -965,26 +968,30 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _isLiveSharing ? AppColors.success : Colors.grey,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _isLiveSharing ? AppColors.success : Colors.grey,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _isLiveSharing ? context.tr('live_sharing_active') : context.tr('live_sharing_toggle'),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: _isLiveSharing ? AppColors.success : null,
-                      fontSize: 14,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _isLiveSharing ? context.tr('live_sharing_active') : context.tr('live_sharing_toggle'),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: _isLiveSharing ? AppColors.success : null,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               Switch(
                 value: _isLiveSharing,

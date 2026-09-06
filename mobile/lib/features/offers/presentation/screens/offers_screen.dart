@@ -129,13 +129,6 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
     final request = offer['request'] as Map<String, dynamic>?;
     if (request == null) return const SizedBox.shrink();
 
-    final expiresAtStr = offer['created_at'] as String?; // Assuming created_at + some time = expires_at if there is no expires_at
-    final createdAt = expiresAtStr != null ? DateTime.parse(expiresAtStr) : DateTime.now();
-    final expiresAt = createdAt.add(const Duration(hours: 24)); // Example logic for expiration
-    final timeRemaining = expiresAt.difference(DateTime.now());
-    final minutesLeft = timeRemaining.inMinutes;
-    final isUrgent = minutesLeft <= 60;
-
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -144,37 +137,9 @@ class _OfferCardState extends ConsumerState<_OfferCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    request['category']?['name'] ?? context.tr('service'),
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isUrgent ? AppColors.error.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.timer_outlined, size: 14, color: isUrgent ? AppColors.error : Colors.orange),
-                      const SizedBox(width: 4),
-                      Text(
-                        minutesLeft > 0 ? '$minutesLeft${context.tr('mins_left')}' : context.tr('expires_soon'),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isUrgent ? AppColors.error : Colors.orange,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            Text(
+              request['category']?['name'] ?? context.tr('service'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(

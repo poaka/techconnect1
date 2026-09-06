@@ -4,14 +4,16 @@ import 'package:flutter/foundation.dart';
 import '../storage/secure_storage_service.dart';
 import 'jwt_interceptor.dart';
 
+const bool useLocalBackend = false; // Set to true to test locally, false to test Render
+
 String get defaultApiBaseUrl {
   const envUrl = String.fromEnvironment('API_BASE_URL');
   if (envUrl.isNotEmpty) return envUrl;
 
-  if (kDebugMode) {
-    // 192.168.1.33 is your computer's local Wi-Fi IP address.
-    // This allows both physical devices and emulators to connect to the backend over Wi-Fi.
-    return 'http://192.168.1.33:5000/api';
+  if (kDebugMode && useLocalBackend) {
+    // Uses 127.0.0.1 along with ADB reverse port forwarding.
+    // This securely bypasses Windows Firewall and IP changes.
+    return 'http://127.0.0.1:5000/api';
   }
 
   // Release mode / Production URL on Render
@@ -53,7 +55,7 @@ class DioClient {
       logPrint: (obj) => developer.log('[Dio] $obj', name: 'Network'),
     ));
 
-    // Add Automatic Connection Error Fallback Interceptor (10.0.2.2 <-> 127.0.0.1)
+    // Add Automatic Connection Error Fallback Interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
         onError: (DioException error, handler) async {
@@ -61,34 +63,31 @@ class DioClient {
               error.type == DioExceptionType.connectionTimeout) {
             
             // Prevent infinite fallback loop
-            if (error.requestOptions.extra['isFallback'] == true) {
-              return handler.next(error);
-            }
-
+            final triedBases = List<String>.from(error.requestOptions.extra['triedBases'] ?? []);
             final currentBase = _dio.options.baseUrl;
-            String? fallbackBase;
+            triedBases.add(currentBase);
 
-            if (currentBase.contains('10.0.2.2')) {
-              fallbackBase = currentBase.replaceAll('10.0.2.2', '127.0.0.1');
-            } else if (currentBase.contains('127.0.0.1')) {
-              fallbackBase = currentBase.replaceAll('127.0.0.1', '10.0.2.2');
-            } else if (currentBase.contains('localhost')) {
-              fallbackBase = currentBase.replaceAll('localhost', '10.0.2.2');
-            }
+            const candidateBases = [
+              'http://127.0.0.1:5000/api',
+              'http://172.20.10.3:5000/api',
+              'http://10.0.2.2:5000/api',
+            ];
 
-            if (fallbackBase != null && fallbackBase != currentBase) {
-              try {
-                // Update primary baseUrl for all subsequent requests
-                _dio.options.baseUrl = fallbackBase;
+            for (final candidate in candidateBases) {
+              if (!triedBases.contains(candidate)) {
+                try {
+                  developer.log('[Dio] Connection failed on $currentBase, trying fallback: $candidate', name: 'Network');
+                  _dio.options.baseUrl = candidate;
 
-                final opts = error.requestOptions;
-                opts.baseUrl = fallbackBase;
-                opts.extra['isFallback'] = true; // Mark as fallback to prevent infinite loop
-                
-                final response = await _dio.fetch(opts);
-                return handler.resolve(response);
-              } catch (_) {
-                // Fallback failed, pass original error downstream
+                  final opts = error.requestOptions;
+                  opts.baseUrl = candidate;
+                  opts.extra['triedBases'] = triedBases;
+                  
+                  final response = await _dio.fetch(opts);
+                  return handler.resolve(response);
+                } catch (_) {
+                  triedBases.add(candidate);
+                }
               }
             }
           }
