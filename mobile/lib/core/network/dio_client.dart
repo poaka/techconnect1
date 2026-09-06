@@ -4,14 +4,16 @@ import 'package:flutter/foundation.dart';
 import '../storage/secure_storage_service.dart';
 import 'jwt_interceptor.dart';
 
+const bool useLocalBackend = true; // Set to true to test locally, false to test Render
+
 String get defaultApiBaseUrl {
   const envUrl = String.fromEnvironment('API_BASE_URL');
   if (envUrl.isNotEmpty) return envUrl;
 
-  if (kDebugMode) {
-    // 192.168.1.33 is your computer's local Wi-Fi IP address.
-    // This allows both physical devices and emulators to connect to the backend over Wi-Fi.
-    return 'http://192.168.1.33:5000/api';
+  if (kDebugMode && useLocalBackend) {
+    // Uses 127.0.0.1 along with ADB reverse port forwarding.
+    // This securely bypasses Windows Firewall and IP changes.
+    return 'http://127.0.0.1:5000/api';
   }
 
   // Release mode / Production URL on Render
