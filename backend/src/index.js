@@ -45,35 +45,37 @@ app.get('/', (req, res) => {
   });
 });
 
-// One-time admin seed/reset (development only – remove in production)
-app.get('/setup-admin', async (req, res) => {
-  const supabase = require('./config/supabase');
-  const bcrypt = require('bcryptjs');
-  if (!supabase) {
-    return res.json({ ok: false, message: 'Supabase not connected (running in local mode). Admin mock user is available.' });
-  }
-  try {
-    const hash = await bcrypt.hash('admin', 10);
-    const { data, error } = await supabase
-      .from('users')
-      .upsert([{
-        full_name: 'Admin FixerPro237',
-        email: 'admin@gmail.com',
-        phone: '+237690000000',
-        password_hash: hash,
-        role: 'admin'
-      }], { onConflict: 'email' })
-      .select('id, email, role')
-      .single();
-
-    if (error) {
-      return res.json({ ok: false, error: error.message, details: error });
+// One-time admin seed/reset (DEVELOPMENT ONLY — blocked in production)
+if (env.nodeEnv === 'development') {
+  app.get('/setup-admin', async (req, res) => {
+    const supabase = require('./config/supabase');
+    const bcrypt = require('bcryptjs');
+    if (!supabase) {
+      return res.json({ ok: false, message: 'Supabase not connected (running in local mode). Admin mock user is available.' });
     }
-    return res.json({ ok: true, message: '✅ Admin upserted successfully!', user: data });
-  } catch (err) {
-    return res.json({ ok: false, error: err.message });
-  }
-});
+    try {
+      const hash = await bcrypt.hash('admin', 10);
+      const { data, error } = await supabase
+        .from('users')
+        .upsert([{
+          full_name: 'Admin FixerPro237',
+          email: 'admin@gmail.com',
+          phone: '+237690000000',
+          password_hash: hash,
+          role: 'admin'
+        }], { onConflict: 'email' })
+        .select('id, email, role')
+        .single();
+
+      if (error) {
+        return res.json({ ok: false, error: error.message, details: error });
+      }
+      return res.json({ ok: true, message: '✅ Admin upserted successfully!', user: data });
+    } catch (err) {
+      return res.json({ ok: false, error: err.message });
+    }
+  });
+}
 
 // Health check endpoint
 app.get('/health', (req, res) => {

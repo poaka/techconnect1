@@ -26,7 +26,7 @@ EXCEPTION
 END $$;
 
 DO $$ BEGIN
-    CREATE TYPE job_offer_status AS ENUM ('pending', 'accepted', 'rejected', 'expired');
+    CREATE TYPE job_offer_status AS ENUM ('sent', 'accepted', 'declined', 'expired');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -142,7 +142,8 @@ CREATE TABLE IF NOT EXISTS job_offers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     request_id UUID NOT NULL REFERENCES service_requests(id) ON DELETE CASCADE,
     technician_id UUID NOT NULL REFERENCES technician_profiles(id) ON DELETE CASCADE,
-    status job_offer_status DEFAULT 'pending',
+    status job_offer_status DEFAULT 'sent',
+    rank INT NOT NULL DEFAULT 1,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     responded_at TIMESTAMPTZ,
     CONSTRAINT unique_offer_per_tech_req UNIQUE (request_id, technician_id)
