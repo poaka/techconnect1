@@ -67,11 +67,11 @@ class DioClient {
             final currentBase = _dio.options.baseUrl;
             triedBases.add(currentBase);
 
-            const candidateBases = [
+            final candidateBases = kDebugMode ? [
               'http://127.0.0.1:5000/api',
               'http://172.20.10.3:5000/api',
               'http://10.0.2.2:5000/api',
-            ];
+            ] : <String>[];
 
             for (final candidate in candidateBases) {
               if (!triedBases.contains(candidate)) {
