@@ -17,7 +17,7 @@ String get defaultApiBaseUrl {
   }
 
   // Release mode / Production URL on Render
-  return 'https://fixerpro2371-api.onrender.com/api';
+  return 'https://techconnect1-api.onrender.com/api';
 }
 
 class DioClient {
