@@ -3,18 +3,18 @@ import '../../core/localization/app_localizations.dart';
 import 'service_request.dart';
 
 enum JobOfferStatus {
-  pending,
+  sent,
   accepted,
-  rejected,
+  declined,
   expired;
 
   String getLocalizedLabel(BuildContext context) {
     switch (this) {
-      case JobOfferStatus.pending:
+      case JobOfferStatus.sent:
         return context.tr('status_unassigned');
       case JobOfferStatus.accepted:
         return context.tr('status_in_progress');
-      case JobOfferStatus.rejected:
+      case JobOfferStatus.declined:
         return context.tr('reject');
       case JobOfferStatus.expired:
         return context.tr('status_cancelled');
@@ -23,15 +23,18 @@ enum JobOfferStatus {
 
   static JobOfferStatus fromString(String value) {
     switch (value.toLowerCase()) {
+      case 'sent':
+      case 'pending':  // backward compatibility
+        return JobOfferStatus.sent;
       case 'accepted':
         return JobOfferStatus.accepted;
-      case 'rejected':
-        return JobOfferStatus.rejected;
+      case 'declined':
+      case 'rejected':  // backward compatibility
+        return JobOfferStatus.declined;
       case 'expired':
         return JobOfferStatus.expired;
-      case 'pending':
       default:
-        return JobOfferStatus.pending;
+        return JobOfferStatus.sent;
     }
   }
 }
