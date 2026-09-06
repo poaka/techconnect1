@@ -30,8 +30,8 @@ class OffersListNotifier extends StateNotifier<AsyncValue<List<JobOffer>>> {
     state = const AsyncValue.loading();
     try {
       final offers = await _repository.getOffers();
-      // Only keep pending offers
-      final pendingOffers = offers.where((o) => o.status == JobOfferStatus.pending).toList();
+      // Only keep actionable (sent) offers
+      final pendingOffers = offers.where((o) => o.status == JobOfferStatus.sent).toList();
       state = AsyncValue.data(pendingOffers);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
